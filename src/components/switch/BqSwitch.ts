@@ -1,119 +1,92 @@
-import { getBaseStyles } from '../../utils/styles.js';
-import { dispatch, uniqueId } from '../../utils/dom.js';
-import { t } from '../../i18n/index.js';
-
 /**
- * Toggle switch component.
+ * Toggle switch form control.
  * @element bq-switch
- * @prop {string}  label
- * @prop {string}  name
+ * @prop {string}  label   - Visible label
+ * @prop {string}  name    - Input name
  * @prop {boolean} checked
  * @prop {boolean} disabled
- * @prop {string}  size - sm | md | lg
- * @fires bq-change - { checked }
+ * @prop {string}  size    - sm | md | lg
+ * @fires bq-change - { checked: boolean }
  */
-export class BqSwitch extends HTMLElement {
-  static get observedAttributes() { return ['label','name','checked','disabled','size']; }
-  private _shadow: ShadowRoot;
-  private _id: string;
+import { component, html } from '@bquery/bquery/component';
+import type { ComponentDefinition } from '@bquery/bquery/component';
+import { escapeHtml } from '@bquery/bquery/security';
+import { getBaseStyles } from '../../utils/styles.js';
 
-  constructor() {
-    super();
-    this._shadow = this.attachShadow({ mode: 'open' });
-    this._id = uniqueId('bq-switch');
-  }
+type BqSwitchProps = { label: string; name: string; checked: boolean; disabled: boolean; size: string };
 
-  connectedCallback() { this._render(); }
-  attributeChangedCallback() { this._render(); }
-
-  get checked(): boolean { return this.hasAttribute('checked'); }
-  set checked(v: boolean) { v ? this.setAttribute('checked', '') : this.removeAttribute('checked'); }
-
-  private _render() {
-    const label = this.getAttribute('label') ?? '';
-    const name = this.getAttribute('name') ?? '';
-    const checked = this.hasAttribute('checked');
-    const disabled = this.hasAttribute('disabled');
-    const size = this.getAttribute('size') ?? 'md';
-
-    const sizeMap: Record<string, { w: string; h: string; thumb: string; offset: string }> = {
-      sm: { w: '2rem',    h: '1.125rem', thumb: '0.875rem', offset: '0.9rem' },
-      md: { w: '2.5rem',  h: '1.375rem', thumb: '1.125rem', offset: '1.125rem' },
-      lg: { w: '3rem',    h: '1.625rem', thumb: '1.375rem', offset: '1.375rem' },
+const definition: ComponentDefinition<BqSwitchProps> = {
+  props: {
+    label:   { type: String, default: '' },
+    name:    { type: String, default: '' },
+    checked: { type: Boolean, default: false },
+    disabled:{ type: Boolean, default: false },
+    size:    { type: String, default: 'md' },
+  },
+  styles: `
+    ${getBaseStyles()}
+    *, *::before, *::after { box-sizing: border-box; }
+    :host { display: inline-flex; }
+    .control { display: inline-flex; align-items: center; gap: 0.625rem; cursor: pointer; font-family: var(--bq-font-family-sans); }
+    :host([disabled]) .control { opacity: 0.5; cursor: not-allowed; pointer-events: none; }
+    .track {
+      position: relative; display: inline-block; background: var(--bq-border-emphasis,#cbd5e1);
+      border-radius: var(--bq-radius-full,9999px);
+      transition: background var(--bq-duration-fast) var(--bq-easing-standard);
+      flex-shrink: 0;
+    }
+    .track[data-size="sm"] { width: 1.75rem; height: 1rem; }
+    .track[data-size="md"] { width: 2.5rem; height: 1.375rem; }
+    .track[data-size="lg"] { width: 3rem; height: 1.625rem; }
+    input { position: absolute; opacity: 0; width: 0; height: 0; }
+    .thumb {
+      position: absolute; top: 2px; left: 2px; background: #fff;
+      border-radius: 50%; transition: transform var(--bq-duration-fast) var(--bq-easing-standard);
+      box-shadow: var(--bq-shadow-sm);
+    }
+    .track[data-size="sm"]  .thumb { width: calc(1rem - 4px);    height: calc(1rem - 4px); }
+    .track[data-size="md"]  .thumb { width: calc(1.375rem - 4px); height: calc(1.375rem - 4px); }
+    .track[data-size="lg"]  .thumb { width: calc(1.625rem - 4px); height: calc(1.625rem - 4px); }
+    :host([checked]) .track { background: var(--bq-color-primary-600,#2563eb); }
+    :host([checked]) .track[data-size="sm"]  .thumb { transform: translateX(0.75rem); }
+    :host([checked]) .track[data-size="md"]  .thumb { transform: translateX(1.125rem); }
+    :host([checked]) .track[data-size="lg"]  .thumb { transform: translateX(1.375rem); }
+    input:focus-visible + .thumb { box-shadow: var(--bq-focus-ring); }
+    .label-text { font-size: var(--bq-font-size-sm,0.875rem); color: var(--bq-text-base,#0f172a); }
+  `,
+  connected() {
+    const self = this;
+    const handler = (e: Event) => {
+      const input = e.target as HTMLInputElement | null;
+      if (input?.type !== 'checkbox') return;
+      if (input.checked) self.setAttribute('checked', ''); else self.removeAttribute('checked');
+      self.dispatchEvent(new CustomEvent('bq-change', { detail: { checked: input.checked }, bubbles: true, composed: true }));
     };
-    const s = sizeMap[size] ?? sizeMap['md']!;
-
-    const styles = `
-      ${getBaseStyles()}
-      *, *::before, *::after { box-sizing: border-box; }
-      :host { display: inline-block; }
-      .wrapper {
-        display: inline-flex; align-items: center; gap: 0.5rem;
-        cursor: ${disabled ? 'not-allowed' : 'pointer'};
-        opacity: ${disabled ? '0.5' : '1'};
-        font-family: var(--bq-font-family-sans);
-        user-select: none;
-      }
-      .switch-wrap { position: relative; display: inline-flex; }
-      input[type="checkbox"] {
-        position: absolute; opacity: 0; width: 100%; height: 100%; margin: 0;
-        cursor: ${disabled ? 'not-allowed' : 'pointer'};
-      }
-      .track {
-        width: ${s.w}; height: ${s.h};
-        border-radius: var(--bq-radius-full,9999px);
-        background: ${checked ? 'var(--bq-color-primary-600,#2563eb)' : 'var(--bq-color-secondary-300,#cbd5e1)'};
-        transition: background var(--bq-duration-fast) var(--bq-easing-standard);
-        display: flex; align-items: center;
-        padding: 0.125rem;
-        pointer-events: none;
-      }
-      .thumb {
-        width: ${s.thumb}; height: ${s.thumb};
-        border-radius: var(--bq-radius-full,9999px);
-        background: #fff;
-        box-shadow: var(--bq-shadow-sm);
-        transform: translateX(${checked ? s.offset : '0'});
-        transition: transform var(--bq-duration-fast) var(--bq-easing-spring,cubic-bezier(0.34,1.56,0.64,1));
-      }
-      input:focus-visible ~ .track { box-shadow: var(--bq-focus-ring); }
-      .label-text { font-size: var(--bq-font-size-sm,0.875rem); font-weight: var(--bq-font-weight-medium,500); color: var(--bq-text-base,#0f172a); }
-    `;
-
-    this._shadow.innerHTML = `
-      <style>${styles}</style>
-      <label class="wrapper" part="wrapper">
-        <span class="switch-wrap">
-          <input
-            type="checkbox"
-            id="${this._id}"
-            name="${name}"
-            ${checked ? 'checked' : ''}
-            ${disabled ? 'disabled' : ''}
-            role="switch"
-            aria-checked="${checked}"
-            aria-label="${label || t('common.open')}"
-          />
-          <span class="track" part="track" aria-hidden="true">
-            <span class="thumb" part="thumb"></span>
-          </span>
+    (self as unknown as Record<string, unknown>)['_handler'] = handler;
+    self.shadowRoot?.addEventListener('change', handler);
+  },
+  disconnected() {
+    const h = (this as unknown as Record<string, unknown>)['_handler'] as EventListener | undefined;
+    if (h) this.shadowRoot?.removeEventListener('change', h);
+  },
+  render({ props }) {
+    return html`
+      <label class="control" part="control">
+        <span class="track" data-size="${escapeHtml(props.size)}">
+          <input type="checkbox" part="input" name="${escapeHtml(props.name)}"
+            ${props.checked ? 'checked' : ''} ${props.disabled ? 'disabled' : ''}
+            role="switch" aria-checked="${props.checked ? 'true' : 'false'}"
+            aria-label="${escapeHtml(props.label)}" />
+          <span class="thumb" part="thumb"></span>
         </span>
-        ${label ? `<span class="label-text">${label}</span>` : ''}
+        ${props.label ? `<span class="label-text" part="label">${escapeHtml(props.label)}</span>` : ''}
       </label>
     `;
-
-    const input = this._shadow.querySelector('input');
-    if (input) {
-      input.addEventListener('change', () => {
-        input.checked ? this.setAttribute('checked', '') : this.removeAttribute('checked');
-        dispatch(this, 'bq-change', { checked: input.checked });
-      });
-    }
-  }
-}
+  },
+};
 
 export function registerBqSwitch(prefix = 'bq'): string {
   const tag = `${prefix}-switch`;
-  if (!customElements.get(tag)) customElements.define(tag, BqSwitch);
+  component<BqSwitchProps>(tag, definition);
   return tag;
 }

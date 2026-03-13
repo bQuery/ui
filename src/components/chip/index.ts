@@ -1,1 +1,1 @@
-export { BqChip, registerBqChip } from './BqChip.js';
+export { registerBqChip } from './BqChip.js';

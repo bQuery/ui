@@ -1,78 +1,52 @@
-import { getBaseStyles } from '../../utils/styles.js';
-import { t } from '../../i18n/index.js';
-
 /**
- * Empty state / zero state component.
+ * Empty state component - placeholder for empty content areas.
  * @element bq-empty-state
- * @prop {string} title
- * @prop {string} description
- * @prop {string} icon - SVG or emoji
- * @slot action - CTA button(s)
- * @slot icon   - Custom icon
+ * @prop {string} title       - Main heading
+ * @prop {string} description - Descriptive text
+ * @prop {string} icon        - Icon character/emoji
+ * @slot - Additional content (e.g. action button)
  */
-export class BqEmptyState extends HTMLElement {
-  static get observedAttributes() { return ['title','description','icon']; }
-  private _shadow: ShadowRoot;
+import { component, html } from '@bquery/bquery/component';
+import type { ComponentDefinition } from '@bquery/bquery/component';
+import { escapeHtml } from '@bquery/bquery/security';
+import { getBaseStyles } from '../../utils/styles.js';
 
-  constructor() {
-    super();
-    this._shadow = this.attachShadow({ mode: 'open' });
-  }
+type BqEmptyStateProps = { title: string; description: string; icon: string };
 
-  connectedCallback() { this._render(); }
-  attributeChangedCallback() { this._render(); }
-
-  private _render() {
-    const title = this.getAttribute('title') ?? t('emptyState.title');
-    const description = this.getAttribute('description') ?? t('emptyState.description');
-    const icon = this.getAttribute('icon') ?? '📭';
-
-    const styles = `
-      ${getBaseStyles()}
-      *, *::before, *::after { box-sizing: border-box; }
-      :host { display: flex; justify-content: center; }
-
-      .empty {
-        display: flex; flex-direction: column; align-items: center;
-        gap: var(--bq-space-4,1rem);
-        padding: var(--bq-space-12,3rem) var(--bq-space-6,1.5rem);
-        text-align: center;
-        max-width: 24rem;
-        font-family: var(--bq-font-family-sans);
-      }
-      .icon-wrap { font-size: 3rem; line-height: 1; color: var(--bq-text-subtle,#94a3b8); }
-      .title {
-        font-size: var(--bq-font-size-lg,1.125rem);
-        font-weight: var(--bq-font-weight-semibold,600);
-        color: var(--bq-text-base,#0f172a);
-        margin: 0;
-      }
-      .description {
-        font-size: var(--bq-font-size-sm,0.875rem);
-        color: var(--bq-text-muted,#475569);
-        line-height: var(--bq-line-height-relaxed,1.625);
-        margin: 0;
-      }
-      .action { display: flex; gap: 0.5rem; flex-wrap: wrap; justify-content: center; }
-      .action:empty { display: none; }
-    `;
-
-    this._shadow.innerHTML = `
-      <style>${styles}</style>
-      <div part="empty-state" class="empty" role="status">
-        <div class="icon-wrap" part="icon" aria-hidden="true">
-          <slot name="icon">${icon}</slot>
-        </div>
-        <h2 class="title" part="title">${title}</h2>
-        <p class="description" part="description">${description}</p>
-        <div class="action" part="action"><slot name="action"></slot></div>
+const definition: ComponentDefinition<BqEmptyStateProps> = {
+  props: {
+    title:       { type: String, default: '' },
+    description: { type: String, default: '' },
+    icon:        { type: String, default: '' },
+  },
+  styles: `
+    ${getBaseStyles()}
+    *, *::before, *::after { box-sizing: border-box; }
+    :host { display: block; }
+    .empty {
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      text-align: center; padding: var(--bq-space-12,3rem) var(--bq-space-6,1.5rem);
+      font-family: var(--bq-font-family-sans);
+    }
+    .icon { font-size: 3rem; line-height: 1; margin-bottom: var(--bq-space-4,1rem); color: var(--bq-text-subtle,#94a3b8); }
+    .title { font-size: var(--bq-font-size-xl,1.25rem); font-weight: var(--bq-font-weight-semibold,600); color: var(--bq-text-base,#0f172a); margin: 0 0 0.5rem; }
+    .description { font-size: var(--bq-font-size-md,1rem); color: var(--bq-text-muted,#475569); margin: 0 0 var(--bq-space-6,1.5rem); max-width: 28rem; }
+    .actions { display: flex; gap: var(--bq-space-3,0.75rem); flex-wrap: wrap; justify-content: center; }
+  `,
+  render({ props }) {
+    return html`
+      <div part="empty-state" class="empty">
+        ${props.icon ? `<span class="icon" part="icon" aria-hidden="true">${escapeHtml(props.icon)}</span>` : ''}
+        ${props.title ? `<h3 class="title" part="title">${escapeHtml(props.title)}</h3>` : ''}
+        ${props.description ? `<p class="description" part="description">${escapeHtml(props.description)}</p>` : ''}
+        <div class="actions"><slot></slot></div>
       </div>
     `;
-  }
-}
+  },
+};
 
 export function registerBqEmptyState(prefix = 'bq'): string {
   const tag = `${prefix}-empty-state`;
-  if (!customElements.get(tag)) customElements.define(tag, BqEmptyState);
+  component<BqEmptyStateProps>(tag, definition);
   return tag;
 }

@@ -1,1 +1,1 @@
-export { BqSlider, registerBqSlider } from './BqSlider.js';
+export { registerBqSlider } from './BqSlider.js';

@@ -1,1 +1,1 @@
-export { BqDialog, registerBqDialog } from './BqDialog.js';
+export { registerBqDialog } from './BqDialog.js';

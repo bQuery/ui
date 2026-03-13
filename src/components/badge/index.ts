@@ -1,1 +1,1 @@
-export { BqBadge, registerBqBadge } from './BqBadge.js';
+export { registerBqBadge } from './BqBadge.js';

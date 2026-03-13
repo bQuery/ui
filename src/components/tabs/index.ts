@@ -1,1 +1,1 @@
-export { BqTabs, registerBqTabs } from './BqTabs.js';
+export { registerBqTabs } from './BqTabs.js';

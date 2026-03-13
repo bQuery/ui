@@ -1,123 +1,89 @@
-import { getBaseStyles } from '../../utils/styles.js';
-import { dispatch, uniqueId } from '../../utils/dom.js';
-
 /**
- * Checkbox component.
+ * Checkbox form control.
  * @element bq-checkbox
- * @prop {string}  label
- * @prop {string}  name
- * @prop {string}  value
+ * @prop {string}  label         - Visible label
+ * @prop {string}  name          - Input name
+ * @prop {string}  value         - Input value
  * @prop {boolean} checked
  * @prop {boolean} indeterminate
  * @prop {boolean} disabled
  * @prop {boolean} required
  * @prop {string}  hint
- * @fires bq-change - { checked, value }
+ * @fires bq-change - { checked: boolean, value: string }
  */
-export class BqCheckbox extends HTMLElement {
-  static get observedAttributes() { return ['label','name','value','checked','indeterminate','disabled','required','hint']; }
-  private _shadow: ShadowRoot;
-  private _id: string;
+import { component, html } from '@bquery/bquery/component';
+import type { ComponentDefinition } from '@bquery/bquery/component';
+import { escapeHtml } from '@bquery/bquery/security';
+import { getBaseStyles } from '../../utils/styles.js';
 
-  constructor() {
-    super();
-    this._shadow = this.attachShadow({ mode: 'open' });
-    this._id = uniqueId('bq-checkbox');
-  }
+type BqCheckboxProps = { label: string; name: string; value: string; checked: boolean; indeterminate: boolean; disabled: boolean; required: boolean; hint: string };
 
-  connectedCallback() { this._render(); }
-  attributeChangedCallback() { this._render(); }
-
-  get checked(): boolean { return this.hasAttribute('checked'); }
-  set checked(v: boolean) { v ? this.setAttribute('checked', '') : this.removeAttribute('checked'); }
-
-  private _render() {
-    const label = this.getAttribute('label') ?? '';
-    const name = this.getAttribute('name') ?? '';
-    const value = this.getAttribute('value') ?? '';
-    const checked = this.hasAttribute('checked');
-    const indeterminate = this.hasAttribute('indeterminate');
-    const disabled = this.hasAttribute('disabled');
-    const required = this.hasAttribute('required');
-    const hint = this.getAttribute('hint') ?? '';
-
-    const styles = `
-      ${getBaseStyles()}
-      *, *::before, *::after { box-sizing: border-box; }
-      :host { display: block; }
-
-      .wrapper {
-        display: inline-flex; align-items: flex-start; gap: 0.5rem;
-        cursor: ${disabled ? 'not-allowed' : 'pointer'};
-        opacity: ${disabled ? '0.5' : '1'};
-        font-family: var(--bq-font-family-sans);
-        user-select: none;
-      }
-      .check-wrap {
-        position: relative; display: inline-flex; align-items: center; justify-content: center;
-        width: 1.125rem; height: 1.125rem; flex-shrink: 0; margin-top: 0.1rem;
-      }
-      input[type="checkbox"] {
-        position: absolute; opacity: 0; width: 100%; height: 100%; margin: 0; cursor: ${disabled ? 'not-allowed' : 'pointer'};
-      }
-      .box {
-        width: 1.125rem; height: 1.125rem;
-        border: 2px solid ${checked || indeterminate ? 'var(--bq-color-primary-600,#2563eb)' : 'var(--bq-border-emphasis,#cbd5e1)'};
-        border-radius: var(--bq-radius-sm,0.25rem);
-        background: ${checked || indeterminate ? 'var(--bq-color-primary-600,#2563eb)' : 'var(--bq-bg-base,#fff)'};
-        display: flex; align-items: center; justify-content: center;
-        transition: all var(--bq-duration-fast) var(--bq-easing-standard);
-        pointer-events: none;
-        color: #fff; font-size: 0.7rem; font-weight: bold;
-      }
-      input:focus-visible ~ .box { box-shadow: var(--bq-focus-ring); }
-
-      .label-wrap { display: flex; flex-direction: column; gap: 0.125rem; padding-top: 0.05rem; }
-      .label-text { font-size: var(--bq-font-size-sm,0.875rem); font-weight: var(--bq-font-weight-medium,500); color: var(--bq-text-base,#0f172a); }
-      .hint { font-size: 0.75rem; color: var(--bq-text-muted,#475569); }
-    `;
-
-    const checkmark = checked ? '✓' : (indeterminate ? '−' : '');
-
-    this._shadow.innerHTML = `
-      <style>${styles}</style>
-      <label class="wrapper" part="wrapper">
-        <span class="check-wrap">
-          <input
-            type="checkbox"
-            id="${this._id}"
-            name="${name}"
-            value="${value}"
-            ${checked ? 'checked' : ''}
-            ${disabled ? 'disabled' : ''}
-            ${required ? 'required' : ''}
-            aria-checked="${indeterminate ? 'mixed' : checked}"
-          />
-          <span class="box" part="box" aria-hidden="true">${checkmark}</span>
-        </span>
-        ${label || hint ? `
-          <span class="label-wrap">
-            ${label ? `<span class="label-text">${label}</span>` : ''}
-            ${hint ? `<span class="hint">${hint}</span>` : ''}
-          </span>
-        ` : ''}
-      </label>
-    `;
-
-    const input = this._shadow.querySelector('input');
-    if (input) {
-      if (indeterminate) input.indeterminate = true;
-      input.addEventListener('change', () => {
-        if (indeterminate) { this.removeAttribute('indeterminate'); }
-        input.checked ? this.setAttribute('checked', '') : this.removeAttribute('checked');
-        dispatch(this, 'bq-change', { checked: input.checked, value });
-      });
+const definition: ComponentDefinition<BqCheckboxProps> = {
+  props: {
+    label:         { type: String, default: '' },
+    name:          { type: String, default: '' },
+    value:         { type: String, default: '' },
+    checked:       { type: Boolean, default: false },
+    indeterminate: { type: Boolean, default: false },
+    disabled:      { type: Boolean, default: false },
+    required:      { type: Boolean, default: false },
+    hint:          { type: String, default: '' },
+  },
+  styles: `
+    ${getBaseStyles()}
+    *, *::before, *::after { box-sizing: border-box; }
+    :host { display: block; }
+    .wrapper { display: flex; flex-direction: column; gap: 0.25rem; }
+    .control { display: flex; align-items: flex-start; gap: 0.625rem; cursor: pointer; }
+    :host([disabled]) .control { opacity: 0.5; cursor: not-allowed; pointer-events: none; }
+    input[type="checkbox"] {
+      width: 1.125rem; height: 1.125rem; flex-shrink: 0;
+      border: 2px solid var(--bq-border-emphasis,#cbd5e1);
+      border-radius: var(--bq-radius-sm,0.25rem);
+      background: var(--bq-bg-base,#fff); cursor: pointer;
+      accent-color: var(--bq-color-primary-600,#2563eb);
+      margin-top: 0.125rem;
     }
-  }
-}
+    input[type="checkbox"]:focus-visible { outline: 2px solid transparent; box-shadow: var(--bq-focus-ring); }
+    .label-text { font-size: var(--bq-font-size-sm,0.875rem); color: var(--bq-text-base,#0f172a); font-family: var(--bq-font-family-sans); line-height: 1.5; }
+    .hint { font-size: var(--bq-font-size-sm,0.875rem); color: var(--bq-text-muted,#475569); font-family: var(--bq-font-family-sans); padding-left: 1.75rem; }
+  `,
+  connected() {
+    const self = this;
+    const handler = (e: Event) => {
+      const input = e.target as HTMLInputElement | null;
+      if (input?.type !== 'checkbox') return;
+      if (input.checked) self.setAttribute('checked', ''); else self.removeAttribute('checked');
+      self.dispatchEvent(new CustomEvent('bq-change', { detail: { checked: input.checked, value: self.getAttribute('value') ?? '' }, bubbles: true, composed: true }));
+    };
+    (self as unknown as Record<string, unknown>)['_handler'] = handler;
+    self.shadowRoot?.addEventListener('change', handler);
+  },
+  disconnected() {
+    const h = (this as unknown as Record<string, unknown>)['_handler'] as EventListener | undefined;
+    if (h) this.shadowRoot?.removeEventListener('change', h);
+  },
+  updated() {
+    const input = this.shadowRoot?.querySelector('input') as HTMLInputElement | null;
+    if (input) input.indeterminate = this.hasAttribute('indeterminate');
+  },
+  render({ props }) {
+    return html`
+      <div class="wrapper" part="wrapper">
+        <label class="control" part="control">
+          <input type="checkbox" part="input" name="${escapeHtml(props.name)}" value="${escapeHtml(props.value)}"
+            ${props.checked ? 'checked' : ''} ${props.disabled ? 'disabled' : ''} ${props.required ? 'required' : ''}
+            aria-label="${escapeHtml(props.label)}" />
+          ${props.label ? `<span class="label-text" part="label">${escapeHtml(props.label)}${props.required ? ' <span aria-hidden="true" style="">*</span>' : ''}</span>` : ''}
+        </label>
+        ${props.hint ? `<span class="hint" part="hint">${escapeHtml(props.hint)}</span>` : ''}
+      </div>
+    `;
+  },
+};
 
 export function registerBqCheckbox(prefix = 'bq'): string {
   const tag = `${prefix}-checkbox`;
-  if (!customElements.get(tag)) customElements.define(tag, BqCheckbox);
+  component<BqCheckboxProps>(tag, definition);
   return tag;
 }

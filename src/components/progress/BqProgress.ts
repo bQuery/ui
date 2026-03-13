@@ -1,96 +1,73 @@
-import { getBaseStyles } from '../../utils/styles.js';
-import { uniqueId } from '../../utils/dom.js';
-
 /**
  * Progress bar component.
  * @element bq-progress
- * @prop {number} value    - 0–100
- * @prop {number} max      - Default 100
- * @prop {string} size     - sm | md | lg
- * @prop {string} variant  - primary | success | danger | warning
- * @prop {boolean} indeterminate
- * @prop {string} label    - Accessible label
+ * @prop {number}  value         - Current value (0-max)
+ * @prop {number}  max           - Maximum value
+ * @prop {string}  size          - sm | md | lg
+ * @prop {string}  variant       - primary | success | danger | warning
+ * @prop {boolean} indeterminate - Indeterminate/loading state
+ * @prop {string}  label         - Accessible label
  */
-export class BqProgress extends HTMLElement {
-  static get observedAttributes() { return ['value', 'max', 'size', 'variant', 'indeterminate', 'label']; }
-  private _shadow: ShadowRoot;
-  private _id: string;
+import { component, html } from '@bquery/bquery/component';
+import type { ComponentDefinition } from '@bquery/bquery/component';
+import { escapeHtml } from '@bquery/bquery/security';
+import { getBaseStyles } from '../../utils/styles.js';
 
-  constructor() {
-    super();
-    this._shadow = this.attachShadow({ mode: 'open' });
-    this._id = uniqueId('bq-progress');
-  }
+type BqProgressProps = { value: number; max: number; size: string; variant: string; indeterminate: boolean; label: string };
 
-  connectedCallback() { this._render(); }
-  attributeChangedCallback() { this._render(); }
-
-  private _render() {
-    const value = parseFloat(this.getAttribute('value') ?? '0');
-    const max = parseFloat(this.getAttribute('max') ?? '100');
-    const size = this.getAttribute('size') ?? 'md';
-    const variant = this.getAttribute('variant') ?? 'primary';
-    const indeterminate = this.hasAttribute('indeterminate');
-    const label = this.getAttribute('label') ?? 'Progress';
-
-    const pct = indeterminate ? 100 : Math.min(100, Math.max(0, (value / max) * 100));
-
-    const sizeMap: Record<string, string> = { sm: '0.375rem', md: '0.625rem', lg: '1rem' };
-    const h = sizeMap[size] ?? sizeMap['md'];
-
-    const colorMap: Record<string, string> = {
-      primary: 'var(--bq-color-primary-600,#2563eb)',
-      success: 'var(--bq-color-success-600,#16a34a)',
-      danger:  'var(--bq-color-danger-600,#dc2626)',
-      warning: 'var(--bq-color-warning-600,#d97706)',
-    };
-    const color = colorMap[variant] ?? colorMap['primary'];
-
-    const styles = `
-      ${getBaseStyles()}
-      :host { display: block; }
-      .track {
-        width: 100%; height: ${h};
-        background: var(--bq-color-secondary-100,#f1f5f9);
-        border-radius: var(--bq-radius-full,9999px);
-        overflow: hidden;
-      }
-      .bar {
-        height: 100%;
-        background: ${color};
-        border-radius: var(--bq-radius-full,9999px);
-        width: ${pct}%;
-        transition: ${indeterminate ? 'none' : 'width var(--bq-duration-slow,300ms) var(--bq-easing-standard)'};
-        ${indeterminate ? 'animation: indeterminate 1.5s ease-in-out infinite;' : ''}
-        transform-origin: left center;
-      }
-      @keyframes indeterminate {
-        0%   { transform: translateX(-100%) scaleX(0.5); }
-        50%  { transform: translateX(0%) scaleX(0.5); }
-        100% { transform: translateX(200%) scaleX(0.5); }
-      }
-    `;
-
-    this._shadow.innerHTML = `
-      <style>${styles}</style>
-      <div
-        part="track"
-        class="track"
-        role="progressbar"
-        aria-label="${label}"
-        aria-valuenow="${indeterminate ? '' : value}"
-        aria-valuemin="0"
-        aria-valuemax="${max}"
-        id="${this._id}"
-      >
-        <div part="bar" class="bar"></div>
+const definition: ComponentDefinition<BqProgressProps> = {
+  props: {
+    value:         { type: Number, default: 0 },
+    max:           { type: Number, default: 100 },
+    size:          { type: String, default: 'md' },
+    variant:       { type: String, default: 'primary' },
+    indeterminate: { type: Boolean, default: false },
+    label:         { type: String, default: '' },
+  },
+  styles: `
+    ${getBaseStyles()}
+    :host { display: block; }
+    .track {
+      background: var(--bq-bg-emphasis,#e2e8f0); border-radius: var(--bq-radius-full,9999px);
+      overflow: hidden; width: 100%;
+    }
+    .track[data-size="sm"] { height: 0.375rem; }
+    .track[data-size="md"] { height: 0.625rem; }
+    .track[data-size="lg"] { height: 1rem; }
+    .bar {
+      height: 100%; border-radius: inherit;
+      transition: width var(--bq-duration-normal) var(--bq-easing-standard);
+    }
+    .bar[data-variant="primary"] { background: var(--bq-color-primary-600,#2563eb); }
+    .bar[data-variant="success"] { background: var(--bq-color-success-600,#16a34a); }
+    .bar[data-variant="danger"]  { background: var(--bq-color-danger-600,#dc2626); }
+    .bar[data-variant="warning"] { background: var(--bq-color-warning-600,#d97706); }
+    :host([indeterminate]) .bar {
+      width: 40% !important;
+      animation: indeterminate 1.4s linear infinite;
+    }
+    @keyframes indeterminate { 0% { transform: translateX(-150%); } 100% { transform: translateX(350%); } }
+    .label { font-size: var(--bq-font-size-sm,0.875rem); color: var(--bq-text-muted,#475569); margin-bottom: 0.375rem; font-family: var(--bq-font-family-sans); }
+    .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+  `,
+  render({ props }) {
+    const pct = props.indeterminate ? 0 : Math.min(100, Math.max(0, (props.value / props.max) * 100));
+    return html`
+      ${props.label ? `<div class="label" part="label">${escapeHtml(props.label)}</div>` : ''}
+      <div part="track" class="track" data-size="${escapeHtml(props.size)}"
+        role="progressbar" aria-valuenow="${props.indeterminate ? '' : String(props.value)}"
+        aria-valuemin="0" aria-valuemax="${String(props.max)}"
+        aria-label="${escapeHtml(props.label || 'Progress')}">
+        <div part="bar" class="bar" data-variant="${escapeHtml(props.variant)}" data-value="${String(Math.round(pct))}"
+          style="width:${String(Math.round(pct))}%"></div>
       </div>
+      <span class="sr-only">${escapeHtml(props.label ? `${props.label}: ${Math.round(pct)}%` : `${Math.round(pct)}%`)}</span>
     `;
-  }
-}
+  },
+};
 
 export function registerBqProgress(prefix = 'bq'): string {
   const tag = `${prefix}-progress`;
-  if (!customElements.get(tag)) customElements.define(tag, BqProgress);
+  component<BqProgressProps>(tag, definition);
   return tag;
 }

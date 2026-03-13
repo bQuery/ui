@@ -1,1 +1,1 @@
-export { BqTable, registerBqTable } from './BqTable.js';
+export { registerBqTable } from './BqTable.js';

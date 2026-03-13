@@ -1,1 +1,1 @@
-export { BqSkeleton, registerBqSkeleton } from './BqSkeleton.js';
+export { registerBqSkeleton } from './BqSkeleton.js';

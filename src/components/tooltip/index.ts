@@ -1,1 +1,1 @@
-export { BqTooltip, registerBqTooltip } from './BqTooltip.js';
+export { registerBqTooltip } from './BqTooltip.js';

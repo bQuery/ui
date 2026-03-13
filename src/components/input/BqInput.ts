@@ -1,175 +1,137 @@
-import { getBaseStyles } from '../../utils/styles.js';
-import { dispatch, uniqueId } from '../../utils/dom.js';
-
 /**
- * Input component.
+ * Text input form field.
  * @element bq-input
- * @prop {string}  label
- * @prop {string}  type       - text | email | password | number | tel | url | search
+ * @prop {string}  label       - Field label
+ * @prop {string}  type        - text | email | password | number | tel | url | search
  * @prop {string}  value
  * @prop {string}  placeholder
  * @prop {string}  name
- * @prop {string}  size       - sm | md | lg
+ * @prop {string}  size        - sm | md | lg
  * @prop {boolean} disabled
  * @prop {boolean} readonly
  * @prop {boolean} required
- * @prop {string}  error      - Error message
- * @prop {string}  hint       - Hint message
+ * @prop {string}  error       - Error message (non-empty = error state)
+ * @prop {string}  hint
  * @prop {string}  maxlength
  * @slot prefix - Leading icon/element
  * @slot suffix - Trailing icon/element
- * @fires bq-input  - { value }
- * @fires bq-change - { value }
+ * @fires bq-input  - { value: string }
+ * @fires bq-change - { value: string }
  * @fires bq-focus
  * @fires bq-blur
  */
-export class BqInput extends HTMLElement {
-  static get observedAttributes() {
-    return ['label','type','value','placeholder','name','size','disabled','readonly','required','error','hint','maxlength'];
-  }
-  private _shadow: ShadowRoot;
-  private _id: string;
-  private _errorId: string;
-  private _hintId: string;
+import { component, html } from '@bquery/bquery/component';
+import type { ComponentDefinition } from '@bquery/bquery/component';
+import { escapeHtml } from '@bquery/bquery/security';
+import { getBaseStyles } from '../../utils/styles.js';
 
-  constructor() {
-    super();
-    this._shadow = this.attachShadow({ mode: 'open' });
-    this._id = uniqueId('bq-input');
-    this._errorId = `${this._id}-error`;
-    this._hintId = `${this._id}-hint`;
-  }
+type BqInputProps = {
+  label: string; type: string; value: string; placeholder: string; name: string;
+  size: string; disabled: boolean; readonly: boolean; required: boolean;
+  error: string; hint: string; maxlength: string;
+};
 
-  connectedCallback() { this._render(); }
-  attributeChangedCallback() { this._render(); }
-
-  get value(): string {
-    return this._shadow.querySelector('input')?.value ?? this.getAttribute('value') ?? '';
-  }
-  set value(v: string) {
-    const el = this._shadow.querySelector('input');
-    if (el) el.value = v;
-    this.setAttribute('value', v);
-  }
-
-  private _render() {
-    const label = this.getAttribute('label') ?? '';
-    const type = this.getAttribute('type') ?? 'text';
-    const value = this.getAttribute('value') ?? '';
-    const placeholder = this.getAttribute('placeholder') ?? '';
-    const name = this.getAttribute('name') ?? '';
-    const size = this.getAttribute('size') ?? 'md';
-    const disabled = this.hasAttribute('disabled');
-    const readonly = this.hasAttribute('readonly');
-    const required = this.hasAttribute('required');
-    const error = this.getAttribute('error') ?? '';
-    const hint = this.getAttribute('hint') ?? '';
-    const maxlength = this.getAttribute('maxlength') ?? '';
-
-    const sizeStyles: Record<string, { padding: string; fontSize: string; height: string }> = {
-      sm: { padding: '0.375rem 0.75rem', fontSize: '0.875rem', height: '2rem' },
-      md: { padding: '0.5rem 0.875rem',  fontSize: '1rem',     height: '2.5rem' },
-      lg: { padding: '0.625rem 1rem',    fontSize: '1.125rem', height: '3rem' },
+const definition: ComponentDefinition<BqInputProps> = {
+  props: {
+    label:      { type: String, default: '' },
+    type:       { type: String, default: 'text' },
+    value:      { type: String, default: '' },
+    placeholder:{ type: String, default: '' },
+    name:       { type: String, default: '' },
+    size:       { type: String, default: 'md' },
+    disabled:   { type: Boolean, default: false },
+    readonly:   { type: Boolean, default: false },
+    required:   { type: Boolean, default: false },
+    error:      { type: String, default: '' },
+    hint:       { type: String, default: '' },
+    maxlength:  { type: String, default: '' },
+  },
+  styles: `
+    ${getBaseStyles()}
+    *, *::before, *::after { box-sizing: border-box; }
+    :host { display: block; }
+    .field { display: flex; flex-direction: column; gap: 0.375rem; }
+    .label { display: flex; align-items: center; gap: 0.25rem; font-size: var(--bq-font-size-sm,0.875rem); font-weight: var(--bq-font-weight-medium,500); color: var(--bq-text-base,#0f172a); font-family: var(--bq-font-family-sans); }
+    .required-mark { color: var(--bq-color-danger-600,#dc2626); }
+    .input-wrap {
+      display: flex; align-items: center;
+      border: 1.5px solid var(--bq-border-emphasis,#cbd5e1);
+      border-radius: var(--bq-radius-lg,0.5rem);
+      background: var(--bq-bg-base,#fff);
+      transition: border-color var(--bq-duration-fast) var(--bq-easing-standard), box-shadow var(--bq-duration-fast) var(--bq-easing-standard);
+      overflow: hidden;
+    }
+    .input-wrap:focus-within { border-color: var(--bq-border-focus,#2563eb); box-shadow: var(--bq-focus-ring); }
+    :host([error]:not([error=""])) .input-wrap { border-color: var(--bq-color-danger-500,#ef4444); }
+    :host([error]:not([error=""])) .input-wrap:focus-within { border-color: var(--bq-color-danger-500,#ef4444); box-shadow: var(--bq-focus-ring-danger); }
+    :host([disabled]) .input-wrap { opacity: 0.5; cursor: not-allowed; background: var(--bq-bg-muted,#f1f5f9); }
+    .slot-wrap { display: flex; align-items: center; padding: 0 0.5rem; color: var(--bq-text-muted,#475569); }
+    input {
+      flex: 1; border: none; outline: none; background: transparent;
+      color: var(--bq-text-base,#0f172a); font-family: var(--bq-font-family-sans); width: 100%;
+    }
+    :host([size="sm"]) input { font-size: 0.875rem; padding: 0.375rem 0.75rem; min-height: 2rem; }
+    :host([size="md"]) input, :host(:not([size])) input { font-size: 1rem; padding: 0.5rem 0.875rem; min-height: 2.5rem; }
+    :host([size="lg"]) input { font-size: 1.125rem; padding: 0.625rem 1rem; min-height: 3rem; }
+    input::placeholder { color: var(--bq-text-subtle,#94a3b8); }
+    input:disabled { cursor: not-allowed; }
+    .hint { font-size: var(--bq-font-size-sm,0.875rem); color: var(--bq-text-muted,#475569); font-family: var(--bq-font-family-sans); }
+    .error-msg { font-size: var(--bq-font-size-sm,0.875rem); color: var(--bq-color-danger-600,#dc2626); font-family: var(--bq-font-family-sans); }
+  `,
+  connected() {
+    const self = this;
+    const ih = (e: Event) => {
+      const input = e.target as HTMLInputElement | null;
+      if (input?.tagName === 'INPUT') self.dispatchEvent(new CustomEvent('bq-input', { detail: { value: input.value }, bubbles: true, composed: true }));
     };
-    const s = sizeStyles[size] ?? sizeStyles['md']!;
-
-    const describedBy = [error ? this._errorId : '', hint ? this._hintId : '']
-      .filter(Boolean).join(' ');
-
-    const styles = `
-      ${getBaseStyles()}
-      *, *::before, *::after { box-sizing: border-box; }
-      :host { display: block; }
-
-      .field { display: flex; flex-direction: column; gap: 0.375rem; }
-      .label {
-        display: flex; align-items: center; gap: 0.25rem;
-        font-size: var(--bq-font-size-sm,0.875rem);
-        font-weight: var(--bq-font-weight-medium,500);
-        color: var(--bq-text-base,#0f172a);
-        font-family: var(--bq-font-family-sans);
-      }
-      .required-mark { color: var(--bq-color-danger-600,#dc2626); }
-
-      .input-wrap {
-        display: flex; align-items: center;
-        border: 1.5px solid ${error ? 'var(--bq-color-danger-500,#ef4444)' : 'var(--bq-border-emphasis,#cbd5e1)'};
-        border-radius: var(--bq-radius-lg,0.5rem);
-        background: var(--bq-bg-base,#fff);
-        transition: border-color var(--bq-duration-fast) var(--bq-easing-standard),
-                    box-shadow var(--bq-duration-fast) var(--bq-easing-standard);
-        overflow: hidden;
-      }
-      .input-wrap:focus-within {
-        border-color: ${error ? 'var(--bq-color-danger-500,#ef4444)' : 'var(--bq-border-focus,#2563eb)'};
-        box-shadow: ${error ? 'var(--bq-focus-ring-danger)' : 'var(--bq-focus-ring)'};
-      }
-      .input-wrap--disabled { opacity: 0.5; cursor: not-allowed; background: var(--bq-bg-muted,#f1f5f9); }
-
-      .slot-wrap { display: flex; align-items: center; padding: 0 0.5rem; color: var(--bq-text-muted,#475569); }
-      .slot-wrap:empty { display: none; }
-
-      input {
-        flex: 1; border: none; outline: none; background: transparent;
-        color: var(--bq-text-base,#0f172a);
-        font-family: var(--bq-font-family-sans);
-        font-size: ${s.fontSize};
-        padding: ${s.padding};
-        min-height: ${s.height};
-        width: 100%;
-      }
-      input::placeholder { color: var(--bq-text-subtle,#94a3b8); }
-      input:disabled { cursor: not-allowed; }
-
-      .hint { font-size: var(--bq-font-size-sm,0.875rem); color: var(--bq-text-muted,#475569); font-family: var(--bq-font-family-sans); }
-      .error-msg { font-size: var(--bq-font-size-sm,0.875rem); color: var(--bq-color-danger-600,#dc2626); font-family: var(--bq-font-family-sans); }
-    `;
-
-    this._shadow.innerHTML = `
-      <style>${styles}</style>
+    const ch = (e: Event) => {
+      const input = e.target as HTMLInputElement | null;
+      if (input?.tagName === 'INPUT') self.dispatchEvent(new CustomEvent('bq-change', { detail: { value: input.value }, bubbles: true, composed: true }));
+    };
+    const fh = (e: Event) => { if ((e.target as Element)?.tagName === 'INPUT') self.dispatchEvent(new CustomEvent('bq-focus', { bubbles: true, composed: true })); };
+    const bh = (e: Event) => { if ((e.target as Element)?.tagName === 'INPUT') self.dispatchEvent(new CustomEvent('bq-blur', { bubbles: true, composed: true })); };
+    const s = self as unknown as Record<string, unknown>;
+    s['_ih'] = ih; s['_ch'] = ch; s['_fh'] = fh; s['_bh'] = bh;
+    self.shadowRoot?.addEventListener('input', ih);
+    self.shadowRoot?.addEventListener('change', ch);
+    self.shadowRoot?.addEventListener('focusin', fh);
+    self.shadowRoot?.addEventListener('focusout', bh);
+  },
+  disconnected() {
+    const s = this as unknown as Record<string, unknown>;
+    const sr = this.shadowRoot;
+    const ih = s['_ih'] as EventListener | undefined; if (ih) sr?.removeEventListener('input', ih);
+    const ch = s['_ch'] as EventListener | undefined; if (ch) sr?.removeEventListener('change', ch);
+    const fh = s['_fh'] as EventListener | undefined; if (fh) sr?.removeEventListener('focusin', fh);
+    const bh = s['_bh'] as EventListener | undefined; if (bh) sr?.removeEventListener('focusout', bh);
+  },
+  render({ props }) {
+    const hasError = Boolean(props.error);
+    const uid = `bq-input-${Math.random().toString(36).slice(2,8)}`;
+    return html`
       <div class="field" part="field">
-        ${label ? `
-          <label class="label" for="${this._id}" part="label">
-            ${label}
-            ${required ? '<span class="required-mark" aria-hidden="true">*</span>' : ''}
-          </label>
-        ` : ''}
-        <div class="input-wrap ${disabled ? 'input-wrap--disabled' : ''}" part="input-wrap">
+        ${props.label ? `<label class="label" for="${uid}" part="label">${escapeHtml(props.label)}${props.required ? '<span class="required-mark" aria-hidden="true"> *</span>' : ''}</label>` : ''}
+        <div class="input-wrap" part="input-wrap">
           <span class="slot-wrap" part="prefix"><slot name="prefix"></slot></span>
-          <input
-            part="input"
-            id="${this._id}"
-            type="${type}"
-            name="${name}"
-            placeholder="${placeholder}"
-            value="${value}"
-            ${maxlength ? `maxlength="${maxlength}"` : ''}
-            ${disabled ? 'disabled' : ''}
-            ${readonly ? 'readonly' : ''}
-            ${required ? 'required' : ''}
-            aria-invalid="${!!error}"
-            ${describedBy ? `aria-describedby="${describedBy}"` : ''}
-            ${required ? 'aria-required="true"' : ''}
+          <input part="input" id="${uid}"
+            type="${escapeHtml(props.type)}" name="${escapeHtml(props.name)}"
+            placeholder="${escapeHtml(props.placeholder)}" value="${escapeHtml(props.value)}"
+            ${props.maxlength ? `maxlength="${escapeHtml(props.maxlength)}"` : ''}
+            ${props.disabled ? 'disabled' : ''} ${props.readonly ? 'readonly' : ''} ${props.required ? 'required' : ''}
+            aria-invalid="${hasError ? 'true' : 'false'}"
+            ${hasError ? `aria-describedby="${uid}-err"` : (props.hint ? `aria-describedby="${uid}-hint"` : '')}
           />
           <span class="slot-wrap" part="suffix"><slot name="suffix"></slot></span>
         </div>
-        ${error ? `<span class="error-msg" id="${this._errorId}" role="alert" part="error">${error}</span>` : ''}
-        ${hint && !error ? `<span class="hint" id="${this._hintId}" part="hint">${hint}</span>` : ''}
+        ${hasError ? `<span class="error-msg" id="${uid}-err" role="alert" part="error">${escapeHtml(props.error)}</span>` : ''}
+        ${(props.hint && !hasError) ? `<span class="hint" id="${uid}-hint" part="hint">${escapeHtml(props.hint)}</span>` : ''}
       </div>
     `;
-
-    const input = this._shadow.querySelector('input');
-    if (input) {
-      input.addEventListener('input', () => dispatch(this, 'bq-input', { value: input.value }));
-      input.addEventListener('change', () => dispatch(this, 'bq-change', { value: input.value }));
-      input.addEventListener('focus', () => dispatch(this, 'bq-focus'));
-      input.addEventListener('blur', () => dispatch(this, 'bq-blur'));
-    }
-  }
-}
+  },
+};
 
 export function registerBqInput(prefix = 'bq'): string {
   const tag = `${prefix}-input`;
-  if (!customElements.get(tag)) customElements.define(tag, BqInput);
+  component<BqInputProps>(tag, definition);
   return tag;
 }

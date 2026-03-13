@@ -1,1 +1,1 @@
-export { BqDrawer, registerBqDrawer } from './BqDrawer.js';
+export { registerBqDrawer } from './BqDrawer.js';

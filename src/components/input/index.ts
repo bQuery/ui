@@ -1,1 +1,1 @@
-export { BqInput, registerBqInput } from './BqInput.js';
+export { registerBqInput } from './BqInput.js';

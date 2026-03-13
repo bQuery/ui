@@ -1,1 +1,1 @@
-export { BqRadio, registerBqRadio } from './BqRadio.js';
+export { registerBqRadio } from './BqRadio.js';

@@ -1,1 +1,1 @@
-export { BqAlert, registerBqAlert } from './BqAlert.js';
+export { registerBqAlert } from './BqAlert.js';

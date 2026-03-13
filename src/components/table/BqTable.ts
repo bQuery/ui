@@ -1,150 +1,100 @@
-import { getBaseStyles } from '../../utils/styles.js';
-import { dispatch, uniqueId } from '../../utils/dom.js';
-import { t } from '../../i18n/index.js';
-
 /**
  * Data table component.
  * @element bq-table
- *
- * Columns and rows are passed as JSON attributes for simplicity:
- * @prop {string} columns - JSON array of { key, label, sortable? }
- * @prop {string} rows    - JSON array of record objects
- * @prop {string} sort-key
- * @prop {string} sort-dir - asc | desc
+ * @prop {string}  columns  - JSON array of { key, label, sortable? }
+ * @prop {string}  rows     - JSON array of row objects
+ * @prop {string}  sort-key
+ * @prop {string}  sort-dir - asc | desc
  * @prop {boolean} striped
  * @prop {boolean} bordered
  * @prop {boolean} hover
  * @prop {boolean} loading
- * @fires bq-sort - { key, dir }
+ * @fires bq-sort - { key: string, dir: string }
  */
-export class BqTable extends HTMLElement {
-  static get observedAttributes() { return ['columns','rows','sort-key','sort-dir','striped','bordered','hover','loading']; }
-  private _shadow: ShadowRoot;
-  private _id: string;
+import { component, html } from '@bquery/bquery/component';
+import type { ComponentDefinition } from '@bquery/bquery/component';
+import { escapeHtml } from '@bquery/bquery/security';
+import { getBaseStyles } from '../../utils/styles.js';
 
-  constructor() {
-    super();
-    this._shadow = this.attachShadow({ mode: 'open' });
-    this._id = uniqueId('bq-table');
-  }
+type ColDef = { key: string; label: string; sortable?: boolean };
+type BqTableProps = { columns: string; rows: string; 'sort-key': string; 'sort-dir': string; striped: boolean; bordered: boolean; hover: boolean; loading: boolean };
 
-  connectedCallback() { this._render(); }
-  attributeChangedCallback() { this._render(); }
-
-  private _parse<T>(attr: string, fallback: T): T {
-    try { return JSON.parse(this.getAttribute(attr) ?? '') as T; } catch { return fallback; }
-  }
-
-  private _render() {
-    type Column = { key: string; label: string; sortable?: boolean };
-    type Row = Record<string, unknown>;
-
-    const columns: Column[] = this._parse('columns', []);
-    const rows: Row[] = this._parse('rows', []);
-    const sortKey = this.getAttribute('sort-key') ?? '';
-    const sortDir = this.getAttribute('sort-dir') ?? 'asc';
-    const striped = this.hasAttribute('striped');
-    const bordered = this.hasAttribute('bordered');
-    const hover = this.hasAttribute('hover');
-    const loading = this.hasAttribute('loading');
-
-    const styles = `
-      ${getBaseStyles()}
-      *, *::before, *::after { box-sizing: border-box; }
-      :host { display: block; overflow: auto; }
-
-      .table-wrap { overflow-x: auto; }
-      table {
-        width: 100%; border-collapse: collapse;
-        font-family: var(--bq-font-family-sans);
-        font-size: var(--bq-font-size-sm,0.875rem);
-        color: var(--bq-text-base,#0f172a);
-        ${bordered ? 'border: 1.5px solid var(--bq-border-base,#e2e8f0);' : ''}
-      }
-      thead { background: var(--bq-bg-subtle,#f8fafc); }
-      th {
-        padding: 0.75rem 1rem; text-align: left;
-        font-weight: var(--bq-font-weight-semibold,600);
-        color: var(--bq-text-muted,#475569);
-        border-bottom: 2px solid var(--bq-border-emphasis,#cbd5e1);
-        white-space: nowrap;
-      }
-      th.sortable { cursor: pointer; user-select: none; }
-      th.sortable:hover { color: var(--bq-color-primary-600,#2563eb); }
-      th:focus-visible { outline: 2px solid transparent; box-shadow: var(--bq-focus-ring); }
-      .sort-icon { margin-left: 0.25rem; opacity: 0.5; }
-      .sort-icon.active { opacity: 1; color: var(--bq-color-primary-600,#2563eb); }
-
-      td {
-        padding: 0.75rem 1rem;
-        border-bottom: 1px solid var(--bq-border-base,#e2e8f0);
-        ${bordered ? 'border-right: 1px solid var(--bq-border-base,#e2e8f0);' : ''}
-      }
-      ${striped ? 'tbody tr:nth-child(even) { background: var(--bq-bg-subtle,#f8fafc); }' : ''}
-      ${hover ? 'tbody tr:hover { background: var(--bq-color-primary-50,#eff6ff); }' : ''}
-
-      .empty, .loading {
-        text-align: center; padding: 3rem;
-        color: var(--bq-text-muted,#475569);
-      }
-      .spinner { display: inline-block; width: 1.5rem; height: 1.5rem; border: 3px solid var(--bq-color-secondary-200,#e2e8f0); border-top-color: var(--bq-color-primary-600,#2563eb); border-radius: 50%; animation: spin 0.7s linear infinite; }
-      @keyframes spin { to { transform: rotate(360deg); } }
-    `;
-
-    const headerCells = columns.map((col) => {
+const definition: ComponentDefinition<BqTableProps> = {
+  props: {
+    columns:    { type: String, default: '[]' },
+    rows:       { type: String, default: '[]' },
+    'sort-key': { type: String, default: '' },
+    'sort-dir': { type: String, default: 'asc' },
+    striped:    { type: Boolean, default: false },
+    bordered:   { type: Boolean, default: false },
+    hover:      { type: Boolean, default: false },
+    loading:    { type: Boolean, default: false },
+  },
+  styles: `
+    ${getBaseStyles()}
+    *, *::before, *::after { box-sizing: border-box; }
+    :host { display: block; overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-family: var(--bq-font-family-sans); font-size: var(--bq-font-size-sm,0.875rem); }
+    :host([bordered]) table { border: 1px solid var(--bq-border-base,#e2e8f0); }
+    th, td { padding: 0.75rem 1rem; text-align: left; border-bottom: 1px solid var(--bq-border-base,#e2e8f0); }
+    :host([bordered]) th, :host([bordered]) td { border: 1px solid var(--bq-border-base,#e2e8f0); }
+    th { background: var(--bq-bg-subtle,#f8fafc); font-weight: var(--bq-font-weight-semibold,600); color: var(--bq-text-base,#0f172a); white-space: nowrap; }
+    td { color: var(--bq-text-muted,#475569); }
+    .sortable { cursor: pointer; user-select: none; }
+    .sortable:hover { background: var(--bq-bg-emphasis,#e2e8f0); }
+    .sort-icon { display: inline-block; margin-left: 0.375rem; opacity: 0.4; }
+    .sort-icon[data-active="true"] { opacity: 1; }
+    :host([striped]) tbody tr:nth-child(even) td { background: var(--bq-bg-subtle,#f8fafc); }
+    :host([hover]) tbody tr:hover td { background: var(--bq-bg-muted,#f1f5f9); }
+    .empty-row td { text-align: center; color: var(--bq-text-subtle,#94a3b8); padding: 2rem; }
+    .loading-overlay { text-align: center; padding: 2rem; color: var(--bq-text-muted,#475569); }
+  `,
+  connected() {
+    const self = this;
+    const handler = (e: Event) => {
+      const th = (e.target as Element).closest('th.sortable') as HTMLElement | null;
+      if (!th) return;
+      const key = th.getAttribute('data-sort-key') ?? '';
+      const curDir = self.getAttribute('sort-dir') ?? 'asc';
+      const curKey = self.getAttribute('sort-key') ?? '';
+      const newDir = (key === curKey && curDir === 'asc') ? 'desc' : 'asc';
+      self.setAttribute('sort-key', key);
+      self.setAttribute('sort-dir', newDir);
+      self.dispatchEvent(new CustomEvent('bq-sort', { detail: { key, dir: newDir }, bubbles: true, composed: true }));
+    };
+    (self as unknown as Record<string, unknown>)['_handler'] = handler;
+    self.shadowRoot?.addEventListener('click', handler);
+  },
+  disconnected() {
+    const h = (this as unknown as Record<string, unknown>)['_handler'] as EventListener | undefined;
+    if (h) this.shadowRoot?.removeEventListener('click', h);
+  },
+  render({ props }) {
+    let cols: ColDef[] = [];
+    let rows: Record<string, unknown>[] = [];
+    try { cols = JSON.parse(props.columns) as ColDef[]; } catch { cols = []; }
+    try { rows = JSON.parse(props.rows) as Record<string, unknown>[]; } catch { rows = []; }
+    const sortKey = props['sort-key'];
+    const sortDir = props['sort-dir'];
+    const theads = cols.map(col => {
       const isSorted = col.key === sortKey;
-      const icon = isSorted ? (sortDir === 'asc' ? '▲' : '▼') : '↕';
-      return `<th
-        part="th"
-        class="${col.sortable ? 'sortable' : ''}"
-        ${col.sortable ? `tabindex="0" data-sort-key="${col.key}" aria-sort="${isSorted ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'}"` : ''}
-      >${col.label}${col.sortable ? `<span class="sort-icon ${isSorted ? 'active' : ''}" aria-hidden="true">${icon}</span>` : ''}</th>`;
+      const sortIcon = col.sortable ? `<span class="sort-icon" data-active="${isSorted ? 'true' : 'false'}" aria-hidden="true">${isSorted && sortDir === 'desc' ? '&#9650;' : '&#9660;'}</span>` : '';
+      return `<th part="th" ${col.sortable ? `class="sortable" data-sort-key="${escapeHtml(col.key)}" tabindex="0" aria-sort="${isSorted ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'}"` : ''}>${escapeHtml(col.label)}${sortIcon}</th>`;
     }).join('');
-
-    let bodyContent = '';
-    if (loading) {
-      bodyContent = `<tr><td colspan="${columns.length}" class="loading"><div class="spinner" aria-hidden="true"></div> ${t('table.loading')}</td></tr>`;
-    } else if (rows.length === 0) {
-      bodyContent = `<tr><td colspan="${columns.length}" class="empty">${t('table.noData')}</td></tr>`;
-    } else {
-      bodyContent = rows.map((row) => `
-        <tr part="row">
-          ${columns.map((col) => `<td part="td">${String(row[col.key] ?? '')}</td>`).join('')}
-        </tr>
-      `).join('');
-    }
-
-    this._shadow.innerHTML = `
-      <style>${styles}</style>
-      <div class="table-wrap" part="table-wrap">
-        <table part="table" role="table" id="${this._id}">
-          <thead part="thead">
-            <tr part="header-row">${headerCells}</tr>
-          </thead>
-          <tbody part="tbody">${bodyContent}</tbody>
-        </table>
-      </div>
+    const tbodies = props.loading ? `<tr><td colspan="${cols.length}" class="loading-overlay">Loading&#8230;</td></tr>`
+      : rows.length === 0 ? `<tr class="empty-row"><td colspan="${cols.length}">No data</td></tr>`
+      : rows.map(row => `<tr part="row">${cols.map(col => `<td part="td">${escapeHtml(String(row[col.key] ?? ''))}</td>`).join('')}</tr>`).join('');
+    return html`
+      <table part="table" role="grid">
+        <thead part="thead"><tr part="header-row">${theads}</tr></thead>
+        <tbody part="tbody">${tbodies}</tbody>
+      </table>
     `;
-
-    this._shadow.querySelectorAll<HTMLElement>('[data-sort-key]').forEach((th) => {
-      const handler = () => {
-        const key = th.getAttribute('data-sort-key') ?? '';
-        const dir = key === sortKey && sortDir === 'asc' ? 'desc' : 'asc';
-        this.setAttribute('sort-key', key);
-        this.setAttribute('sort-dir', dir);
-        dispatch(this, 'bq-sort', { key, dir });
-      };
-      th.addEventListener('click', handler);
-      th.addEventListener('keydown', (e: Event) => {
-        const ke = e as KeyboardEvent;
-        if (ke.key === 'Enter' || ke.key === ' ') { ke.preventDefault(); handler(); }
-      });
-    });
-  }
-}
+  },
+};
 
 export function registerBqTable(prefix = 'bq'): string {
   const tag = `${prefix}-table`;
-  if (!customElements.get(tag)) customElements.define(tag, BqTable);
+  component<BqTableProps>(tag, definition);
   return tag;
 }

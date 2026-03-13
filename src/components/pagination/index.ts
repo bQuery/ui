@@ -1,1 +1,1 @@
-export { BqPagination, registerBqPagination } from './BqPagination.js';
+export { registerBqPagination } from './BqPagination.js';

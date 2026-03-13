@@ -1,1 +1,1 @@
-export { BqProgress, registerBqProgress } from './BqProgress.js';
+export { registerBqProgress } from './BqProgress.js';

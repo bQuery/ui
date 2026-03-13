@@ -1,200 +1,131 @@
-import { getBaseStyles } from '../../utils/styles.js';
-import { dispatch, uniqueId } from '../../utils/dom.js';
-
 /**
- * Button component.
+ * Button component - primary interactive control.
  * @element bq-button
- *
- * @prop {string} variant - primary | secondary | outline | ghost | danger
- * @prop {string} size    - sm | md | lg | xl
+ * @prop {string}  variant  - primary | secondary | outline | ghost | danger
+ * @prop {string}  size     - sm | md | lg | xl
  * @prop {boolean} disabled
  * @prop {boolean} loading
- * @prop {string} type    - button | submit | reset
- *
- * @slot - Button content (default)
- * @slot prefix-icon - Icon before label
- * @slot suffix-icon - Icon after label
- *
- * @fires bq-click - CustomEvent<{ originalEvent: MouseEvent }>
+ * @prop {string}  type     - button | submit | reset
+ * @prop {string}  href
+ * @prop {string}  target
+ * @slot          - Button content
+ * @slot prefix-icon - Icon before content
+ * @slot suffix-icon - Icon after content
+ * @fires bq-click - { originalEvent: Event }
  */
-export class BqButton extends HTMLElement {
-  static get observedAttributes() {
-    return ['variant', 'size', 'disabled', 'loading', 'type', 'href', 'target'];
-  }
+import { component, html } from '@bquery/bquery/component';
+import type { ComponentDefinition } from '@bquery/bquery/component';
+import { escapeHtml } from '@bquery/bquery/security';
+import { getBaseStyles } from '../../utils/styles.js';
 
-  private _shadow: ShadowRoot;
-  private _id: string;
+type BqButtonProps = {
+  variant: string;
+  size: string;
+  disabled: boolean;
+  loading: boolean;
+  type: string;
+  href: string;
+  target: string;
+};
 
-  constructor() {
-    super();
-    this._shadow = this.attachShadow({ mode: 'open' });
-    this._id = uniqueId('bq-btn');
-  }
+const definition: ComponentDefinition<BqButtonProps> = {
+  props: {
+    variant: { type: String, default: 'primary' },
+    size:    { type: String, default: 'md' },
+    disabled:{ type: Boolean, default: false },
+    loading: { type: Boolean, default: false },
+    type:    { type: String, default: 'button' },
+    href:    { type: String, default: '' },
+    target:  { type: String, default: '' },
+  },
+  styles: `
+    ${getBaseStyles()}
+    *, *::before, *::after { box-sizing: border-box; }
+    :host { display: inline-block; }
+    :host([hidden]) { display: none; }
 
-  connectedCallback() {
-    // Attach event delegation once on the shadow root; survives innerHTML re-renders.
-    this._shadow.addEventListener('click', this._handleClick);
-    this._render();
-  }
-
-  disconnectedCallback() {
-    this._shadow.removeEventListener('click', this._handleClick);
-  }
-
-  attributeChangedCallback() {
-    this._render();
-  }
-
-  private _handleClick = (e: Event) => {
-    if (this.hasAttribute('disabled') || this.hasAttribute('loading')) {
-      e.preventDefault();
-      e.stopPropagation();
-      return;
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center;
+      gap: 0.5rem; border: 1.5px solid transparent;
+      border-radius: var(--bq-radius-lg, 0.5rem);
+      font-family: var(--bq-font-family-sans);
+      font-weight: var(--bq-font-weight-semibold, 600);
+      line-height: 1; cursor: pointer; text-decoration: none;
+      transition: background-color var(--bq-duration-fast) var(--bq-easing-standard),
+                  border-color var(--bq-duration-fast) var(--bq-easing-standard),
+                  box-shadow var(--bq-duration-fast) var(--bq-easing-standard),
+                  opacity var(--bq-duration-fast) var(--bq-easing-standard);
+      white-space: nowrap; user-select: none; -webkit-user-select: none;
+      position: relative; overflow: hidden;
     }
-    dispatch(this, 'bq-click', { originalEvent: e });
-  };
-
-  private _render() {
-    const variant = this.getAttribute('variant') ?? 'primary';
-    const size = this.getAttribute('size') ?? 'md';
-    const disabled = this.hasAttribute('disabled');
-    const loading = this.hasAttribute('loading');
-    const type = (this.getAttribute('type') ?? 'button') as
-      | 'button'
-      | 'submit'
-      | 'reset';
-    const href = this.getAttribute('href');
-
-    const styles = `
-      ${getBaseStyles()}
-      *, *::before, *::after { box-sizing: border-box; }
-
-      :host { display: inline-block; }
-      :host([hidden]) { display: none; }
-
-      .btn {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        gap: 0.5rem;
-        border: 1.5px solid transparent;
-        border-radius: var(--bq-radius-lg, 0.5rem);
-        font-family: var(--bq-font-family-sans);
-        font-weight: var(--bq-font-weight-semibold, 600);
-        line-height: 1;
-        cursor: pointer;
-        text-decoration: none;
-        transition:
-          background-color var(--bq-duration-fast, 150ms) var(--bq-easing-standard),
-          border-color var(--bq-duration-fast, 150ms) var(--bq-easing-standard),
-          box-shadow var(--bq-duration-fast, 150ms) var(--bq-easing-standard),
-          opacity var(--bq-duration-fast, 150ms) var(--bq-easing-standard);
-        white-space: nowrap;
-        user-select: none;
-        -webkit-user-select: none;
-        position: relative;
-        overflow: hidden;
+    /* Sizes */
+    .btn[data-size="sm"] { font-size: 0.875rem; padding: 0.375rem 0.75rem; min-height: 2rem; }
+    .btn[data-size="md"] { font-size: 1rem; padding: 0.5rem 1rem; min-height: 2.5rem; }
+    .btn[data-size="lg"] { font-size: 1.125rem; padding: 0.625rem 1.25rem; min-height: 3rem; }
+    .btn[data-size="xl"] { font-size: 1.25rem; padding: 0.75rem 1.5rem; min-height: 3.5rem; }
+    /* Variants */
+    .btn[data-variant="primary"] { background-color: var(--bq-color-primary-600,#2563eb); color: #fff; border-color: var(--bq-color-primary-600,#2563eb); }
+    .btn[data-variant="primary"]:hover:not(:disabled) { background-color: var(--bq-color-primary-700,#1d4ed8); border-color: var(--bq-color-primary-700,#1d4ed8); }
+    .btn[data-variant="secondary"] { background-color: var(--bq-color-secondary-100,#f1f5f9); color: var(--bq-color-secondary-700,#334155); border-color: var(--bq-color-secondary-200,#e2e8f0); }
+    .btn[data-variant="secondary"]:hover:not(:disabled) { background-color: var(--bq-color-secondary-200,#e2e8f0); }
+    .btn[data-variant="outline"] { background-color: transparent; color: var(--bq-color-primary-600,#2563eb); border-color: var(--bq-color-primary-600,#2563eb); }
+    .btn[data-variant="outline"]:hover:not(:disabled) { background-color: var(--bq-color-primary-50,#eff6ff); }
+    .btn[data-variant="ghost"] { background-color: transparent; color: var(--bq-color-secondary-700,#334155); border-color: transparent; }
+    .btn[data-variant="ghost"]:hover:not(:disabled) { background-color: var(--bq-color-secondary-100,#f1f5f9); }
+    .btn[data-variant="danger"] { background-color: var(--bq-color-danger-600,#dc2626); color: #fff; border-color: var(--bq-color-danger-600,#dc2626); }
+    .btn[data-variant="danger"]:hover:not(:disabled) { background-color: var(--bq-color-danger-700,#b91c1c); }
+    /* States */
+    .btn:focus-visible { outline: 2px solid transparent; box-shadow: var(--bq-focus-ring); }
+    .btn[data-variant="danger"]:focus-visible { box-shadow: var(--bq-focus-ring-danger); }
+    .btn:disabled, .btn[aria-disabled="true"] { opacity: 0.5; cursor: not-allowed; }
+    /* Loading spinner */
+    .spinner { width: 1em; height: 1em; border: 2px solid currentColor; border-top-color: transparent; border-radius: 50%; animation: spin 0.7s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  `,
+  connected() {
+    const self = this;
+    const handler = (e: Event) => {
+      if (self.hasAttribute('disabled') || self.hasAttribute('loading')) {
+        e.preventDefault(); e.stopPropagation(); return;
       }
-
-      /* Sizes */
-      .btn--sm { font-size: var(--bq-font-size-sm, 0.875rem); padding: 0.375rem 0.75rem; min-height: 2rem; }
-      .btn--md { font-size: var(--bq-font-size-md, 1rem);    padding: 0.5rem 1rem;    min-height: 2.5rem; }
-      .btn--lg { font-size: var(--bq-font-size-lg, 1.125rem); padding: 0.625rem 1.25rem; min-height: 3rem; }
-      .btn--xl { font-size: var(--bq-font-size-xl, 1.25rem); padding: 0.75rem 1.5rem; min-height: 3.5rem; }
-
-      /* Variants */
-      .btn--primary {
-        background-color: var(--bq-color-primary-600, #2563eb);
-        color: #ffffff;
-        border-color: var(--bq-color-primary-600, #2563eb);
-      }
-      .btn--primary:hover:not(:disabled) { background-color: var(--bq-color-primary-700, #1d4ed8); border-color: var(--bq-color-primary-700, #1d4ed8); }
-      .btn--primary:active:not(:disabled) { background-color: var(--bq-color-primary-800, #1e40af); }
-
-      .btn--secondary {
-        background-color: var(--bq-color-secondary-100, #f1f5f9);
-        color: var(--bq-color-secondary-700, #334155);
-        border-color: var(--bq-color-secondary-200, #e2e8f0);
-      }
-      .btn--secondary:hover:not(:disabled) { background-color: var(--bq-color-secondary-200, #e2e8f0); }
-
-      .btn--outline {
-        background-color: transparent;
-        color: var(--bq-color-primary-600, #2563eb);
-        border-color: var(--bq-color-primary-600, #2563eb);
-      }
-      .btn--outline:hover:not(:disabled) { background-color: var(--bq-color-primary-50, #eff6ff); }
-
-      .btn--ghost {
-        background-color: transparent;
-        color: var(--bq-color-secondary-700, #334155);
-        border-color: transparent;
-      }
-      .btn--ghost:hover:not(:disabled) { background-color: var(--bq-color-secondary-100, #f1f5f9); }
-
-      .btn--danger {
-        background-color: var(--bq-color-danger-600, #dc2626);
-        color: #ffffff;
-        border-color: var(--bq-color-danger-600, #dc2626);
-      }
-      .btn--danger:hover:not(:disabled) { background-color: var(--bq-color-danger-700, #b91c1c); }
-
-      /* States */
-      .btn:focus-visible {
-        outline: 2px solid transparent;
-        box-shadow: var(--bq-focus-ring, 0 0 0 3px rgba(37, 99, 235, 0.35));
-      }
-      .btn--danger:focus-visible { box-shadow: var(--bq-focus-ring-danger, 0 0 0 3px rgba(239, 68, 68, 0.35)); }
-      .btn:disabled, .btn[aria-disabled="true"] { opacity: 0.5; cursor: not-allowed; }
-
-      /* Loading */
-      .spinner {
-        width: 1em; height: 1em;
-        border: 2px solid currentColor;
-        border-top-color: transparent;
-        border-radius: 50%;
-        animation: spin 0.7s linear infinite;
-      }
-      @keyframes spin { to { transform: rotate(360deg); } }
-    `;
-
-    const tag = href ? 'a' : 'button';
-    const sizeClass = `btn--${size}`;
-    const variantClass = `btn--${variant}`;
-    const disabledAttrs = disabled || loading
-      ? `aria-disabled="true"${disabled ? ' disabled' : ''}`
-      : '';
-
-    this._shadow.innerHTML = `
-      <style>${styles}</style>
+      self.dispatchEvent(new CustomEvent('bq-click', { detail: { originalEvent: e }, bubbles: true, composed: true }));
+    };
+    (self as unknown as Record<string, unknown>)['_clickHandler'] = handler;
+    self.shadowRoot?.addEventListener('click', handler);
+  },
+  disconnected() {
+    const self = this;
+    const handler = (self as unknown as Record<string, unknown>)['_clickHandler'] as EventListener | undefined;
+    if (handler) self.shadowRoot?.removeEventListener('click', handler);
+  },
+  render({ props }) {
+    const tag = props.href ? 'a' : 'button';
+    const disabled = props.disabled || props.loading;
+    return html`
       <${tag}
         part="button"
-        id="${this._id}"
-        class="btn ${sizeClass} ${variantClass}"
-        type="${tag === 'button' ? type : ''}"
-        ${href ? `href="${href}"` : ''}
-        ${this.getAttribute('target') ? `target="${this.getAttribute('target')}"` : ''}
-        ${disabledAttrs}
-        ${loading ? 'aria-busy="true"' : ''}
-        role="${tag === 'a' ? 'button' : ''}"
+        class="btn"
+        data-variant="${escapeHtml(props.variant)}"
+        data-size="${escapeHtml(props.size)}"
+        type="${tag === 'button' ? escapeHtml(props.type) : ''}"
+        ${props.href ? `href="${escapeHtml(props.href)}"` : ''}
+        ${props.target ? `target="${escapeHtml(props.target)}"` : ''}
+        ${disabled ? (props.disabled ? 'disabled aria-disabled="true"' : 'aria-disabled="true"') : ''}
+        ${props.loading ? 'aria-busy="true"' : ''}
+        ${tag === 'a' ? 'role="button"' : ''}
       >
         <slot name="prefix-icon"></slot>
-        ${loading ? '<span class="spinner" aria-hidden="true"></span>' : ''}
+        ${props.loading ? '<span class="spinner" aria-hidden="true"></span>' : ''}
         <slot></slot>
         <slot name="suffix-icon"></slot>
       </${tag}>
     `;
+  },
+};
 
-    this._shadow
-      .querySelector('button,a')
-      ?.addEventListener('click', this._handleClick);
-  }
-}
-
+/** Register bq-button (or custom prefix-button) with the custom element registry. */
 export function registerBqButton(prefix = 'bq'): string {
   const tag = `${prefix}-button`;
-  if (!customElements.get(tag)) {
-    customElements.define(tag, BqButton);
-  }
+  component<BqButtonProps>(tag, definition);
   return tag;
 }

@@ -1,1 +1,1 @@
-export { BqSelect, registerBqSelect } from './BqSelect.js';
+export { registerBqSelect } from './BqSelect.js';

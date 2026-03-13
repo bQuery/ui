@@ -1,1 +1,1 @@
-export { BqCard, registerBqCard } from './BqCard.js';
+export { registerBqCard } from './BqCard.js';

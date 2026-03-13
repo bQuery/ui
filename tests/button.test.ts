@@ -37,7 +37,7 @@ describe('BqButton', () => {
     el.setAttribute('variant', 'danger');
     doc.body.appendChild(el);
     const btn = el.shadowRoot?.querySelector('button');
-    expect(btn?.className).toContain('btn--danger');
+    expect(btn?.getAttribute('data-variant')).toBe('danger');
   });
 
   it('should be disabled when disabled attribute is set', () => {
@@ -70,7 +70,7 @@ describe('BqButton', () => {
     el.setAttribute('size', 'lg');
     doc.body.appendChild(el);
     const btn = el.shadowRoot?.querySelector('button');
-    expect(btn?.className).toContain('btn--lg');
+    expect(btn?.getAttribute('data-size')).toBe('lg');
   });
 
   it('should dispatch bq-click event on click', () => {
