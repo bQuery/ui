@@ -64,6 +64,7 @@
     }
   },
   "devDependencies": {
+    "@bquery/bquery": "^1.5.0",
     "@types/node": "^20.11.0",
     "autoprefixer": "^10.4.17",
     "bun-types": "^1.0.25",
