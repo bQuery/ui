@@ -45,8 +45,7 @@ export function t(
   vars?: Record<string, string | number>,
 ): string {
   const parts = key.split('.');
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let value: any = _locale;
+  let value: unknown = _locale;
   for (const part of parts) {
     if (value == null || typeof value !== 'object') return key;
     value = (value as Record<string, unknown>)[part];
