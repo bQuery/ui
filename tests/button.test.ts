@@ -1,18 +1,9 @@
+// DOM environment is provided by tests/setup.ts (preloaded via bunfig.toml)
 import { describe, it, expect, beforeAll, afterAll } from 'bun:test';
-import { Window } from 'happy-dom';
 
-// Set up a DOM environment BEFORE any component module is loaded
-const win = new Window();
-const doc = win.document;
-(globalThis as Record<string, unknown>).window = win;
-(globalThis as Record<string, unknown>).document = doc;
-(globalThis as Record<string, unknown>).HTMLElement = win.HTMLElement;
-(globalThis as Record<string, unknown>).customElements = win.customElements;
-(globalThis as Record<string, unknown>).CustomEvent = win.CustomEvent;
-(globalThis as Record<string, unknown>).ShadowRoot = win.ShadowRoot;
-(globalThis as Record<string, unknown>).MutationObserver = win.MutationObserver;
-(globalThis as Record<string, unknown>).MouseEvent = (win as unknown as { MouseEvent: typeof MouseEvent }).MouseEvent;
-(globalThis as Record<string, unknown>).requestAnimationFrame = (cb: FrameRequestCallback) => { cb(0); return 0; };
+// Obtain the shared happy-dom window/document injected by the preload setup.
+const win = (globalThis as unknown as Record<string, unknown>)['window'] as Window & typeof globalThis;
+const doc = win.document as unknown as Document;
 
 type RegisterFn = (prefix?: string) => string;
 let registerBqButton: RegisterFn;
@@ -88,7 +79,7 @@ describe('BqButton', () => {
     let fired = false;
     el.addEventListener('bq-click', () => { fired = true; });
     const btn = el.shadowRoot?.querySelector('button');
-    btn?.dispatchEvent(new (win as unknown as { MouseEvent: typeof MouseEvent }).MouseEvent('click', { bubbles: true, composed: true }));
+    btn?.dispatchEvent(new (win as unknown as Record<string, typeof MouseEvent>)['MouseEvent']('click', { bubbles: true, composed: true }));
     expect(fired).toBe(true);
   });
 

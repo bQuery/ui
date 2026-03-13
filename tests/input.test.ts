@@ -1,16 +1,9 @@
+// DOM environment is provided by tests/setup.ts (preloaded via bunfig.toml)
 import { describe, it, expect, beforeAll, afterAll } from 'bun:test';
-import { Window } from 'happy-dom';
 
-const win = new Window();
-const doc = win.document;
-(globalThis as Record<string, unknown>).window = win;
-(globalThis as Record<string, unknown>).document = doc;
-(globalThis as Record<string, unknown>).HTMLElement = win.HTMLElement;
-(globalThis as Record<string, unknown>).customElements = win.customElements;
-(globalThis as Record<string, unknown>).CustomEvent = win.CustomEvent;
-(globalThis as Record<string, unknown>).ShadowRoot = win.ShadowRoot;
-(globalThis as Record<string, unknown>).MutationObserver = win.MutationObserver;
-(globalThis as Record<string, unknown>).requestAnimationFrame = (cb: FrameRequestCallback) => { cb(0); return 0; };
+// Obtain the shared happy-dom window/document injected by the preload setup.
+const win = (globalThis as unknown as Record<string, unknown>)['window'] as Window & typeof globalThis;
+const doc = win.document as unknown as Document;
 
 type RegisterFn = (prefix?: string) => string;
 let registerBqInput: RegisterFn;

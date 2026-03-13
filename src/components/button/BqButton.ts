@@ -32,16 +32,13 @@ export class BqButton extends HTMLElement {
   }
 
   connectedCallback() {
+    // Attach event delegation once on the shadow root; survives innerHTML re-renders.
+    this._shadow.addEventListener('click', this._handleClick);
     this._render();
-    this._shadow
-      .querySelector('button,a')
-      ?.addEventListener('click', this._handleClick);
   }
 
   disconnectedCallback() {
-    this._shadow
-      .querySelector('button,a')
-      ?.removeEventListener('click', this._handleClick);
+    this._shadow.removeEventListener('click', this._handleClick);
   }
 
   attributeChangedCallback() {
