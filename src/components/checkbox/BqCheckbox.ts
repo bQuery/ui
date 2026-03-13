@@ -74,7 +74,7 @@ const definition: ComponentDefinition<BqCheckboxProps> = {
           <input type="checkbox" part="input" name="${escapeHtml(props.name)}" value="${escapeHtml(props.value)}"
             ${props.checked ? 'checked' : ''} ${props.disabled ? 'disabled' : ''} ${props.required ? 'required' : ''}
             aria-label="${escapeHtml(props.label)}" />
-          ${props.label ? `<span class="label-text" part="label">${escapeHtml(props.label)}${props.required ? ' <span aria-hidden="true" style="">*</span>' : ''}</span>` : ''}
+          ${props.label ? `<span class="label-text" part="label">${escapeHtml(props.label)}${props.required ? '<span class="required-mark" aria-hidden="true"> *</span>' : ''}</span>` : ''}
         </label>
         ${props.hint ? `<span class="hint" part="hint">${escapeHtml(props.hint)}</span>` : ''}
       </div>

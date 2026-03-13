@@ -34,6 +34,7 @@ export const en = {
     next: 'Next page',
     page: 'Page',
     of: 'of',
+    nav: 'Pagination',
     goToPage: 'Go to page',
     firstPage: 'First page',
     lastPage: 'Last page',
@@ -72,8 +73,8 @@ export const en = {
     title: 'Nothing here yet',
     description: 'There is no content to display.',
   },
-  drawer: {
-    close: 'Close drawer',
+  chip: {
+    remove: 'Remove',
   },
 } as const;
 
