@@ -1,10 +1,10 @@
 import type { Meta, StoryObj } from '@storybook/web-components';
-import { html } from 'lit';
+import { storyHtml } from '@bquery/bquery/storybook';
 
 const meta: Meta = {
   title: 'Overlays/Drawer',
   tags: ['autodocs'],
-  render: (args) => html`
+  render: (args) => storyHtml`
     <bq-button variant="primary" id="open-drawer-btn">Open Drawer</bq-button>
     <bq-drawer id="demo-drawer" title=${args.title} placement=${args.placement} size=${args.size}>
       <p>Drawer content goes here.</p>
@@ -34,7 +34,7 @@ type Story = StoryObj;
 export const Default:  Story = {};
 export const LeftSide: Story = { args: { placement: 'left', title: 'Navigation' } };
 export const OpenByDefault: Story = {
-  render: () => html`
+  render: () => storyHtml`
     <bq-drawer open title="Notifications" placement="right" size="sm">
       <p>You have 3 new notifications.</p>
     </bq-drawer>

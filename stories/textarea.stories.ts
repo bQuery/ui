@@ -1,10 +1,10 @@
 import type { Meta, StoryObj } from '@storybook/web-components';
-import { html } from 'lit';
+import { storyHtml } from '@bquery/bquery/storybook';
 
 const meta: Meta = {
   title: 'Forms/Textarea',
   tags: ['autodocs'],
-  render: (args) => html`<bq-textarea label=${args.label} placeholder=${args.placeholder} rows=${args.rows} ?disabled=${args.disabled} ?required=${args.required} error=${args.error} hint=${args.hint}></bq-textarea>`,
+  render: (args) => storyHtml`<bq-textarea label=${args.label} placeholder=${args.placeholder} rows=${args.rows} ?disabled=${args.disabled} ?required=${args.required} error=${args.error} hint=${args.hint}></bq-textarea>`,
   argTypes: {
     label:      { control: 'text' },
     placeholder:{ control: 'text' },

@@ -1,10 +1,10 @@
 import type { Meta, StoryObj } from '@storybook/web-components';
-import { html } from 'lit';
+import { storyHtml } from '@bquery/bquery/storybook';
 
 const meta: Meta = {
   title: 'Overlays/Dialog',
   tags: ['autodocs'],
-  render: (args) => html`
+  render: (args) => storyHtml`
     <bq-button variant="primary" id="open-dialog-btn">Open dialog</bq-button>
     <bq-dialog id="demo-dialog" title=${args.title} size=${args.size} ?dismissible=${args.dismissible}>
       <p>${args.content}</p>
@@ -35,7 +35,7 @@ type Story = StoryObj;
 
 export const Default: Story = {};
 export const OpenByDefault: Story = {
-  render: () => html`
+  render: () => storyHtml`
     <bq-dialog open title="Welcome" size="sm">
       <p>This dialog is open by default in this story.</p>
       <div slot="footer"><bq-button variant="primary">Got it</bq-button></div>

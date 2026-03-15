@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/web-components';
-import { html } from 'lit';
+import { storyHtml } from '@bquery/bquery/storybook';
 
 /**
  * The bq-button component is the primary interactive control.
@@ -8,7 +8,7 @@ import { html } from 'lit';
 const meta: Meta = {
   title: 'Components/Button',
   tags: ['autodocs'],
-  render: (args) => html`
+  render: (args) => storyHtml`
     <bq-button
       variant=${args.variant}
       size=${args.size}
@@ -40,10 +40,10 @@ export const Large: Story = { args: { size: 'lg', label: 'Large' } };
 export const Loading: Story = { args: { loading: true, label: 'Loading…' } };
 export const Disabled: Story = { args: { disabled: true, label: 'Disabled' } };
 export const AsLink: Story = {
-  render: () => html`<bq-button href="https://example.com" target="_blank">Open link</bq-button>`,
+  render: () => storyHtml`<bq-button href="https://example.com" target="_blank">Open link</bq-button>`,
 };
 export const AllVariants: Story = {
-  render: () => html`
+  render: () => storyHtml`
     <div style="display:flex;gap:1rem;flex-wrap:wrap;align-items:center">
       <bq-button variant="primary">Primary</bq-button>
       <bq-button variant="secondary">Secondary</bq-button>

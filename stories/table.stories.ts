@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/web-components';
-import { html } from 'lit';
+import { storyHtml } from '@bquery/bquery/storybook';
 
 const columns = JSON.stringify([
   { key: 'name', label: 'Name', sortable: true },
@@ -15,7 +15,7 @@ const rows = JSON.stringify([
 const meta: Meta = {
   title: 'Data/Table',
   tags: ['autodocs'],
-  render: (args) => html`<bq-table columns=${columns} rows=${rows} ?striped=${args.striped} ?bordered=${args.bordered} ?hover=${args.hover} ?loading=${args.loading}></bq-table>`,
+  render: (args) => storyHtml`<bq-table columns=${columns} rows=${rows} ?striped=${args.striped} ?bordered=${args.bordered} ?hover=${args.hover} ?loading=${args.loading}></bq-table>`,
   argTypes: {
     striped:  { control: 'boolean' },
     bordered: { control: 'boolean' },

@@ -1,10 +1,10 @@
 import type { Meta, StoryObj } from '@storybook/web-components';
-import { html } from 'lit';
+import { storyHtml } from '@bquery/bquery/storybook';
 
 const meta: Meta = {
   title: 'Forms/Checkbox',
   tags: ['autodocs'],
-  render: (args) => html`<bq-checkbox label=${args.label} ?checked=${args.checked} ?disabled=${args.disabled} ?required=${args.required} hint=${args.hint}></bq-checkbox>`,
+  render: (args) => storyHtml`<bq-checkbox label=${args.label} ?checked=${args.checked} ?disabled=${args.disabled} ?required=${args.required} hint=${args.hint}></bq-checkbox>`,
   argTypes: {
     label:    { control: 'text' },
     checked:  { control: 'boolean' },

@@ -1,10 +1,10 @@
 import type { Meta, StoryObj } from '@storybook/web-components';
-import { html } from 'lit';
+import { storyHtml } from '@bquery/bquery/storybook';
 
 const meta: Meta = {
   title: 'Layout/Accordion',
   tags: ['autodocs'],
-  render: (args) => html`
+  render: (args) => storyHtml`
     <bq-accordion label=${args.label} ?open=${args.open} ?disabled=${args.disabled} variant=${args.variant}>
       ${args.content}
     </bq-accordion>
@@ -25,7 +25,7 @@ export const Default: Story = {};
 export const Open:    Story = { args: { open: true } };
 export const Bordered:Story = { args: { variant: 'bordered' } };
 export const Multiple:Story = {
-  render: () => html`
+  render: () => storyHtml`
     <div style="display:flex;flex-direction:column;gap:0.5rem">
       <bq-accordion variant="bordered" label="Section 1">Content for section 1.</bq-accordion>
       <bq-accordion variant="bordered" label="Section 2" open>Content for section 2.</bq-accordion>

@@ -1,10 +1,10 @@
 import type { Meta, StoryObj } from '@storybook/web-components';
-import { html } from 'lit';
+import { storyHtml } from '@bquery/bquery/storybook';
 
 const meta: Meta = {
   title: 'Feedback/Progress',
   tags: ['autodocs'],
-  render: (args) => html`<bq-progress value=${args.value} max=${args.max} variant=${args.variant} size=${args.size} label=${args.label} ?indeterminate=${args.indeterminate}></bq-progress>`,
+  render: (args) => storyHtml`<bq-progress value=${args.value} max=${args.max} variant=${args.variant} size=${args.size} label=${args.label} ?indeterminate=${args.indeterminate}></bq-progress>`,
   argTypes: {
     value:         { control: 'number' },
     max:           { control: 'number' },

@@ -1,10 +1,10 @@
 import type { Meta, StoryObj } from '@storybook/web-components';
-import { html } from 'lit';
+import { storyHtml } from '@bquery/bquery/storybook';
 
 const meta: Meta = {
   title: 'Feedback/Skeleton',
   tags: ['autodocs'],
-  render: (args) => html`<bq-skeleton variant=${args.variant} width=${args.width} height=${args.height} lines=${args.lines}></bq-skeleton>`,
+  render: (args) => storyHtml`<bq-skeleton variant=${args.variant} width=${args.width} height=${args.height} lines=${args.lines}></bq-skeleton>`,
   argTypes: {
     variant: { control: 'select', options: ['text','circle','rect','card'] },
     width:   { control: 'text' },
@@ -20,7 +20,7 @@ export const Text:     Story = {};
 export const Circle:   Story = { args: { variant: 'circle', width: '3rem', height: '3rem' } };
 export const MultiLine:Story = { args: { lines: 3 } };
 export const CardSkeleton: Story = {
-  render: () => html`
+  render: () => storyHtml`
     <div style="max-width:24rem;display:flex;flex-direction:column;gap:0.75rem;padding:1rem">
       <div style="display:flex;gap:0.75rem;align-items:center">
         <bq-skeleton variant="circle" width="3rem" height="3rem"></bq-skeleton>

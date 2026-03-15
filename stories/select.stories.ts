@@ -1,10 +1,10 @@
 import type { Meta, StoryObj } from '@storybook/web-components';
-import { html } from 'lit';
+import { storyHtml } from '@bquery/bquery/storybook';
 
 const meta: Meta = {
   title: 'Forms/Select',
   tags: ['autodocs'],
-  render: (args) => html`
+  render: (args) => storyHtml`
     <bq-select label=${args.label} placeholder=${args.placeholder} size=${args.size} ?disabled=${args.disabled} ?required=${args.required} error=${args.error}>
       <option value="react">React</option>
       <option value="vue">Vue</option>

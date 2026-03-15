@@ -1,10 +1,10 @@
 import type { Meta, StoryObj } from '@storybook/web-components';
-import { html } from 'lit';
+import { storyHtml } from '@bquery/bquery/storybook';
 
 const meta: Meta = {
   title: 'Layout/Divider',
   tags: ['autodocs'],
-  render: (args) => html`<bq-divider orientation=${args.orientation} variant=${args.variant} label=${args.label}></bq-divider>`,
+  render: (args) => storyHtml`<bq-divider orientation=${args.orientation} variant=${args.variant} label=${args.label}></bq-divider>`,
   argTypes: {
     orientation: { control: 'select', options: ['horizontal','vertical'] },
     variant:     { control: 'select', options: ['solid','dashed','dotted'] },

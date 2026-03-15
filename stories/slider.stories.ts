@@ -1,10 +1,10 @@
 import type { Meta, StoryObj } from '@storybook/web-components';
-import { html } from 'lit';
+import { storyHtml } from '@bquery/bquery/storybook';
 
 const meta: Meta = {
   title: 'Forms/Slider',
   tags: ['autodocs'],
-  render: (args) => html`<bq-slider label=${args.label} value=${args.value} min=${args.min} max=${args.max} step=${args.step} ?disabled=${args.disabled} show-value="true"></bq-slider>`,
+  render: (args) => storyHtml`<bq-slider label=${args.label} value=${args.value} min=${args.min} max=${args.max} step=${args.step} ?disabled=${args.disabled} show-value="true"></bq-slider>`,
   argTypes: {
     label:    { control: 'text' },
     value:    { control: 'number' },

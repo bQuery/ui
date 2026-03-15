@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/web-components';
-import { html } from 'lit';
+import { storyHtml } from '@bquery/bquery/storybook';
 
 /**
  * Text input field with label, hint, error, and slot support.
@@ -7,7 +7,7 @@ import { html } from 'lit';
 const meta: Meta = {
   title: 'Forms/Input',
   tags: ['autodocs'],
-  render: (args) => html`
+  render: (args) => storyHtml`
     <bq-input
       label=${args.label} type=${args.type} placeholder=${args.placeholder}
       size=${args.size} ?disabled=${args.disabled} ?required=${args.required}
@@ -35,7 +35,7 @@ export const Disabled: Story = { args: { disabled: true } };
 export const Required: Story = { args: { required: true } };
 export const Password: Story = { args: { label: 'Password', type: 'password', placeholder: 'Enter password', hint: '' } };
 export const AllSizes: Story = {
-  render: () => html`
+  render: () => storyHtml`
     <div style="display:flex;flex-direction:column;gap:1rem;max-width:28rem">
       <bq-input label="Small" size="sm" placeholder="Small input"></bq-input>
       <bq-input label="Medium" size="md" placeholder="Medium input"></bq-input>

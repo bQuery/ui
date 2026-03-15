@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/web-components';
-import { html } from 'lit';
+import { storyHtml } from '@bquery/bquery/storybook';
 
 /**
  * Small status or count indicator. Supports multiple variants and sizes.
@@ -7,7 +7,7 @@ import { html } from 'lit';
 const meta: Meta = {
   title: 'Components/Badge',
   tags: ['autodocs'],
-  render: (args) => html`<bq-badge variant=${args.variant} size=${args.size} ?pill=${args.pill}>${args.label}</bq-badge>`,
+  render: (args) => storyHtml`<bq-badge variant=${args.variant} size=${args.size} ?pill=${args.pill}>${args.label}</bq-badge>`,
   argTypes: {
     variant: { control: 'select', options: ['primary','secondary','success','danger','warning','info','outline'] },
     size:    { control: 'select', options: ['sm','md','lg'] },
@@ -26,7 +26,7 @@ export const Warning: Story = { args: { variant: 'warning', label: 'Pending' } }
 export const Outline: Story = { args: { variant: 'outline', label: 'Draft' } };
 export const Pill:    Story = { args: { pill: true } };
 export const AllVariants: Story = {
-  render: () => html`
+  render: () => storyHtml`
     <div style="display:flex;gap:0.5rem;flex-wrap:wrap;align-items:center">
       <bq-badge variant="primary">Primary</bq-badge>
       <bq-badge variant="secondary">Secondary</bq-badge>

@@ -1,10 +1,10 @@
 import type { Meta, StoryObj } from '@storybook/web-components';
-import { html } from 'lit';
+import { storyHtml } from '@bquery/bquery/storybook';
 
 const meta: Meta = {
   title: 'Layout/Card',
   tags: ['autodocs'],
-  render: (args) => html`
+  render: (args) => storyHtml`
     <bq-card title=${args.title} ?elevated=${args.elevated} padding=${args.padding} style="max-width:24rem">
       ${args.content}
       <div slot="footer"><bq-button variant="primary" size="sm">Action</bq-button></div>

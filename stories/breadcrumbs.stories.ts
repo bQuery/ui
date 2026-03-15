@@ -1,10 +1,10 @@
 import type { Meta, StoryObj } from '@storybook/web-components';
-import { html } from 'lit';
+import { storyHtml } from '@bquery/bquery/storybook';
 
 const meta: Meta = {
   title: 'Navigation/Breadcrumbs',
   tags: ['autodocs'],
-  render: () => html`
+  render: () => storyHtml`
     <bq-breadcrumbs>
       <a href="#">Home</a>
       <a href="#">Products</a>

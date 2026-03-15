@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/web-components';
-import { html } from 'lit';
+import { storyHtml } from '@bquery/bquery/storybook';
 
 /**
  * Contextual status messages for success, error, warning, and info states.
@@ -7,7 +7,7 @@ import { html } from 'lit';
 const meta: Meta = {
   title: 'Feedback/Alert',
   tags: ['autodocs'],
-  render: (args) => html`<bq-alert variant=${args.variant} title=${args.title} ?dismissible=${args.dismissible}>${args.message}</bq-alert>`,
+  render: (args) => storyHtml`<bq-alert variant=${args.variant} title=${args.title} ?dismissible=${args.dismissible}>${args.message}</bq-alert>`,
   argTypes: {
     variant:    { control: 'select', options: ['info','success','warning','danger'] },
     title:      { control: 'text' },
@@ -25,7 +25,7 @@ export const Warning: Story = { args: { variant: 'warning', title: 'Warning!', m
 export const Danger:  Story = { args: { variant: 'danger',  title: 'Error!',   message: 'Something went wrong.' } };
 export const Dismissible: Story = { args: { dismissible: true, title: 'Dismissible' } };
 export const AllVariants: Story = {
-  render: () => html`
+  render: () => storyHtml`
     <div style="display:flex;flex-direction:column;gap:1rem">
       <bq-alert variant="info"    title="Info">Informational message.</bq-alert>
       <bq-alert variant="success" title="Success">Your action was successful.</bq-alert>

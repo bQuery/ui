@@ -1,10 +1,10 @@
 import type { Meta, StoryObj } from '@storybook/web-components';
-import { html } from 'lit';
+import { storyHtml } from '@bquery/bquery/storybook';
 
 const meta: Meta = {
   title: 'Navigation/Pagination',
   tags: ['autodocs'],
-  render: (args) => html`<bq-pagination page=${args.page} total=${args.total} sibling-count=${args.siblingCount} ?disabled=${args.disabled}></bq-pagination>`,
+  render: (args) => storyHtml`<bq-pagination page=${args.page} total=${args.total} sibling-count=${args.siblingCount} ?disabled=${args.disabled}></bq-pagination>`,
   argTypes: {
     page:         { control: 'number' },
     total:        { control: 'number' },

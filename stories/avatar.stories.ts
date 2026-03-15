@@ -1,10 +1,10 @@
 import type { Meta, StoryObj } from '@storybook/web-components';
-import { html } from 'lit';
+import { storyHtml } from '@bquery/bquery/storybook';
 
 const meta: Meta = {
   title: 'Components/Avatar',
   tags: ['autodocs'],
-  render: (args) => html`<bq-avatar src=${args.src} alt=${args.alt} size=${args.size} shape=${args.shape} status=${args.status}></bq-avatar>`,
+  render: (args) => storyHtml`<bq-avatar src=${args.src} alt=${args.alt} size=${args.size} shape=${args.shape} status=${args.status}></bq-avatar>`,
   argTypes: {
     src:    { control: 'text' },
     alt:    { control: 'text' },
@@ -21,7 +21,7 @@ export const Initials: Story = {};
 export const WithImage: Story = { args: { src: 'https://i.pravatar.cc/80?img=1', alt: 'User avatar' } };
 export const Online: Story = { args: { status: 'online' } };
 export const AllSizes: Story = {
-  render: () => html`
+  render: () => storyHtml`
     <div style="display:flex;gap:1rem;align-items:center">
       <bq-avatar alt="XS" size="xs"></bq-avatar>
       <bq-avatar alt="SM" size="sm"></bq-avatar>

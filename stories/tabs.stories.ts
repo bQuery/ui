@@ -1,10 +1,10 @@
 import type { Meta, StoryObj } from '@storybook/web-components';
-import { html } from 'lit';
+import { storyHtml } from '@bquery/bquery/storybook';
 
 const meta: Meta = {
   title: 'Navigation/Tabs',
   tags: ['autodocs'],
-  render: (args) => html`
+  render: (args) => storyHtml`
     <bq-tabs active-tab="tab1" variant=${args.variant}>
       <span id="tab1" data-tab-item label="Overview"></span>
       <span id="tab2" data-tab-item label="Features"></span>

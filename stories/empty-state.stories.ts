@@ -1,10 +1,10 @@
 import type { Meta, StoryObj } from '@storybook/web-components';
-import { html } from 'lit';
+import { storyHtml } from '@bquery/bquery/storybook';
 
 const meta: Meta = {
   title: 'Components/EmptyState',
   tags: ['autodocs'],
-  render: (args) => html`
+  render: (args) => storyHtml`
     <bq-empty-state icon=${args.icon} title=${args.title} description=${args.description}>
       <bq-button variant="primary">Get started</bq-button>
     </bq-empty-state>

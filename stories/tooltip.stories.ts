@@ -1,10 +1,10 @@
 import type { Meta, StoryObj } from '@storybook/web-components';
-import { html } from 'lit';
+import { storyHtml } from '@bquery/bquery/storybook';
 
 const meta: Meta = {
   title: 'Components/Tooltip',
   tags: ['autodocs'],
-  render: (args) => html`
+  render: (args) => storyHtml`
     <div style="padding:4rem;display:inline-block">
       <bq-tooltip content=${args.content} placement=${args.placement} delay=${args.delay}>
         <bq-button>Hover me</bq-button>
