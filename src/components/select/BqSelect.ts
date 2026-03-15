@@ -15,11 +15,13 @@
 import { component, html } from '@bquery/bquery/component';
 import type { ComponentDefinition } from '@bquery/bquery/component';
 import { escapeHtml } from '@bquery/bquery/security';
+import { uniqueId } from '../../utils/dom.js';
 import { getBaseStyles } from '../../utils/styles.js';
 
 type BqSelectProps = { label: string; value: string; placeholder: string; name: string; disabled: boolean; required: boolean; error: string; size: string };
+type BqSelectState = { uid: string };
 
-const definition: ComponentDefinition<BqSelectProps> = {
+const definition: ComponentDefinition<BqSelectProps, BqSelectState> = {
   props: {
     label:      { type: String, default: '' },
     value:      { type: String, default: '' },
@@ -29,6 +31,9 @@ const definition: ComponentDefinition<BqSelectProps> = {
     required:   { type: Boolean, default: false },
     error:      { type: String, default: '' },
     size:       { type: String, default: 'md' },
+  },
+  state: {
+    uid: '',
   },
   styles: `
     ${getBaseStyles()}
@@ -58,7 +63,9 @@ const definition: ComponentDefinition<BqSelectProps> = {
     .error-msg { font-size: var(--bq-font-size-sm,0.875rem); color: var(--bq-color-danger-600,#dc2626); font-family: var(--bq-font-family-sans); }
   `,
   connected() {
-    const self = this;
+    type BQEl = HTMLElement & { setState(k: 'uid', v: string): void; getState<T>(k: string): T };
+    const self = this as unknown as BQEl;
+    if (!self.getState<string>('uid')) self.setState('uid', uniqueId('bq-select'));
     const handler = (e: Event) => {
       const select = e.target as HTMLSelectElement | null;
       if (select?.tagName === 'SELECT') {
@@ -73,9 +80,9 @@ const definition: ComponentDefinition<BqSelectProps> = {
     const h = (this as unknown as Record<string, unknown>)['_handler'] as EventListener | undefined;
     if (h) this.shadowRoot?.removeEventListener('change', h);
   },
-  render({ props }) {
+  render({ props, state }) {
     const hasError = Boolean(props.error);
-    const uid = `bq-select-${Math.random().toString(36).slice(2,8)}`;
+    const uid = state.uid || 'bq-select';
     return html`
       <div class="field" part="field">
         ${props.label ? `<label class="label" for="${uid}" part="label">${escapeHtml(props.label)}${props.required ? '<span class="required-mark" aria-hidden="true"> *</span>' : ''}</label>` : ''}
@@ -96,6 +103,6 @@ const definition: ComponentDefinition<BqSelectProps> = {
 
 export function registerBqSelect(prefix = 'bq'): string {
   const tag = `${prefix}-select`;
-  component<BqSelectProps>(tag, definition);
+  component<BqSelectProps, BqSelectState>(tag, definition);
   return tag;
 }

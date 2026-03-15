@@ -23,6 +23,7 @@
 import { component, html } from '@bquery/bquery/component';
 import type { ComponentDefinition } from '@bquery/bquery/component';
 import { escapeHtml } from '@bquery/bquery/security';
+import { uniqueId } from '../../utils/dom.js';
 import { getBaseStyles } from '../../utils/styles.js';
 
 type BqInputProps = {
@@ -30,8 +31,9 @@ type BqInputProps = {
   size: string; disabled: boolean; readonly: boolean; required: boolean;
   error: string; hint: string; maxlength: string;
 };
+type BqInputState = { uid: string };
 
-const definition: ComponentDefinition<BqInputProps> = {
+const definition: ComponentDefinition<BqInputProps, BqInputState> = {
   props: {
     label:      { type: String, default: '' },
     type:       { type: String, default: 'text' },
@@ -45,6 +47,9 @@ const definition: ComponentDefinition<BqInputProps> = {
     error:      { type: String, default: '' },
     hint:       { type: String, default: '' },
     maxlength:  { type: String, default: '' },
+  },
+  state: {
+    uid: '',
   },
   styles: `
     ${getBaseStyles()}
@@ -79,7 +84,9 @@ const definition: ComponentDefinition<BqInputProps> = {
     .error-msg { font-size: var(--bq-font-size-sm,0.875rem); color: var(--bq-color-danger-600,#dc2626); font-family: var(--bq-font-family-sans); }
   `,
   connected() {
-    const self = this;
+    type BQEl = HTMLElement & { setState(k: 'uid', v: string): void; getState<T>(k: string): T };
+    const self = this as unknown as BQEl;
+    if (!self.getState<string>('uid')) self.setState('uid', uniqueId('bq-input'));
     const ih = (e: Event) => {
       const input = e.target as HTMLInputElement | null;
       if (input?.tagName === 'INPUT') self.dispatchEvent(new CustomEvent('bq-input', { detail: { value: input.value }, bubbles: true, composed: true }));
@@ -105,9 +112,9 @@ const definition: ComponentDefinition<BqInputProps> = {
     const fh = s['_fh'] as EventListener | undefined; if (fh) sr?.removeEventListener('focusin', fh);
     const bh = s['_bh'] as EventListener | undefined; if (bh) sr?.removeEventListener('focusout', bh);
   },
-  render({ props }) {
+  render({ props, state }) {
     const hasError = Boolean(props.error);
-    const uid = `bq-input-${Math.random().toString(36).slice(2,8)}`;
+    const uid = state.uid || 'bq-input';
     return html`
       <div class="field" part="field">
         ${props.label ? `<label class="label" for="${uid}" part="label">${escapeHtml(props.label)}${props.required ? '<span class="required-mark" aria-hidden="true"> *</span>' : ''}</label>` : ''}
@@ -132,6 +139,6 @@ const definition: ComponentDefinition<BqInputProps> = {
 
 export function registerBqInput(prefix = 'bq'): string {
   const tag = `${prefix}-input`;
-  component<BqInputProps>(tag, definition);
+  component<BqInputProps, BqInputState>(tag, definition);
   return tag;
 }

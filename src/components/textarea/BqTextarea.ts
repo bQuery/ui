@@ -5,14 +5,16 @@
 import { component, html } from '@bquery/bquery/component';
 import type { ComponentDefinition } from '@bquery/bquery/component';
 import { escapeHtml } from '@bquery/bquery/security';
+import { uniqueId } from '../../utils/dom.js';
 import { getBaseStyles } from '../../utils/styles.js';
 
 type BqTextareaProps = {
   label: string; value: string; placeholder: string; name: string; rows: number;
   disabled: boolean; readonly: boolean; required: boolean; error: string; hint: string; maxlength: string;
 };
+type BqTextareaState = { uid: string };
 
-const definition: ComponentDefinition<BqTextareaProps> = {
+const definition: ComponentDefinition<BqTextareaProps, BqTextareaState> = {
   props: {
     label:      { type: String, default: '' },
     value:      { type: String, default: '' },
@@ -25,6 +27,9 @@ const definition: ComponentDefinition<BqTextareaProps> = {
     error:      { type: String, default: '' },
     hint:       { type: String, default: '' },
     maxlength:  { type: String, default: '' },
+  },
+  state: {
+    uid: '',
   },
   styles: `
     ${getBaseStyles()}
@@ -50,7 +55,9 @@ const definition: ComponentDefinition<BqTextareaProps> = {
     .error-msg { font-size: var(--bq-font-size-sm,0.875rem); color: var(--bq-color-danger-600,#dc2626); font-family: var(--bq-font-family-sans); }
   `,
   connected() {
-    const self = this;
+    type BQEl = HTMLElement & { setState(k: 'uid', v: string): void; getState<T>(k: string): T };
+    const self = this as unknown as BQEl;
+    if (!self.getState<string>('uid')) self.setState('uid', uniqueId('bq-ta'));
     const ih = (e: Event) => { const t = e.target as HTMLTextAreaElement | null; if (t?.tagName === 'TEXTAREA') self.dispatchEvent(new CustomEvent('bq-input', { detail: { value: t.value }, bubbles: true, composed: true })); };
     const ch = (e: Event) => { const t = e.target as HTMLTextAreaElement | null; if (t?.tagName === 'TEXTAREA') self.dispatchEvent(new CustomEvent('bq-change', { detail: { value: t.value }, bubbles: true, composed: true })); };
     const fh = (e: Event) => { if ((e.target as Element)?.tagName === 'TEXTAREA') self.dispatchEvent(new CustomEvent('bq-focus', { bubbles: true, composed: true })); };
@@ -67,9 +74,9 @@ const definition: ComponentDefinition<BqTextareaProps> = {
     const sr = this.shadowRoot;
     (['_ih','_ch','_fh','_bh'] as const).forEach(k => { const h = s[k] as EventListener | undefined; if (h) sr?.removeEventListener(k === '_ih' ? 'input' : k === '_ch' ? 'change' : k === '_fh' ? 'focusin' : 'focusout', h); });
   },
-  render({ props }) {
+  render({ props, state }) {
     const hasError = Boolean(props.error);
-    const uid = `bq-ta-${Math.random().toString(36).slice(2,8)}`;
+    const uid = state.uid || 'bq-ta';
     return html`
       <div class="field" part="field">
         ${props.label ? `<label class="label" for="${uid}" part="label">${escapeHtml(props.label)}${props.required ? '<span class="required-mark" aria-hidden="true"> *</span>' : ''}</label>` : ''}
@@ -89,6 +96,6 @@ const definition: ComponentDefinition<BqTextareaProps> = {
 
 export function registerBqTextarea(prefix = 'bq'): string {
   const tag = `${prefix}-textarea`;
-  component<BqTextareaProps>(tag, definition);
+  component<BqTextareaProps, BqTextareaState>(tag, definition);
   return tag;
 }

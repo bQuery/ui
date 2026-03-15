@@ -1,5 +1,3 @@
-import { getTokensCSS } from '../tokens/index.js';
-
 /**
  * Dark theme for @bquery/ui
  */
@@ -28,14 +26,12 @@ export const darkTheme = {
 };
 
 /**
- * Generates the CSS for the dark theme, including all design tokens with dark-mode overrides.
+ * Generates the CSS for the dark theme overrides.
  */
 export function getDarkThemeCSS(): string {
   return `
 :host([data-theme="dark"]),
 :host-context([data-theme="dark"]) {
-  ${getTokensCSS()}
-
   /* Semantic tokens (dark) */
   --bq-bg-base: #0f172a;
   --bq-bg-subtle: #1e293b;

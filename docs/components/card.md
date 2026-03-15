@@ -23,39 +23,37 @@ The `bq-card` component is a flexible container with optional header, body, and 
 </bq-card>
 ```
 
-## Shadow Variants
+## Elevated Cards
 
 ```html
-<bq-card shadow="none">No shadow</bq-card>
-<bq-card shadow="sm">Small shadow</bq-card>
-<bq-card shadow="md">Medium shadow (default)</bq-card>
-<bq-card shadow="lg">Large shadow</bq-card>
+<bq-card>Default elevated card</bq-card>
+<bq-card elevated="false">Flat card</bq-card>
 ```
 
-## Bordered
+## With Title
 
 ```html
-<bq-card bordered shadow="none">
-  Bordered card without shadow
+<bq-card title="Card title">
+  Card body content
 </bq-card>
 ```
 
-## Interactive (hover effect)
+## Padding Options
 
 ```html
-<bq-card interactive>
-  <p>Hover over me!</p>
-</bq-card>
+<bq-card padding="none">No body padding</bq-card>
+<bq-card padding="sm">Small padding</bq-card>
+<bq-card padding="md">Medium padding (default)</bq-card>
+<bq-card padding="lg">Large padding</bq-card>
 ```
 
 ## Properties
 
 | Property | Type | Default | Description |
 |----------|------|---------|-------------|
-| `shadow` | `none \| sm \| md \| lg` | `md` | Box shadow depth |
-| `radius` | `none \| sm \| md \| lg \| xl` | `xl` | Border radius |
-| `bordered` | `boolean` | `false` | Shows a border |
-| `interactive` | `boolean` | `false` | Adds hover lift effect |
+| `title` | `string` | `''` | Renders a built-in card header title |
+| `elevated` | `boolean` | `true` | Enables the default card shadow |
+| `padding` | `none \| sm \| md \| lg` | `md` | Sets the body padding |
 
 ## Slots
 
