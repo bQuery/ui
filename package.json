@@ -61,7 +61,7 @@
     "@bquery/bquery": "^1.5.0"
   },
   "devDependencies": {
-    "@bquery/bquery": "^1.5.0",
+    "@bquery/bquery": "^1.6.0",
     "@storybook/addon-docs": "^8.6.17",
     "@storybook/web-components-vite": "^8.6.17",
     "@types/node": "^20.11.0",
