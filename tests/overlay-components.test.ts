@@ -1,0 +1,103 @@
+// DOM environment is provided by tests/setup.ts (preloaded via bunfig.toml)
+import { describe, it, expect, beforeAll, afterEach } from 'bun:test';
+
+const win = (globalThis as unknown as Record<string, unknown>)['window'] as Window & typeof globalThis;
+const doc = win.document as unknown as Document;
+
+type RegisterFn = (prefix?: string) => string;
+
+let registerBqDialog: RegisterFn;
+let registerBqDrawer: RegisterFn;
+let registerBqBreadcrumbs: RegisterFn;
+let registerBqSkeleton: RegisterFn;
+
+describe('overlay and utility component fixes', () => {
+  beforeAll(async () => {
+    registerBqDialog = (await import('../src/components/dialog/BqDialog.js')).registerBqDialog;
+    registerBqDrawer = (await import('../src/components/drawer/BqDrawer.js')).registerBqDrawer;
+    registerBqBreadcrumbs = (await import('../src/components/breadcrumbs/BqBreadcrumbs.js')).registerBqBreadcrumbs;
+    registerBqSkeleton = (await import('../src/components/skeleton/BqSkeleton.js')).registerBqSkeleton;
+
+    registerBqDialog('bq');
+    registerBqDrawer('bq');
+    registerBqBreadcrumbs('bq');
+    registerBqSkeleton('bq');
+  });
+
+  afterEach(() => {
+    doc.body.innerHTML = '';
+  });
+
+  it('assigns unique title ids to dialog instances', () => {
+    const first = doc.createElement('bq-dialog');
+    const second = doc.createElement('bq-dialog');
+    first.setAttribute('open', '');
+    second.setAttribute('open', '');
+    doc.body.append(first, second);
+
+    const firstDialog = first.shadowRoot?.querySelector('.dialog');
+    const secondDialog = second.shadowRoot?.querySelector('.dialog');
+    const firstTitle = first.shadowRoot?.querySelector('.header-title');
+    const secondTitle = second.shadowRoot?.querySelector('.header-title');
+
+    expect(firstDialog?.getAttribute('aria-labelledby')).toBe(firstTitle?.id);
+    expect(secondDialog?.getAttribute('aria-labelledby')).toBe(secondTitle?.id);
+    expect(firstTitle?.id).not.toBe(secondTitle?.id);
+  });
+
+  it('assigns unique title ids to drawer instances', () => {
+    const first = doc.createElement('bq-drawer');
+    const second = doc.createElement('bq-drawer');
+    doc.body.append(first, second);
+
+    const firstDrawer = first.shadowRoot?.querySelector('.drawer');
+    const secondDrawer = second.shadowRoot?.querySelector('.drawer');
+    const firstTitle = first.shadowRoot?.querySelector('.title');
+    const secondTitle = second.shadowRoot?.querySelector('.title');
+
+    expect(firstDrawer?.getAttribute('aria-labelledby')).toBe(firstTitle?.id);
+    expect(secondDrawer?.getAttribute('aria-labelledby')).toBe(secondTitle?.id);
+    expect(firstTitle?.id).not.toBe(secondTitle?.id);
+  });
+
+  it('renders breadcrumb separators from the separator prop', async () => {
+    const el = doc.createElement('bq-breadcrumbs');
+    el.setAttribute('separator', '>');
+    el.innerHTML = '<a href="/">Home</a><a href="/docs">Docs</a><a href="/api">API</a>';
+    doc.body.appendChild(el);
+    await Promise.resolve();
+
+    const separators = Array.from(el.querySelectorAll('[data-bq-breadcrumb-separator]'));
+
+    expect(separators).toHaveLength(2);
+    expect(separators.map((item) => item.textContent)).toEqual(['>', '>']);
+    expect(el.querySelector('a:last-of-type')?.getAttribute('aria-current')).toBe('page');
+  });
+
+  it('applies width and height styles to single skeleton variants', () => {
+    const el = doc.createElement('bq-skeleton');
+    el.setAttribute('variant', 'rect');
+    el.setAttribute('width', '240px');
+    el.setAttribute('height', '120px');
+    doc.body.appendChild(el);
+
+    const skeleton = el.shadowRoot?.querySelector('.skeleton');
+    expect(skeleton?.getAttribute('style')).toContain('width:240px');
+    expect(skeleton?.getAttribute('style')).toContain('height:120px');
+  });
+
+  it('applies height styles to multiline skeleton lines', () => {
+    const el = doc.createElement('bq-skeleton');
+    el.setAttribute('variant', 'text');
+    el.setAttribute('lines', '2');
+    el.setAttribute('width', '320px');
+    el.setAttribute('height', '18px');
+    doc.body.appendChild(el);
+
+    const lines = Array.from(el.shadowRoot?.querySelectorAll('.skeleton') ?? []);
+    expect(lines).toHaveLength(2);
+    expect(lines[0]?.getAttribute('style')).toContain('width:320px');
+    expect(lines[0]?.getAttribute('style')).toContain('height:18px');
+    expect(lines[1]?.getAttribute('style')).toContain('width:70%');
+  });
+});

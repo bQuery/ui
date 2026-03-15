@@ -19,13 +19,34 @@ type DeepPartial<T> = {
 export type BqLocale = typeof en;
 export type BqLocaleOverride = DeepPartial<BqLocale>;
 
-let _locale: BqLocale = { ...en };
+function cloneLocale<T>(value: T): T {
+  if (Array.isArray(value)) {
+    return value.map((item) => cloneLocale(item)) as T;
+  }
+
+  if (value && typeof value === 'object') {
+    const entries = Object.entries(value as Record<string, unknown>).map(([key, item]) => [
+      key,
+      cloneLocale(item),
+    ]);
+    return Object.fromEntries(entries) as T;
+  }
+
+  return value;
+}
+
+let _locale: BqLocale = cloneLocale(en);
 
 /**
  * Override locale strings. Merges shallowly at the top level, deeply at the second level.
  */
 export function setLocale(overrides: BqLocaleOverride): void {
   _locale = deepMerge(_locale, overrides) as BqLocale;
+}
+
+/** Restores the active locale to the default English locale. */
+export function resetLocale(): void {
+  _locale = cloneLocale(en);
 }
 
 /** Returns the currently active locale object. */

@@ -14,15 +14,20 @@ import type { ComponentDefinition } from '@bquery/bquery/component';
 import { escapeHtml } from '@bquery/bquery/security';
 import { getBaseStyles } from '../../utils/styles.js';
 import { t } from '../../i18n/index.js';
+import { uniqueId } from '../../utils/dom.js';
 
 type BqDrawerProps = { open: boolean; title: string; placement: string; size: string };
+type BqDrawerState = { titleId: string };
 
-const definition: ComponentDefinition<BqDrawerProps> = {
+const definition: ComponentDefinition<BqDrawerProps, BqDrawerState> = {
   props: {
     open:      { type: Boolean, default: false },
     title:     { type: String, default: '' },
     placement: { type: String, default: 'right' },
     size:      { type: String, default: 'md' },
+  },
+  state: {
+    titleId: '',
   },
   styles: `
     ${getBaseStyles()}
@@ -65,7 +70,9 @@ const definition: ComponentDefinition<BqDrawerProps> = {
     .footer { padding: var(--bq-space-4,1rem) var(--bq-space-6,1.5rem); border-top: 1px solid var(--bq-border-base,#e2e8f0); display: flex; gap: var(--bq-space-3,0.75rem); justify-content: flex-end; flex-shrink: 0; background: var(--bq-bg-subtle,#f8fafc); }
   `,
   connected() {
-    const self = this;
+    type BQEl = HTMLElement & { setState(k: 'titleId', v: string): void; getState<T>(k: string): T };
+    const self = this as unknown as BQEl;
+    if (!self.getState<string>('titleId')) self.setState('titleId', uniqueId('bq-drawer-title'));
     const close = () => { self.removeAttribute('open'); self.dispatchEvent(new CustomEvent('bq-close', { bubbles: true, composed: true })); };
     const kh = (e: Event) => { if ((e as KeyboardEvent).key === 'Escape' && self.hasAttribute('open')) close(); };
     const bh = (e: Event) => { if ((e.target as Element).classList.contains('backdrop')) close(); };
@@ -82,13 +89,14 @@ const definition: ComponentDefinition<BqDrawerProps> = {
     const bh = s['_bh'] as EventListener | undefined; if (bh) this.shadowRoot?.removeEventListener('click', bh);
     const ch = s['_ch'] as EventListener | undefined; if (ch) this.shadowRoot?.removeEventListener('click', ch);
   },
-  render({ props }) {
+  render({ props, state }) {
+    const titleId = state.titleId || 'bq-drawer-title';
     return html`
       <div class="backdrop" part="backdrop" role="presentation">
         <div class="drawer" part="drawer" data-placement="${escapeHtml(props.placement)}" data-size="${escapeHtml(props.size)}"
-          role="dialog" aria-modal="true" aria-labelledby="bq-drawer-title">
+          role="dialog" aria-modal="true" aria-labelledby="${escapeHtml(titleId)}">
           <div class="header" part="header">
-            <h2 class="title" id="bq-drawer-title" part="title">${escapeHtml(props.title)}</h2>
+            <h2 class="title" id="${escapeHtml(titleId)}" part="title">${escapeHtml(props.title)}</h2>
             <button class="close-btn" type="button" aria-label="${t('drawer.close')}" part="close">&#10005;</button>
           </div>
           <div class="body" part="body"><slot></slot></div>
@@ -101,6 +109,6 @@ const definition: ComponentDefinition<BqDrawerProps> = {
 
 export function registerBqDrawer(prefix = 'bq'): string {
   const tag = `${prefix}-drawer`;
-  component<BqDrawerProps>(tag, definition);
+  component<BqDrawerProps, BqDrawerState>(tag, definition);
   return tag;
 }

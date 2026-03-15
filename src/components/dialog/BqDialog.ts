@@ -13,17 +13,21 @@ import { component, html } from '@bquery/bquery/component';
 import type { ComponentDefinition } from '@bquery/bquery/component';
 import { escapeHtml } from '@bquery/bquery/security';
 import { getBaseStyles } from '../../utils/styles.js';
-import { trapFocus } from '../../utils/dom.js';
+import { trapFocus, uniqueId } from '../../utils/dom.js';
 import { t } from '../../i18n/index.js';
 
 type BqDialogProps = { open: boolean; title: string; size: string; dismissible: boolean };
+type BqDialogState = { titleId: string };
 
-const definition: ComponentDefinition<BqDialogProps> = {
+const definition: ComponentDefinition<BqDialogProps, BqDialogState> = {
   props: {
     open:       { type: Boolean, default: false },
     title:      { type: String, default: '' },
     size:       { type: String, default: 'md' },
     dismissible:{ type: Boolean, default: true },
+  },
+  state: {
+    titleId: '',
   },
   styles: `
     ${getBaseStyles()}
@@ -60,7 +64,9 @@ const definition: ComponentDefinition<BqDialogProps> = {
     .footer { padding: var(--bq-space-4,1rem) var(--bq-space-6,1.5rem); border-top: 1px solid var(--bq-border-base,#e2e8f0); display: flex; align-items: center; justify-content: flex-end; gap: var(--bq-space-3,0.75rem); flex-shrink: 0; background: var(--bq-bg-subtle,#f8fafc); }
   `,
   connected() {
-    const self = this;
+    type BQEl = HTMLElement & { setState(k: 'titleId', v: string): void; getState<T>(k: string): T };
+    const self = this as unknown as BQEl;
+    if (!self.getState<string>('titleId')) self.setState('titleId', uniqueId('bq-dlg-title'));
     // Escape key handler
     const kh = (e: Event) => {
       if ((e as KeyboardEvent).key === 'Escape' && self.hasAttribute('open')) close();
@@ -83,28 +89,37 @@ const definition: ComponentDefinition<BqDialogProps> = {
   },
   disconnected() {
     const s = this as unknown as Record<string, unknown>;
+    const releaseFocus = s['_releaseFocus'] as (() => void) | undefined; if (releaseFocus) releaseFocus();
     const kh = s['_kh'] as EventListener | undefined; if (kh) document.removeEventListener('keydown', kh);
     const oh = s['_oh'] as EventListener | undefined; if (oh) this.shadowRoot?.removeEventListener('click', oh);
     const ch = s['_ch'] as EventListener | undefined; if (ch) this.shadowRoot?.removeEventListener('click', ch);
   },
   updated() {
+    const s = this as unknown as Record<string, unknown>;
+    const releaseFocus = s['_releaseFocus'] as (() => void) | undefined;
     if (this.hasAttribute('open')) {
       const dialog = this.shadowRoot?.querySelector('.dialog') as HTMLElement | null;
       if (dialog) {
+        releaseFocus?.();
+        s['_releaseFocus'] = trapFocus(dialog);
         requestAnimationFrame(() => {
-          const focusable = dialog.querySelector<HTMLElement>('button, [tabindex="0"]');
+          const focusable = dialog.querySelector<HTMLElement>('button, a[href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
           if (focusable) focusable.focus();
         });
       }
+    } else {
+      releaseFocus?.();
+      delete s['_releaseFocus'];
     }
   },
-  render({ props }) {
+  render({ props, state }) {
+    const titleId = state.titleId || 'bq-dlg-title';
     return html`
       <div part="overlay" class="overlay" role="presentation">
         <div part="dialog" class="dialog" data-size="${escapeHtml(props.size)}"
-          role="dialog" aria-modal="true" aria-labelledby="bq-dlg-title" tabindex="-1">
+          role="dialog" aria-modal="true" aria-labelledby="${escapeHtml(titleId)}" tabindex="-1">
           <div class="header" part="header">
-            <h2 class="header-title" id="bq-dlg-title" part="title">${escapeHtml(props.title)}</h2>
+            <h2 class="header-title" id="${escapeHtml(titleId)}" part="title">${escapeHtml(props.title)}</h2>
             ${props.dismissible ? `<button class="close-btn" type="button" aria-label="${t('dialog.close')}" part="close">&#10005;</button>` : ''}
           </div>
           <div class="body" part="body"><slot></slot></div>
@@ -117,6 +132,6 @@ const definition: ComponentDefinition<BqDialogProps> = {
 
 export function registerBqDialog(prefix = 'bq'): string {
   const tag = `${prefix}-dialog`;
-  component<BqDialogProps>(tag, definition);
+  component<BqDialogProps, BqDialogState>(tag, definition);
   return tag;
 }

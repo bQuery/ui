@@ -1,6 +1,6 @@
-import { describe, it, expect } from 'bun:test';
+import { describe, it, expect, beforeEach } from 'bun:test';
 import { cn } from '../src/utils/cn.js';
-import { setLocale, getLocale, t } from '../src/i18n/index.js';
+import { setLocale, getLocale, resetLocale, t } from '../src/i18n/index.js';
 import { en } from '../src/i18n/en.js';
 
 describe('cn utility', () => {
@@ -30,6 +30,10 @@ describe('cn utility', () => {
 });
 
 describe('i18n system', () => {
+  beforeEach(() => {
+    resetLocale();
+  });
+
   it('should return default locale', () => {
     const locale = getLocale();
     expect(locale.dialog.close).toBe('Close dialog');
@@ -61,6 +65,16 @@ describe('i18n system', () => {
   it('should restore with setLocale', () => {
     setLocale({ dialog: { close: en.dialog.close } });
     expect(t('dialog.close')).toBe('Close dialog');
+  });
+
+  it('should reset nested locale state', () => {
+    setLocale({ dialog: { confirm: 'Confirmer' } });
+    resetLocale();
+    expect(t('dialog.confirm')).toBe(en.dialog.confirm);
+  });
+
+  it('should keep default drawer labels available', () => {
+    expect(t('drawer.close')).toBe(en.drawer.close);
   });
 });
 

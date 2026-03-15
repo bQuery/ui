@@ -22,6 +22,9 @@ export const en = {
     cancel: 'Cancel',
     ariaLabel: 'Dialog',
   },
+  drawer: {
+    close: 'Close drawer',
+  },
   toast: {
     close: 'Dismiss notification',
     success: 'Success',
