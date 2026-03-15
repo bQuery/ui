@@ -15,14 +15,12 @@ In React, register the elements once and listen to custom events through a ref.
 
 ```tsx
 import { useEffect, useRef } from 'react';
-import { registerAll } from '@bquery/ui/register';
+import '@bquery/ui';
 
 export function SaveButton() {
   const buttonRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
-    registerAll();
-
     const current = buttonRef.current;
     const handleClick = (event: Event) => {
       const customEvent = event as CustomEvent<{ originalEvent: MouseEvent }>;
@@ -46,12 +44,7 @@ Vue can use Custom Elements directly in templates and bind to custom events decl
 
 ```vue
 <script setup lang="ts">
-import { onMounted } from 'vue';
-import { registerAll } from '@bquery/ui/register';
-
-onMounted(() => {
-  registerAll();
-});
+import '@bquery/ui';
 
 function handleChange(event: CustomEvent<{ value: string }>) {
   console.log(event.detail.value);
@@ -74,9 +67,7 @@ Angular applications can use the components after enabling `CUSTOM_ELEMENTS_SCHE
 
 ```ts
 import { CUSTOM_ELEMENTS_SCHEMA, Component } from '@angular/core';
-import { registerAll } from '@bquery/ui/register';
-
-registerAll();
+import '@bquery/ui';
 
 @Component({
   selector: 'app-profile-form',
@@ -102,12 +93,7 @@ Svelte works especially well with Custom Elements because you can bind to native
 
 ```svelte
 <script lang="ts">
-  import { onMount } from 'svelte';
-  import { registerAll } from '@bquery/ui/register';
-
-  onMount(() => {
-    registerAll();
-  });
+  import '@bquery/ui';
 
   function handlePageChange(event: CustomEvent<{ page: number }>) {
     console.log(event.detail.page);
@@ -128,9 +114,7 @@ If you are not using a frontend framework, the setup is even simpler:
 
 ```html
 <script type="module">
-  import { registerAll } from '@bquery/ui/register';
-
-  registerAll();
+  import '@bquery/ui';
 
   document.querySelector('bq-button')?.addEventListener('bq-click', (event) => {
     console.log(event.detail);
@@ -143,7 +127,7 @@ If you are not using a frontend framework, the setup is even simpler:
 ## Best Practices
 
 - Register components once during application startup
-- Prefer per-component registration in performance-sensitive applications
+- Prefer per-component imports in performance-sensitive applications
 - Subscribe to `bq-*` custom events instead of relying on framework-specific synthetic event layers
 - Keep styling at the token, CSS variable, or `::part()` level instead of reaching into shadow DOM internals
 - For SSR applications, register elements only on the client

@@ -44,8 +44,4 @@ const definition: ComponentDefinition<BqSpinnerProps> = {
   },
 };
 
-export function registerBqSpinner(prefix = 'bq'): string {
-  const tag = `${prefix}-spinner`;
-  component<BqSpinnerProps>(tag, definition);
-  return tag;
-}
+component<BqSpinnerProps>('bq-spinner', definition);

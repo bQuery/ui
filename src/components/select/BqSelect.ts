@@ -101,8 +101,4 @@ const definition: ComponentDefinition<BqSelectProps, BqSelectState> = {
   },
 };
 
-export function registerBqSelect(prefix = 'bq'): string {
-  const tag = `${prefix}-select`;
-  component<BqSelectProps, BqSelectState>(tag, definition);
-  return tag;
-}
+component<BqSelectProps, BqSelectState>('bq-select', definition);

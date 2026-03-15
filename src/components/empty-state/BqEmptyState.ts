@@ -45,8 +45,4 @@ const definition: ComponentDefinition<BqEmptyStateProps> = {
   },
 };
 
-export function registerBqEmptyState(prefix = 'bq'): string {
-  const tag = `${prefix}-empty-state`;
-  component<BqEmptyStateProps>(tag, definition);
-  return tag;
-}
+component<BqEmptyStateProps>('bq-empty-state', definition);

@@ -1,7 +1,7 @@
 /**
  * @bquery/ui — Main entry point
  *
- * Tree-shakeable ESM package. Import only what you need, or use registerAll() for everything.
+ * Importing this package registers all bq components via the native @bquery/bquery component API.
  */
 
 // Design tokens
@@ -19,6 +19,6 @@ export * from './utils/index.js';
 // Components
 export * from './components/index.js';
 
-// Registration helpers
+// Legacy compatibility helpers
 export { registerAll } from './register.js';
 export type { RegisterOptions } from './register.js';

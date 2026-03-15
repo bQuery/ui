@@ -8,11 +8,10 @@
 npm install @bquery/ui
 ```
 
-Then in your app:
+Then import the library once in your app:
 
 ```typescript
-import { registerAll } from '@bquery/ui/register';
-registerAll();
+import '@bquery/ui';
 ```
 
 Now you can use all `bq-*` elements in any HTML:
@@ -25,14 +24,11 @@ Now you can use all `bq-*` elements in any HTML:
 
 ## Tree-shakeable Imports
 
-For optimal bundle sizes, import and register only the components you need:
+For optimal bundle sizes, import only the component entry points you need:
 
 ```typescript
-import { BqButton, registerBqButton } from '@bquery/ui/components/button';
-import { BqInput, registerBqInput } from '@bquery/ui/components/input';
-
-registerBqButton();
-registerBqInput();
+import '@bquery/ui/components/button';
+import '@bquery/ui/components/input';
 ```
 
 ## With bQuery
@@ -41,9 +37,7 @@ If you use the `@bquery/bquery` library, components integrate naturally since th
 
 ```typescript
 import { $ } from '@bquery/bquery';
-import { registerAll } from '@bquery/ui/register';
-
-registerAll();
+import '@bquery/ui';
 
 $('bq-button').on('bq-click', (e) => {
   console.log('clicked!', e.detail);

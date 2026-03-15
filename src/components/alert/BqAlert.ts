@@ -76,8 +76,4 @@ const definition: ComponentDefinition<BqAlertProps> = {
   },
 };
 
-export function registerBqAlert(prefix = 'bq'): string {
-  const tag = `${prefix}-alert`;
-  component<BqAlertProps>(tag, definition);
-  return tag;
-}
+component<BqAlertProps>('bq-alert', definition);

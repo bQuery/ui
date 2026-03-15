@@ -66,8 +66,4 @@ const definition: ComponentDefinition<BqProgressProps> = {
   },
 };
 
-export function registerBqProgress(prefix = 'bq'): string {
-  const tag = `${prefix}-progress`;
-  component<BqProgressProps>(tag, definition);
-  return tag;
-}
+component<BqProgressProps>('bq-progress', definition);

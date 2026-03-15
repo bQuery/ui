@@ -1,1 +1,1 @@
-export { registerBqAvatar } from './BqAvatar.js';
+import './BqAvatar.js';

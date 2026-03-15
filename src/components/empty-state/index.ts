@@ -1,1 +1,1 @@
-export { registerBqEmptyState } from './BqEmptyState.js';
+import './BqEmptyState.js';

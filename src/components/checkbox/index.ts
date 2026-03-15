@@ -1,1 +1,1 @@
-export { registerBqCheckbox } from './BqCheckbox.js';
+import './BqCheckbox.js';

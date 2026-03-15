@@ -1,1 +1,1 @@
-export { registerBqAccordion } from './BqAccordion.js';
+import './BqAccordion.js';

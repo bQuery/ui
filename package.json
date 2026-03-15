@@ -37,7 +37,14 @@
       "types": "./dist-types/register.d.ts"
     }
   },
-  "sideEffects": false,
+  "sideEffects": [
+    "./dist/index.js",
+    "./dist/index.cjs",
+    "./dist/register.js",
+    "./dist/register.cjs",
+    "./dist/components/*.js",
+    "./dist/components/*.cjs"
+  ],
   "files": [
     "dist",
     "dist-types",

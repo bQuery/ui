@@ -92,8 +92,4 @@ const definition: ComponentDefinition<BqAccordionProps> = {
   },
 };
 
-export function registerBqAccordion(prefix = 'bq'): string {
-  const tag = `${prefix}-accordion`;
-  component<BqAccordionProps>(tag, definition);
-  return tag;
-}
+component<BqAccordionProps>('bq-accordion', definition);

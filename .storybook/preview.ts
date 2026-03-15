@@ -1,11 +1,5 @@
 import type { Preview } from '@storybook/web-components';
-import { registerAll } from '../src/register.js';
-
-/**
- * Register all @bquery/ui components so they are available in every story.
- * Components are registered once at startup.
- */
-registerAll();
+import '../src/index.js';
 
 const preview: Preview = {
   parameters: {

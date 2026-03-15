@@ -5,14 +5,9 @@ import { describe, it, expect, beforeAll, afterAll } from 'bun:test';
 const win = (globalThis as unknown as Record<string, unknown>)['window'] as Window & typeof globalThis;
 const doc = win.document as unknown as Document;
 
-type RegisterFn = (prefix?: string) => string;
-let registerBqButton: RegisterFn;
-
 describe('BqButton', () => {
   beforeAll(async () => {
-    const mod = await import('../src/components/button/BqButton.js');
-    registerBqButton = mod.registerBqButton;
-    registerBqButton('bq');
+    await import('../src/index.js');
   });
 
   it('should define bq-button as a custom element', () => {

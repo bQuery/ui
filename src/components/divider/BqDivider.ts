@@ -45,8 +45,4 @@ const definition: ComponentDefinition<BqDividerProps> = {
   },
 };
 
-export function registerBqDivider(prefix = 'bq'): string {
-  const tag = `${prefix}-divider`;
-  component<BqDividerProps>(tag, definition);
-  return tag;
-}
+component<BqDividerProps>('bq-divider', definition);

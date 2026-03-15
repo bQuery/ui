@@ -1,1 +1,1 @@
-export { registerBqTextarea } from './BqTextarea.js';
+import './BqTextarea.js';

@@ -5,14 +5,9 @@ import { describe, it, expect, beforeAll, afterAll } from 'bun:test';
 const win = (globalThis as unknown as Record<string, unknown>)['window'] as Window & typeof globalThis;
 const doc = win.document as unknown as Document;
 
-type RegisterFn = (prefix?: string) => string;
-let registerBqInput: RegisterFn;
-
 describe('BqInput', () => {
   beforeAll(async () => {
-    const mod = await import('../src/components/input/BqInput.js');
-    registerBqInput = mod.registerBqInput;
-    registerBqInput('bq');
+    await import('../src/components/input/index.js');
   });
 
   it('should define bq-input', () => {

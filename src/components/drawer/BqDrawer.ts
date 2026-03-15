@@ -107,8 +107,4 @@ const definition: ComponentDefinition<BqDrawerProps, BqDrawerState> = {
   },
 };
 
-export function registerBqDrawer(prefix = 'bq'): string {
-  const tag = `${prefix}-drawer`;
-  component<BqDrawerProps, BqDrawerState>(tag, definition);
-  return tag;
-}
+component<BqDrawerProps, BqDrawerState>('bq-drawer', definition);

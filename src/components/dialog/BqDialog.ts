@@ -130,8 +130,4 @@ const definition: ComponentDefinition<BqDialogProps, BqDialogState> = {
   },
 };
 
-export function registerBqDialog(prefix = 'bq'): string {
-  const tag = `${prefix}-dialog`;
-  component<BqDialogProps, BqDialogState>(tag, definition);
-  return tag;
-}
+component<BqDialogProps, BqDialogState>('bq-dialog', definition);

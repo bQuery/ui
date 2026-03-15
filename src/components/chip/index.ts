@@ -1,1 +1,1 @@
-export { registerBqChip } from './BqChip.js';
+import './BqChip.js';

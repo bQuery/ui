@@ -1,1 +1,1 @@
-export { registerBqButton } from './BqButton.js';
+import './BqButton.js';

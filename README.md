@@ -36,12 +36,10 @@ For the full catalog and feature coverage, see [`docs/components/index.md`](./do
 npm install @bquery/ui
 ```
 
-### Register all components
+### Import once
 
 ```ts
-import { registerAll } from '@bquery/ui/register';
-
-registerAll();
+import '@bquery/ui';
 ```
 
 ### Use in HTML
@@ -56,16 +54,12 @@ registerAll();
 
 ## Tree-Shakeable Usage
 
-Import and register only the components you need for the smallest bundle:
+Import only the component entry points you need for the smallest bundle:
 
 ```ts
-import { registerBqButton } from '@bquery/ui/components/button';
-import { registerBqInput } from '@bquery/ui/components/input';
-import { registerBqDialog } from '@bquery/ui/components/dialog';
-
-registerBqButton();
-registerBqInput();
-registerBqDialog();
+import '@bquery/ui/components/button';
+import '@bquery/ui/components/input';
+import '@bquery/ui/components/dialog';
 ```
 
 ## Cross-Framework Support
@@ -74,11 +68,11 @@ Because the library is built on Web standards, the same components can be used a
 
 | Framework | Integration note |
 | --- | --- |
-| **React** | Register the elements once and subscribe to custom events through refs or wrapper components |
+| **React** | Import the library once and subscribe to custom events through refs or wrapper components |
 | **Vue** | Use components directly in templates and listen to `bq-*` custom events |
 | **Angular** | Enable `CUSTOM_ELEMENTS_SCHEMA` and use `bq-*` elements like native controls |
 | **Svelte** | Register once during `onMount` and bind to custom events with `on:bq-*` |
-| **Plain HTML / bQuery** | Works out of the box after registration |
+| **Plain HTML / bQuery** | Works out of the box after a single import |
 
 See [`docs/guide/framework-integration.md`](./docs/guide/framework-integration.md) for examples.
 

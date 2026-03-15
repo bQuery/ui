@@ -44,8 +44,4 @@ const definition: ComponentDefinition<BqBadgeProps> = {
   },
 };
 
-export function registerBqBadge(prefix = 'bq'): string {
-  const tag = `${prefix}-badge`;
-  component<BqBadgeProps>(tag, definition);
-  return tag;
-}
+component<BqBadgeProps>('bq-badge', definition);

@@ -1,31 +1,33 @@
 /**
- * @bquery/ui — All component exports
+ * @bquery/ui — All component side-effect imports
  */
-export * from './button/index.js';
-export * from './icon-button/index.js';
-export * from './card/index.js';
-export * from './badge/index.js';
-export * from './avatar/index.js';
-export * from './chip/index.js';
-export * from './alert/index.js';
-export * from './spinner/index.js';
-export * from './skeleton/index.js';
-export * from './progress/index.js';
-export * from './tooltip/index.js';
-export * from './divider/index.js';
-export * from './input/index.js';
-export * from './textarea/index.js';
-export * from './checkbox/index.js';
-export * from './radio/index.js';
-export * from './switch/index.js';
-export * from './select/index.js';
-export * from './slider/index.js';
-export * from './tabs/index.js';
-export * from './accordion/index.js';
-export * from './dialog/index.js';
-export * from './drawer/index.js';
+import './button/index.js';
+import './icon-button/index.js';
+import './card/index.js';
+import './badge/index.js';
+import './avatar/index.js';
+import './chip/index.js';
+import './alert/index.js';
+import './spinner/index.js';
+import './skeleton/index.js';
+import './progress/index.js';
+import './tooltip/index.js';
+import './divider/index.js';
+import './input/index.js';
+import './textarea/index.js';
+import './checkbox/index.js';
+import './radio/index.js';
+import './switch/index.js';
+import './select/index.js';
+import './slider/index.js';
+import './tabs/index.js';
+import './accordion/index.js';
+import './dialog/index.js';
+import './drawer/index.js';
+import './toast/index.js';
+import './breadcrumbs/index.js';
+import './pagination/index.js';
+import './table/index.js';
+import './empty-state/index.js';
+
 export * from './toast/index.js';
-export * from './breadcrumbs/index.js';
-export * from './pagination/index.js';
-export * from './table/index.js';
-export * from './empty-state/index.js';

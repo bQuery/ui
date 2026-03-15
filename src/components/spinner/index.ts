@@ -1,1 +1,1 @@
-export { registerBqSpinner } from './BqSpinner.js';
+import './BqSpinner.js';

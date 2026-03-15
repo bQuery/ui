@@ -1,1 +1,1 @@
-export { registerBqSwitch } from './BqSwitch.js';
+import './BqSwitch.js';

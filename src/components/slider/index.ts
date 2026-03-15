@@ -1,1 +1,1 @@
-export { registerBqSlider } from './BqSlider.js';
+import './BqSlider.js';

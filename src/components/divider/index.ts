@@ -1,1 +1,1 @@
-export { registerBqDivider } from './BqDivider.js';
+import './BqDivider.js';
