@@ -1,0 +1,3 @@
+[test]
+# Preload shared DOM environment (happy-dom) before every test file
+preload = ["./tests/setup.ts"]
