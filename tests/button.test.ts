@@ -7,11 +7,15 @@ const doc = win.document as unknown as Document;
 
 describe('BqButton', () => {
   beforeAll(async () => {
-    await import('../src/index.js');
+    await import('../src/components/button/index.js');
   });
 
   it('should define bq-button as a custom element', () => {
     expect(win.customElements.get('bq-button')).toBeDefined();
+  });
+
+  it('should not register unrelated components from the button entrypoint', () => {
+    expect(win.customElements.get('bq-input')).toBeUndefined();
   });
 
   it('should create element with shadow root', () => {

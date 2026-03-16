@@ -35,7 +35,12 @@ bun add @bquery/ui
 The package ships with full TypeScript declarations. No `@types` package needed.
 
 ```typescript
-import '@bquery/ui';
+import type { ToastOptions } from '@bquery/ui/components/toast';
+
+const options: ToastOptions = {
+  message: 'Saved successfully',
+  variant: 'success',
+};
 ```
 
 ## Browser Support
