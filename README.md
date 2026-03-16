@@ -6,11 +6,11 @@ It is designed to give teams the kind of component coverage, polish, accessibili
 
 ## Highlights
 
-- **27 reusable UI components** spanning actions, forms, navigation, data display, overlays, and feedback
+- **Reusable UI components** spanning actions, forms, navigation, data display, overlays, and feedback
 - **Framework-agnostic** usage in plain HTML, React, Vue, Angular, Svelte, and other Custom Element-capable runtimes
 - **Accessible by default** with keyboard support, ARIA roles, focus management, and screen reader announcements
 - **Themeable via design tokens** and CSS custom properties
-- **Tree-shakeable ESM exports** with per-component registration
+- **Tree-shakeable ESM exports** with per-component imports
 - **Built-in dark mode, i18n, and event-driven APIs**
 
 ## Component Coverage

@@ -7,8 +7,10 @@ const componentModulePattern = /^Bq.+\.ts$/;
 const componentEntries = Object.fromEntries(
   readdirSync(componentsDir, { withFileTypes: true })
     .filter((entry) => entry.isDirectory())
+    .sort((a, b) => a.name.localeCompare(b.name))
     .map((entry) => {
       const componentModule = readdirSync(resolve(componentsDir, entry.name))
+        .sort((a, b) => a.localeCompare(b))
         .find((fileName) => componentModulePattern.test(fileName));
       if (!componentModule) throw new Error(`Component module matching pattern ${componentModulePattern} not found in ${entry.name}`);
       return [`components/${entry.name}`, resolve(componentsDir, entry.name, componentModule)];

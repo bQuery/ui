@@ -38,12 +38,8 @@
     }
   },
   "sideEffects": [
-    "./dist/index.js",
-    "./dist/index.cjs",
-    "./dist/register.js",
-    "./dist/register.cjs",
-    "./dist/components/*.js",
-    "./dist/components/*.cjs"
+    "./dist/**/*.js",
+    "./dist/**/*.cjs"
   ],
   "files": [
     "dist",
