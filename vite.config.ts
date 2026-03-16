@@ -1,19 +1,18 @@
 import { defineConfig } from 'vite';
-import { readdirSync } from 'fs';
+import { existsSync, readdirSync } from 'fs';
 import { resolve } from 'path';
 
 const componentsDir = resolve(__dirname, 'src/components');
-const componentModulePattern = /^Bq.+\.ts$/;
 const componentEntries = Object.fromEntries(
   readdirSync(componentsDir, { withFileTypes: true })
     .filter((entry) => entry.isDirectory())
     .sort((a, b) => a.name.localeCompare(b.name))
     .map((entry) => {
-      const componentModule = readdirSync(resolve(componentsDir, entry.name))
-        .sort((a, b) => a.localeCompare(b))
-        .find((fileName) => componentModulePattern.test(fileName));
-      if (!componentModule) throw new Error(`Component module matching pattern ${componentModulePattern} not found in ${entry.name}`);
-      return [`components/${entry.name}`, resolve(componentsDir, entry.name, componentModule)];
+      const componentEntry = resolve(componentsDir, entry.name, 'index.ts');
+      if (!existsSync(componentEntry)) {
+        throw new Error(`Component entrypoint not found: ${componentEntry}`);
+      }
+      return [`components/${entry.name}`, componentEntry];
     }),
 );
 

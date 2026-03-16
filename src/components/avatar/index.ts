@@ -1,1 +1,1 @@
-import './BqAvatar.js';
+export * as __bqComponentEntry from './BqAvatar.js';

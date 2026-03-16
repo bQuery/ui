@@ -1,1 +1,1 @@
-import './BqCard.js';
+export * as __bqComponentEntry from './BqCard.js';

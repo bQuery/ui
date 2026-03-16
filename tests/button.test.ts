@@ -22,7 +22,7 @@ describe('BqButton', () => {
 
     expect(existsSync(componentModuleUrl)).toBe(true);
     // The TypeScript source keeps the emitted `.js` specifier that consumers import at runtime.
-    expect(entrypointSource).toBe("import './BqButton.js';");
+    expect(entrypointSource).toBe("export * as __bqComponentEntry from './BqButton.js';");
   });
 
   it('should create element with shadow root', () => {

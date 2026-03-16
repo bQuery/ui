@@ -1,1 +1,1 @@
-import './BqDivider.js';
+export * as __bqComponentEntry from './BqDivider.js';

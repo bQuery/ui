@@ -1,1 +1,1 @@
-import './BqDialog.js';
+export * as __bqComponentEntry from './BqDialog.js';

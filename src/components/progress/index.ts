@@ -1,1 +1,1 @@
-import './BqProgress.js';
+export * as __bqComponentEntry from './BqProgress.js';

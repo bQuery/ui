@@ -1,1 +1,1 @@
-import './BqInput.js';
+export * as __bqComponentEntry from './BqInput.js';

@@ -1,1 +1,1 @@
-import './BqSpinner.js';
+export * as __bqComponentEntry from './BqSpinner.js';

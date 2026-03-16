@@ -1,1 +1,1 @@
-import './BqTooltip.js';
+export * as __bqComponentEntry from './BqTooltip.js';

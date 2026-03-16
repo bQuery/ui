@@ -1,1 +1,1 @@
-import './BqChip.js';
+export * as __bqComponentEntry from './BqChip.js';

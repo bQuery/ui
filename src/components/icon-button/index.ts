@@ -1,1 +1,1 @@
-import './BqIconButton.js';
+export * as __bqComponentEntry from './BqIconButton.js';

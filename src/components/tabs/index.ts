@@ -1,1 +1,1 @@
-import './BqTabs.js';
+export * as __bqComponentEntry from './BqTabs.js';

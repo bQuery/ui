@@ -1,1 +1,1 @@
-import './BqSlider.js';
+export * as __bqComponentEntry from './BqSlider.js';

@@ -1,1 +1,1 @@
-import './BqPagination.js';
+export * as __bqComponentEntry from './BqPagination.js';
