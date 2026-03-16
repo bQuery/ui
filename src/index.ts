@@ -16,6 +16,8 @@ export * from './i18n/index.js';
 // Utilities
 export * from './utils/index.js';
 
+import { registerAll } from './register.js';
+
 // Components
 import { __bqComponentEntry as accordionComponentEntry } from './components/accordion/index.js';
 import { __bqComponentEntry as alertComponentEntry } from './components/alert/index.js';
@@ -44,45 +46,51 @@ import { __bqComponentEntry as tableComponentEntry } from './components/table/in
 import { __bqComponentEntry as tabsComponentEntry } from './components/tabs/index.js';
 import { __bqComponentEntry as textareaComponentEntry } from './components/textarea/index.js';
 import { __bqComponentEntry as tooltipComponentEntry } from './components/tooltip/index.js';
-// Toast is imported directly because its wrapper already re-exports showToast(); the other wrappers need alias imports to stay live.
+// Toast is imported directly because its wrapper both registers the component and re-exports showToast().
 import './components/toast/index.js';
 
-/**
- * Internal mapping that keeps component entry wrappers live in the root bundle
- * so import-time custom element registration is preserved during tree-shaking.
- */
-export const componentEntryMap = {
-  'accordion': accordionComponentEntry,
-  'alert': alertComponentEntry,
-  'avatar': avatarComponentEntry,
-  'badge': badgeComponentEntry,
-  'breadcrumbs': breadcrumbsComponentEntry,
-  'button': buttonComponentEntry,
-  'card': cardComponentEntry,
-  'checkbox': checkboxComponentEntry,
-  'chip': chipComponentEntry,
-  'dialog': dialogComponentEntry,
-  'divider': dividerComponentEntry,
-  'drawer': drawerComponentEntry,
-  'empty-state': emptyStateComponentEntry,
-  'icon-button': iconButtonComponentEntry,
-  'input': inputComponentEntry,
-  'pagination': paginationComponentEntry,
-  'progress': progressComponentEntry,
-  'radio': radioComponentEntry,
-  'select': selectComponentEntry,
-  'skeleton': skeletonComponentEntry,
-  'slider': sliderComponentEntry,
-  'spinner': spinnerComponentEntry,
-  'switch': switchComponentEntry,
-  'table': tableComponentEntry,
-  'tabs': tabsComponentEntry,
-  'textarea': textareaComponentEntry,
-  'tooltip': tooltipComponentEntry,
-};
+// Keep component wrappers reachable from a private symbol-keyed property so the root bundle
+// preserves import-time registration without adding a typed public API surface.
+const COMPONENT_ENTRY_MAP_KEY = Symbol.for('@bquery/ui.componentEntryMap');
+
+Object.defineProperty(registerAll, COMPONENT_ENTRY_MAP_KEY, {
+  value: {
+    'accordion': accordionComponentEntry,
+    'alert': alertComponentEntry,
+    'avatar': avatarComponentEntry,
+    'badge': badgeComponentEntry,
+    'breadcrumbs': breadcrumbsComponentEntry,
+    'button': buttonComponentEntry,
+    'card': cardComponentEntry,
+    'checkbox': checkboxComponentEntry,
+    'chip': chipComponentEntry,
+    'dialog': dialogComponentEntry,
+    'divider': dividerComponentEntry,
+    'drawer': drawerComponentEntry,
+    'empty-state': emptyStateComponentEntry,
+    'icon-button': iconButtonComponentEntry,
+    'input': inputComponentEntry,
+    'pagination': paginationComponentEntry,
+    'progress': progressComponentEntry,
+    'radio': radioComponentEntry,
+    'select': selectComponentEntry,
+    'skeleton': skeletonComponentEntry,
+    'slider': sliderComponentEntry,
+    'spinner': spinnerComponentEntry,
+    'switch': switchComponentEntry,
+    'table': tableComponentEntry,
+    'tabs': tabsComponentEntry,
+    'textarea': textareaComponentEntry,
+    'tooltip': tooltipComponentEntry,
+  },
+  writable: false,
+  enumerable: false,
+  configurable: false,
+});
+
 // Re-export the toast API while other components continue to register via import side effects only.
 export * from './components/toast/index.js';
 
 // Legacy compatibility helpers
-export { registerAll } from './register.js';
+export { registerAll };
 export type { RegisterOptions } from './register.js';

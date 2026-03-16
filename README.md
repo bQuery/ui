@@ -62,6 +62,34 @@ import '@bquery/ui/components/input';
 import '@bquery/ui/components/dialog';
 ```
 
+## Migration Notes
+
+This import-based registration update changes how consumers integrate `@bquery/ui`.
+
+- Importing `@bquery/ui` now registers all custom elements as a side effect.
+- Importing `@bquery/ui/components/<name>` registers only that component through its wrapper entrypoint.
+- Legacy root-level component registration helpers such as `registerBqButton` are no longer re-exported from `@bquery/ui`.
+- `registerAll()` remains available only as a deprecated compatibility shim.
+- New code should avoid `registerAll()` and rely on import side effects instead.
+- Calling `registerAll()` without arguments is still accepted for temporary backward compatibility, but it does not perform any additional registration work.
+- Passing any legacy options object to `registerAll()` continues to emit a warning.
+
+For example, older calls such as `registerAll({ prefix: 'ACME' })` now warn because components self-register on import as `bq-*`.
+The supported replacement is importing `@bquery/ui` once, or only the specific `@bquery/ui/components/<name>` entrypoints you need.
+
+If you previously imported component registration helpers from the package root, migrate those imports to either:
+
+```ts
+import '@bquery/ui';
+```
+
+or the specific component entrypoints you need:
+
+```ts
+import '@bquery/ui/components/button';
+import '@bquery/ui/components/input';
+```
+
 ## Cross-Framework Support
 
 Because the library is built on Web standards, the same components can be used across major frontend frameworks.

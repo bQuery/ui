@@ -1,6 +1,6 @@
 // DOM environment is provided by tests/setup.ts (preloaded via bunfig.toml)
 import { describe, it, expect, beforeAll, afterAll } from 'bun:test';
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync } from 'node:fs';
 
 // Obtain the shared happy-dom window/document injected by the preload setup.
 const win = (globalThis as unknown as Record<string, unknown>)['window'] as Window & typeof globalThis;
@@ -15,14 +15,12 @@ describe('BqButton', () => {
     expect(win.customElements.get('bq-button')).toBeDefined();
   });
 
-  it('should keep the button entrypoint isolated to the button component module', () => {
-    const entrypointUrl = new URL('../src/components/button/index.ts', import.meta.url);
+  it('should expose only the button wrapper export from the button entrypoint', async () => {
     const componentModuleUrl = new URL('../src/components/button/BqButton.ts', import.meta.url);
-    const entrypointSource = readFileSync(entrypointUrl, 'utf8').trim();
+    const entrypointModule = await import('../src/components/button/index.js');
 
     expect(existsSync(componentModuleUrl)).toBe(true);
-    // The TypeScript source keeps the emitted `.js` specifier that consumers import at runtime.
-    expect(entrypointSource).toBe("export * as __bqComponentEntry from './BqButton.js';");
+    expect(Object.keys(entrypointModule)).toEqual(['__bqComponentEntry']);
   });
 
   it('should create element with shadow root', () => {
