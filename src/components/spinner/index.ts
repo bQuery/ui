@@ -1,1 +1,1 @@
-export { registerBqSpinner } from './BqSpinner.js';
+export * as __bqComponentEntry from './BqSpinner.js';

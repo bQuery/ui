@@ -1,1 +1,1 @@
-export { registerBqAvatar } from './BqAvatar.js';
+export * as __bqComponentEntry from './BqAvatar.js';

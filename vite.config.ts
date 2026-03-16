@@ -1,5 +1,20 @@
 import { defineConfig } from 'vite';
+import { existsSync, readdirSync } from 'fs';
 import { resolve } from 'path';
+
+const componentsDir = resolve(__dirname, 'src/components');
+const componentEntries = Object.fromEntries(
+  readdirSync(componentsDir, { withFileTypes: true })
+    .filter((entry) => entry.isDirectory())
+    .sort((a, b) => a.name.localeCompare(b.name))
+    .map((entry) => {
+      const componentEntry = resolve(componentsDir, entry.name, 'index.ts');
+      if (!existsSync(componentEntry)) {
+        throw new Error(`Component entrypoint not found: ${componentEntry}`);
+      }
+      return [`components/${entry.name}`, componentEntry];
+    }),
+);
 
 export default defineConfig({
   build: {
@@ -12,6 +27,7 @@ export default defineConfig({
         'i18n/index': resolve(__dirname, 'src/i18n/index.ts'),
         'utils/index': resolve(__dirname, 'src/utils/index.ts'),
         'components/index': resolve(__dirname, 'src/components/index.ts'),
+        ...componentEntries,
       },
       formats: ['es', 'cjs'],
       fileName: (format, entryName) =>

@@ -93,8 +93,4 @@ const definition: ComponentDefinition<BqTableProps> = {
   },
 };
 
-export function registerBqTable(prefix = 'bq'): string {
-  const tag = `${prefix}-table`;
-  component<BqTableProps>(tag, definition);
-  return tag;
-}
+component<BqTableProps>('bq-table', definition);

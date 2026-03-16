@@ -1,22 +1,26 @@
 // DOM environment is provided by tests/setup.ts (preloaded via bunfig.toml)
 import { describe, it, expect, beforeAll, afterAll } from 'bun:test';
+import { existsSync } from 'node:fs';
 
 // Obtain the shared happy-dom window/document injected by the preload setup.
 const win = (globalThis as unknown as Record<string, unknown>)['window'] as Window & typeof globalThis;
 const doc = win.document as unknown as Document;
 
-type RegisterFn = (prefix?: string) => string;
-let registerBqButton: RegisterFn;
-
 describe('BqButton', () => {
   beforeAll(async () => {
-    const mod = await import('../src/components/button/BqButton.js');
-    registerBqButton = mod.registerBqButton;
-    registerBqButton('bq');
+    await import('../src/components/button/index.js');
   });
 
   it('should define bq-button as a custom element', () => {
     expect(win.customElements.get('bq-button')).toBeDefined();
+  });
+
+  it('should expose only the button wrapper export from the button entrypoint', async () => {
+    const componentModuleUrl = new URL('../src/components/button/BqButton.ts', import.meta.url);
+    const entrypointModule = await import('../src/components/button/index.js');
+
+    expect(existsSync(componentModuleUrl)).toBe(true);
+    expect(Object.keys(entrypointModule)).toEqual(['__bqComponentEntry']);
   });
 
   it('should create element with shadow root', () => {

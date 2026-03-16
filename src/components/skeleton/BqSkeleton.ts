@@ -63,8 +63,4 @@ const definition: ComponentDefinition<BqSkeletonProps> = {
   },
 };
 
-export function registerBqSkeleton(prefix = 'bq'): string {
-  const tag = `${prefix}-skeleton`;
-  component<BqSkeletonProps>(tag, definition);
-  return tag;
-}
+component<BqSkeletonProps>('bq-skeleton', definition);

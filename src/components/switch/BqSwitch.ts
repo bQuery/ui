@@ -85,8 +85,4 @@ const definition: ComponentDefinition<BqSwitchProps> = {
   },
 };
 
-export function registerBqSwitch(prefix = 'bq'): string {
-  const tag = `${prefix}-switch`;
-  component<BqSwitchProps>(tag, definition);
-  return tag;
-}
+component<BqSwitchProps>('bq-switch', definition);

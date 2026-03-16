@@ -63,8 +63,4 @@ const definition: ComponentDefinition<BqCardProps> = {
   },
 };
 
-export function registerBqCard(prefix = 'bq'): string {
-  const tag = `${prefix}-card`;
-  component<BqCardProps>(tag, definition);
-  return tag;
-}
+component<BqCardProps>('bq-card', definition);

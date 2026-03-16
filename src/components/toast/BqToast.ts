@@ -88,8 +88,4 @@ export function showToast(options: ToastOptions, container?: HTMLElement): HTMLE
   return toast;
 }
 
-export function registerBqToast(prefix = 'bq'): string {
-  const tag = `${prefix}-toast`;
-  component<BqToastProps>(tag, definition);
-  return tag;
-}
+component<BqToastProps>('bq-toast', definition);

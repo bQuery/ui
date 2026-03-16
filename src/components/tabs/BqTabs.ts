@@ -136,8 +136,4 @@ const definition: ComponentDefinition<BqTabsProps> = {
   },
 };
 
-export function registerBqTabs(prefix = 'bq'): string {
-  const tag = `${prefix}-tabs`;
-  component<BqTabsProps>(tag, definition);
-  return tag;
-}
+component<BqTabsProps>('bq-tabs', definition);

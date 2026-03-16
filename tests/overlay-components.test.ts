@@ -4,24 +4,12 @@ import { describe, it, expect, beforeAll, afterEach } from 'bun:test';
 const win = (globalThis as unknown as Record<string, unknown>)['window'] as Window & typeof globalThis;
 const doc = win.document as unknown as Document;
 
-type RegisterFn = (prefix?: string) => string;
-
-let registerBqDialog: RegisterFn;
-let registerBqDrawer: RegisterFn;
-let registerBqBreadcrumbs: RegisterFn;
-let registerBqSkeleton: RegisterFn;
-
 describe('overlay and utility component fixes', () => {
   beforeAll(async () => {
-    registerBqDialog = (await import('../src/components/dialog/BqDialog.js')).registerBqDialog;
-    registerBqDrawer = (await import('../src/components/drawer/BqDrawer.js')).registerBqDrawer;
-    registerBqBreadcrumbs = (await import('../src/components/breadcrumbs/BqBreadcrumbs.js')).registerBqBreadcrumbs;
-    registerBqSkeleton = (await import('../src/components/skeleton/BqSkeleton.js')).registerBqSkeleton;
-
-    registerBqDialog('bq');
-    registerBqDrawer('bq');
-    registerBqBreadcrumbs('bq');
-    registerBqSkeleton('bq');
+    await import('../src/components/dialog/index.js');
+    await import('../src/components/drawer/index.js');
+    await import('../src/components/breadcrumbs/index.js');
+    await import('../src/components/skeleton/index.js');
   });
 
   afterEach(() => {

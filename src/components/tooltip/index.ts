@@ -1,1 +1,1 @@
-export { registerBqTooltip } from './BqTooltip.js';
+export * as __bqComponentEntry from './BqTooltip.js';

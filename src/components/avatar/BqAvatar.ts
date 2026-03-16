@@ -75,8 +75,4 @@ const definition: ComponentDefinition<BqAvatarProps> = {
   },
 };
 
-export function registerBqAvatar(prefix = 'bq'): string {
-  const tag = `${prefix}-avatar`;
-  component<BqAvatarProps>(tag, definition);
-  return tag;
-}
+component<BqAvatarProps>('bq-avatar', definition);

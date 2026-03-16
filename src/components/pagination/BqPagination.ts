@@ -96,8 +96,4 @@ const definition: ComponentDefinition<BqPaginationProps> = {
   },
 };
 
-export function registerBqPagination(prefix = 'bq'): string {
-  const tag = `${prefix}-pagination`;
-  component<BqPaginationProps>(tag, definition);
-  return tag;
-}
+component<BqPaginationProps>('bq-pagination', definition);

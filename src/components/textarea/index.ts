@@ -1,1 +1,1 @@
-export { registerBqTextarea } from './BqTextarea.js';
+export * as __bqComponentEntry from './BqTextarea.js';

@@ -82,8 +82,4 @@ const definition: ComponentDefinition<BqCheckboxProps> = {
   },
 };
 
-export function registerBqCheckbox(prefix = 'bq'): string {
-  const tag = `${prefix}-checkbox`;
-  component<BqCheckboxProps>(tag, definition);
-  return tag;
-}
+component<BqCheckboxProps>('bq-checkbox', definition);

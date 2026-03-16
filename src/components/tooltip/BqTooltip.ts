@@ -77,8 +77,4 @@ const definition: ComponentDefinition<BqTooltipProps> = {
   },
 };
 
-export function registerBqTooltip(prefix = 'bq'): string {
-  const tag = `${prefix}-tooltip`;
-  component<BqTooltipProps>(tag, definition);
-  return tag;
-}
+component<BqTooltipProps>('bq-tooltip', definition);

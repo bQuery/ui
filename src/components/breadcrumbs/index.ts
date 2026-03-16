@@ -1,1 +1,1 @@
-export { registerBqBreadcrumbs } from './BqBreadcrumbs.js';
+export * as __bqComponentEntry from './BqBreadcrumbs.js';

@@ -26,8 +26,7 @@ bun add @bquery/ui
 
 ```html
 <script type="module">
-  import { registerAll } from 'https://cdn.jsdelivr.net/npm/@bquery/ui/dist/register.js';
-  registerAll();
+  import 'https://cdn.jsdelivr.net/npm/@bquery/ui/dist/index.js';
 </script>
 ```
 
@@ -36,7 +35,12 @@ bun add @bquery/ui
 The package ships with full TypeScript declarations. No `@types` package needed.
 
 ```typescript
-import type { RegisterOptions } from '@bquery/ui';
+import type { ToastOptions } from '@bquery/ui/components/toast';
+
+const options: ToastOptions = {
+  message: 'Saved successfully',
+  variant: 'success',
+};
 ```
 
 ## Browser Support

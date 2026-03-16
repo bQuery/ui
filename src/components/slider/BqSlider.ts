@@ -87,8 +87,4 @@ const definition: ComponentDefinition<BqSliderProps> = {
   },
 };
 
-export function registerBqSlider(prefix = 'bq'): string {
-  const tag = `${prefix}-slider`;
-  component<BqSliderProps>(tag, definition);
-  return tag;
-}
+component<BqSliderProps>('bq-slider', definition);

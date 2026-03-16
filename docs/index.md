@@ -10,6 +10,9 @@ hero:
       text: Get Started
       link: /guide/getting-started
     - theme: alt
+      text: Browse Components
+      link: /components/
+    - theme: alt
       text: View on GitHub
       link: https://github.com/bquery/component-library
 
@@ -31,5 +34,5 @@ features:
     details: First-class dark mode support via CSS custom properties and the data-theme attribute.
   - icon: 🌲
     title: Tree-shakeable ESM
-    details: Import only the components you use. No global side-effects unless you call registerAll().
+    details: Import the full library for automatic component registration or only the component entry points you need.
 ---

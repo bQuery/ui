@@ -72,8 +72,4 @@ const definition: ComponentDefinition<BqRadioProps> = {
   },
 };
 
-export function registerBqRadio(prefix = 'bq'): string {
-  const tag = `${prefix}-radio`;
-  component<BqRadioProps>(tag, definition);
-  return tag;
-}
+component<BqRadioProps>('bq-radio', definition);

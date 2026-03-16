@@ -8,7 +8,7 @@ export default defineConfig({
     logo: '/logo.svg',
     nav: [
       { text: 'Guide', link: '/guide/getting-started' },
-      { text: 'Components', link: '/components/button' },
+      { text: 'Components', link: '/components/' },
       { text: 'GitHub', link: 'https://github.com/bquery/component-library' },
     ],
     sidebar: [
@@ -17,6 +17,7 @@ export default defineConfig({
         items: [
           { text: 'Getting Started', link: '/guide/getting-started' },
           { text: 'Installation', link: '/guide/installation' },
+          { text: 'Framework Integration', link: '/guide/framework-integration' },
           { text: 'Theming', link: '/guide/theming' },
           { text: 'Dark Mode', link: '/guide/dark-mode' },
           { text: 'Accessibility', link: '/guide/accessibility' },
@@ -26,6 +27,7 @@ export default defineConfig({
       {
         text: 'Components',
         items: [
+          { text: 'Catalog', link: '/components/' },
           { text: 'Button', link: '/components/button' },
           { text: 'Input', link: '/components/input' },
           { text: 'Card', link: '/components/card' },

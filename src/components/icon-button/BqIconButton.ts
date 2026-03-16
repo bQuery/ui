@@ -81,8 +81,4 @@ const definition: ComponentDefinition<BqIconButtonProps> = {
   },
 };
 
-export function registerBqIconButton(prefix = 'bq'): string {
-  const tag = `${prefix}-icon-button`;
-  component<BqIconButtonProps>(tag, definition);
-  return tag;
-}
+component<BqIconButtonProps>('bq-icon-button', definition);

@@ -87,8 +87,4 @@ const definition: ComponentDefinition<BqChipProps> = {
   },
 };
 
-export function registerBqChip(prefix = 'bq'): string {
-  const tag = `${prefix}-chip`;
-  component<BqChipProps>(tag, definition);
-  return tag;
-}
+component<BqChipProps>('bq-chip', definition);

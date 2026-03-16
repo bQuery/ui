@@ -100,8 +100,4 @@ const definition: ComponentDefinition<BqBreadcrumbsProps> = {
   },
 };
 
-export function registerBqBreadcrumbs(prefix = 'bq'): string {
-  const tag = `${prefix}-breadcrumbs`;
-  component<BqBreadcrumbsProps>(tag, definition);
-  return tag;
-}
+component<BqBreadcrumbsProps>('bq-breadcrumbs', definition);

@@ -1,1 +1,1 @@
-export { registerBqSwitch } from './BqSwitch.js';
+export * as __bqComponentEntry from './BqSwitch.js';

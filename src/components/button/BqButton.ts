@@ -123,9 +123,4 @@ const definition: ComponentDefinition<BqButtonProps> = {
   },
 };
 
-/** Register bq-button (or custom prefix-button) with the custom element registry. */
-export function registerBqButton(prefix = 'bq'): string {
-  const tag = `${prefix}-button`;
-  component<BqButtonProps>(tag, definition);
-  return tag;
-}
+component<BqButtonProps>('bq-button', definition);

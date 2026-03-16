@@ -1,1 +1,1 @@
-export { registerBqTabs } from './BqTabs.js';
+export * as __bqComponentEntry from './BqTabs.js';

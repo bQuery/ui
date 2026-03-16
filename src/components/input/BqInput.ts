@@ -137,8 +137,4 @@ const definition: ComponentDefinition<BqInputProps, BqInputState> = {
   },
 };
 
-export function registerBqInput(prefix = 'bq'): string {
-  const tag = `${prefix}-input`;
-  component<BqInputProps, BqInputState>(tag, definition);
-  return tag;
-}
+component<BqInputProps, BqInputState>('bq-input', definition);

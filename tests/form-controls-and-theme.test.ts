@@ -4,21 +4,11 @@ import { describe, it, expect, beforeAll, afterEach } from 'bun:test';
 const win = (globalThis as unknown as Record<string, unknown>)['window'] as Window & typeof globalThis;
 const doc = win.document as unknown as Document;
 
-type RegisterFn = (prefix?: string) => string;
-
-let registerBqInput: RegisterFn;
-let registerBqTextarea: RegisterFn;
-let registerBqSelect: RegisterFn;
-
 describe('form control IDs and theme CSS', () => {
   beforeAll(async () => {
-    registerBqInput = (await import('../src/components/input/BqInput.js')).registerBqInput;
-    registerBqTextarea = (await import('../src/components/textarea/BqTextarea.js')).registerBqTextarea;
-    registerBqSelect = (await import('../src/components/select/BqSelect.js')).registerBqSelect;
-
-    registerBqInput('bq');
-    registerBqTextarea('bq');
-    registerBqSelect('bq');
+    await import('../src/components/input/index.js');
+    await import('../src/components/textarea/index.js');
+    await import('../src/components/select/index.js');
   });
 
   afterEach(() => {

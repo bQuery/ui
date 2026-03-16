@@ -94,8 +94,4 @@ const definition: ComponentDefinition<BqTextareaProps, BqTextareaState> = {
   },
 };
 
-export function registerBqTextarea(prefix = 'bq'): string {
-  const tag = `${prefix}-textarea`;
-  component<BqTextareaProps, BqTextareaState>(tag, definition);
-  return tag;
-}
+component<BqTextareaProps, BqTextareaState>('bq-textarea', definition);

@@ -1,31 +1,33 @@
 /**
- * @bquery/ui — All component exports
+ * @bquery/ui — All component side-effect imports
  */
-export * from './button/index.js';
-export * from './icon-button/index.js';
-export * from './card/index.js';
-export * from './badge/index.js';
-export * from './avatar/index.js';
-export * from './chip/index.js';
-export * from './alert/index.js';
-export * from './spinner/index.js';
-export * from './skeleton/index.js';
-export * from './progress/index.js';
-export * from './tooltip/index.js';
-export * from './divider/index.js';
-export * from './input/index.js';
-export * from './textarea/index.js';
-export * from './checkbox/index.js';
-export * from './radio/index.js';
-export * from './switch/index.js';
-export * from './select/index.js';
-export * from './slider/index.js';
-export * from './tabs/index.js';
-export * from './accordion/index.js';
-export * from './dialog/index.js';
-export * from './drawer/index.js';
+import './accordion/BqAccordion.js';
+import './alert/BqAlert.js';
+import './avatar/BqAvatar.js';
+import './badge/BqBadge.js';
+import './breadcrumbs/BqBreadcrumbs.js';
+import './button/BqButton.js';
+import './card/BqCard.js';
+import './checkbox/BqCheckbox.js';
+import './chip/BqChip.js';
+import './dialog/BqDialog.js';
+import './divider/BqDivider.js';
+import './drawer/BqDrawer.js';
+import './empty-state/BqEmptyState.js';
+import './icon-button/BqIconButton.js';
+import './input/BqInput.js';
+import './pagination/BqPagination.js';
+import './progress/BqProgress.js';
+import './radio/BqRadio.js';
+import './select/BqSelect.js';
+import './skeleton/BqSkeleton.js';
+import './slider/BqSlider.js';
+import './spinner/BqSpinner.js';
+import './switch/BqSwitch.js';
+import './table/BqTable.js';
+import './tabs/BqTabs.js';
+import './textarea/BqTextarea.js';
+import './toast/index.js';
+import './tooltip/BqTooltip.js';
+
 export * from './toast/index.js';
-export * from './breadcrumbs/index.js';
-export * from './pagination/index.js';
-export * from './table/index.js';
-export * from './empty-state/index.js';
