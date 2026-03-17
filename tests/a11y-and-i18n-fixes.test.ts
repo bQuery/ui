@@ -153,6 +153,7 @@ describe('accessibility and i18n fixes', () => {
 
     const styles = el.shadowRoot?.querySelector('style');
     expect(styles?.textContent).toContain('prefers-reduced-motion');
+    expect(styles?.textContent).toContain(':host([indeterminate]) .bar { animation: none; width: 40% !important; opacity: 0.7; }');
   });
 
   it('should include prefers-reduced-motion media query in skeleton styles', () => {
