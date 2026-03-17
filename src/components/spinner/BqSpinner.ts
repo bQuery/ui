@@ -43,8 +43,9 @@ const definition: ComponentDefinition<BqSpinnerProps> = {
     .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
   `,
   render({ props }) {
-    const label = props.label.trim() || t('common.loading');
-    return html`<div class="spinner-root" role="status" aria-live="polite" aria-atomic="true" aria-label="${escapeHtml(label)}">
+    const trimmedLabel = props.label.trim();
+    const label = trimmedLabel !== '' ? trimmedLabel : t('common.loading');
+    return html`<div class="spinner-root" role="status" aria-live="polite" aria-label="${escapeHtml(label)}">
       <div part="spinner" class="spinner" data-size="${escapeHtml(props.size)}" data-variant="${escapeHtml(props.variant)}" aria-hidden="true"></div>
       <span class="sr-only">${escapeHtml(label)}</span>
     </div>`;

@@ -33,6 +33,13 @@ describe('BqIconButton', () => {
     expect(btn?.getAttribute('aria-label')).toBe('Refresh data');
   });
 
+  it('should fall back to a localized default accessible name when no label is provided', () => {
+    const el = doc.createElement('bq-icon-button');
+    doc.body.appendChild(el);
+    const btn = el.shadowRoot?.querySelector('button');
+    expect(btn?.getAttribute('aria-label')).toBe('Icon button');
+  });
+
   afterAll(() => {
     doc.body.innerHTML = '';
   });

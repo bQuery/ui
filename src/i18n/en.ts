@@ -79,6 +79,9 @@ export const en = {
   chip: {
     remove: 'Remove',
   },
+  iconButton: {
+    defaultLabel: 'Icon button',
+  },
 } as const;
 
 export type EnLocale = typeof en;

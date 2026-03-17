@@ -40,8 +40,8 @@ const definition: ComponentDefinition<BqEmptyStateProps> = {
     return html`
       <div part="empty-state" class="empty" role="status" aria-live="polite">
         ${props.icon ? `<span class="icon" part="icon" aria-hidden="true">${escapeHtml(props.icon)}</span>` : ''}
-        <h3 class="title" part="title">${escapeHtml(title)}</h3>
-        <p class="description" part="description">${escapeHtml(description)}</p>
+        ${title ? `<h3 class="title" part="title">${escapeHtml(title)}</h3>` : ''}
+        ${description ? `<p class="description" part="description">${escapeHtml(description)}</p>` : ''}
         <div class="actions" part="actions"><slot></slot></div>
       </div>
     `;

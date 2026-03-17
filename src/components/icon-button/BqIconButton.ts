@@ -79,10 +79,12 @@ const definition: ComponentDefinition<BqIconButtonProps> = {
   render({ props }) {
     const tag = props.href ? 'a' : 'button';
     const disabled = props.disabled || props.loading;
-    const accessibleLabel = props.label.trim() || props.title.trim();
+    const trimmedLabel = props.label.trim();
+    const trimmedTitle = props.title.trim();
+    const accessibleLabel = trimmedLabel || trimmedTitle || t('iconButton.defaultLabel');
     const loadingLabel = t('common.loading');
     return html`<${tag} part="button" class="btn" data-variant="${escapeHtml(props.variant)}" data-size="${escapeHtml(props.size)}"
-      ${accessibleLabel ? `aria-label="${escapeHtml(accessibleLabel)}"` : ''} ${props.title ? `title="${escapeHtml(props.title)}"` : ''} type="${tag==='button'?'button':''}"
+      aria-label="${escapeHtml(accessibleLabel)}" ${props.title ? `title="${escapeHtml(props.title)}"` : ''} type="${tag==='button'?'button':''}"
       ${props.href?`href="${escapeHtml(props.href)}"`:''} ${disabled?(props.disabled?'disabled aria-disabled="true"':'aria-disabled="true"'):''}
       ${props.loading?'aria-busy="true"':''} ${tag==='a'?'role="button"':''}
     >${props.loading ? `<span class="spinner" aria-hidden="true"></span><span class="sr-only">${escapeHtml(loadingLabel)}</span>` : ''}

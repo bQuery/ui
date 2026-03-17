@@ -12,7 +12,7 @@ Use `bq-icon-button` for compact icon-only actions such as refresh, close, open-
 
 ## Title Fallback
 
-If you already need a tooltip-like title, you can use `title` as the accessible-name fallback.
+If you already need a tooltip-like title, you can use `title` as the accessible-name fallback when `label` is omitted. If both are provided, `label` remains the primary accessible name.
 
 ```html
 <bq-icon-button title="Refresh results">
@@ -75,5 +75,6 @@ Loading icon buttons expose `aria-busy="true"` and announce a localized loading 
 ## Accessibility Notes
 
 - Always provide `label` unless `title` already conveys the full action name.
+- If neither `label` nor `title` is provided, the component falls back to a localized generic label so the control never becomes unnamed.
 - Mark decorative icon content with `aria-hidden="true"` so screen readers announce only the control label.
 - Prefer `bq-button` when the action should show visible text.
