@@ -60,6 +60,14 @@ describe('BqButton', () => {
     expect(spinner).not.toBeNull();
   });
 
+  it('should apply an explicit accessible label when label attribute is set', () => {
+    const el = doc.createElement('bq-button');
+    el.setAttribute('label', 'Save changes');
+    doc.body.appendChild(el);
+    const btn = el.shadowRoot?.querySelector('button');
+    expect(btn?.getAttribute('aria-label')).toBe('Save changes');
+  });
+
   it('should render anchor tag when href is provided', () => {
     const el = doc.createElement('bq-button');
     el.setAttribute('href', 'https://example.com');
@@ -67,6 +75,58 @@ describe('BqButton', () => {
     const anchor = el.shadowRoot?.querySelector('a');
     expect(anchor).not.toBeNull();
     expect(anchor?.getAttribute('href')).toBe('https://example.com');
+  });
+
+  it('should not emit button-only attributes on anchor rendering', () => {
+    const el = doc.createElement('bq-button');
+    el.setAttribute('href', 'https://example.com');
+    el.setAttribute('disabled', '');
+    doc.body.appendChild(el);
+    const anchor = el.shadowRoot?.querySelector('a');
+    expect(anchor?.hasAttribute('type')).toBe(false);
+    expect(anchor?.hasAttribute('disabled')).toBe(false);
+    expect(anchor?.getAttribute('aria-disabled')).toBe('true');
+    expect(anchor?.getAttribute('tabindex')).toBe('-1');
+  });
+
+  it('should default blank-target links to a safe rel value', () => {
+    const el = doc.createElement('bq-button');
+    el.setAttribute('href', 'https://example.com');
+    el.setAttribute('target', '_blank');
+    doc.body.appendChild(el);
+    const anchor = el.shadowRoot?.querySelector('a');
+    expect(anchor?.getAttribute('rel')).toBe('noopener noreferrer');
+  });
+
+  it('should normalize blank targets before applying the safe rel value', () => {
+    const el = doc.createElement('bq-button');
+    el.setAttribute('href', 'https://example.com');
+    el.setAttribute('target', '  _BlAnK  ');
+    doc.body.appendChild(el);
+    const anchor = el.shadowRoot?.querySelector('a');
+    expect(anchor?.getAttribute('target')).toBe('_BlAnK');
+    expect(anchor?.getAttribute('rel')).toBe('noopener noreferrer');
+  });
+
+  it('should not emit target on native button rendering', () => {
+    const el = doc.createElement('bq-button');
+    el.setAttribute('target', '_blank');
+    doc.body.appendChild(el);
+    const btn = el.shadowRoot?.querySelector('button');
+    expect(btn?.hasAttribute('target')).toBe(false);
+    expect(btn?.hasAttribute('rel')).toBe(false);
+  });
+
+  it('should describe loading state without changing the button accessible name', () => {
+    const el = doc.createElement('bq-button');
+    el.setAttribute('label', 'Save changes');
+    el.setAttribute('loading', '');
+    doc.body.appendChild(el);
+    const btn = el.shadowRoot?.querySelector('button');
+    const status = el.shadowRoot?.querySelector('[role="status"]');
+    expect(btn?.getAttribute('aria-label')).toBe('Save changes');
+    expect(btn?.getAttribute('aria-describedby')).toBe(status?.id);
+    expect(status?.textContent).toBe('Loading');
   });
 
   it('should apply size class', () => {
@@ -85,6 +145,13 @@ describe('BqButton', () => {
     const btn = el.shadowRoot?.querySelector('button');
     btn?.dispatchEvent(new (win as unknown as Record<string, typeof MouseEvent>)['MouseEvent']('click', { bubbles: true, composed: true }));
     expect(fired).toBe(true);
+  });
+
+  it('should prevent hover selectors from matching aria-disabled links', () => {
+    const el = doc.createElement('bq-button');
+    doc.body.appendChild(el);
+    const styles = el.shadowRoot?.querySelector('style')?.textContent ?? '';
+    expect(styles).toContain(':hover:not(:disabled):not([aria-disabled="true"])');
   });
 
   afterAll(() => {

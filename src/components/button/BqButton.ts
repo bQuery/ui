@@ -8,6 +8,7 @@
  * @prop {string}  type     - button | submit | reset
  * @prop {string}  href
  * @prop {string}  target
+ * @prop {string}  label    - Optional accessible label override
  * @slot          - Button content
  * @slot prefix-icon - Icon before content
  * @slot suffix-icon - Icon after content
@@ -16,6 +17,8 @@
 import { component, html } from '@bquery/bquery/component';
 import type { ComponentDefinition } from '@bquery/bquery/component';
 import { escapeHtml } from '@bquery/bquery/security';
+import { t } from '../../i18n/index.js';
+import { uniqueId } from '../../utils/dom.js';
 import { getBaseStyles } from '../../utils/styles.js';
 
 type BqButtonProps = {
@@ -26,9 +29,11 @@ type BqButtonProps = {
   type: string;
   href: string;
   target: string;
+  label: string;
 };
+type BqButtonState = { statusId: string };
 
-const definition: ComponentDefinition<BqButtonProps> = {
+const definition: ComponentDefinition<BqButtonProps, BqButtonState> = {
   props: {
     variant: { type: String, default: 'primary' },
     size:    { type: String, default: 'md' },
@@ -37,6 +42,10 @@ const definition: ComponentDefinition<BqButtonProps> = {
     type:    { type: String, default: 'button' },
     href:    { type: String, default: '' },
     target:  { type: String, default: '' },
+    label:   { type: String, default: '' },
+  },
+  state: {
+    statusId: '',
   },
   styles: `
     ${getBaseStyles()}
@@ -65,25 +74,31 @@ const definition: ComponentDefinition<BqButtonProps> = {
     .btn[data-size="xl"] { font-size: 1.25rem; padding: 0.75rem 1.5rem; min-height: 3.5rem; }
     /* Variants */
     .btn[data-variant="primary"] { background-color: var(--bq-color-primary-600,#2563eb); color: #fff; border-color: var(--bq-color-primary-600,#2563eb); }
-    .btn[data-variant="primary"]:hover:not(:disabled) { background-color: var(--bq-color-primary-700,#1d4ed8); border-color: var(--bq-color-primary-700,#1d4ed8); }
+    .btn[data-variant="primary"]:hover:not(:disabled):not([aria-disabled="true"]) { background-color: var(--bq-color-primary-700,#1d4ed8); border-color: var(--bq-color-primary-700,#1d4ed8); }
     .btn[data-variant="secondary"] { background-color: var(--bq-color-secondary-100,#f1f5f9); color: var(--bq-color-secondary-700,#334155); border-color: var(--bq-color-secondary-200,#e2e8f0); }
-    .btn[data-variant="secondary"]:hover:not(:disabled) { background-color: var(--bq-color-secondary-200,#e2e8f0); }
+    .btn[data-variant="secondary"]:hover:not(:disabled):not([aria-disabled="true"]) { background-color: var(--bq-color-secondary-200,#e2e8f0); }
     .btn[data-variant="outline"] { background-color: transparent; color: var(--bq-color-primary-600,#2563eb); border-color: var(--bq-color-primary-600,#2563eb); }
-    .btn[data-variant="outline"]:hover:not(:disabled) { background-color: var(--bq-color-primary-50,#eff6ff); }
+    .btn[data-variant="outline"]:hover:not(:disabled):not([aria-disabled="true"]) { background-color: var(--bq-color-primary-50,#eff6ff); }
     .btn[data-variant="ghost"] { background-color: transparent; color: var(--bq-color-secondary-700,#334155); border-color: transparent; }
-    .btn[data-variant="ghost"]:hover:not(:disabled) { background-color: var(--bq-color-secondary-100,#f1f5f9); }
+    .btn[data-variant="ghost"]:hover:not(:disabled):not([aria-disabled="true"]) { background-color: var(--bq-color-secondary-100,#f1f5f9); }
     .btn[data-variant="danger"] { background-color: var(--bq-color-danger-600,#dc2626); color: #fff; border-color: var(--bq-color-danger-600,#dc2626); }
-    .btn[data-variant="danger"]:hover:not(:disabled) { background-color: var(--bq-color-danger-700,#b91c1c); }
+    .btn[data-variant="danger"]:hover:not(:disabled):not([aria-disabled="true"]) { background-color: var(--bq-color-danger-700,#b91c1c); }
     /* States */
     .btn:focus-visible { outline: 2px solid transparent; box-shadow: var(--bq-focus-ring); }
     .btn[data-variant="danger"]:focus-visible { box-shadow: var(--bq-focus-ring-danger); }
     .btn:disabled, .btn[aria-disabled="true"] { opacity: 0.5; cursor: not-allowed; }
     /* Loading spinner */
     .spinner { width: 1em; height: 1em; border: 2px solid currentColor; border-top-color: transparent; border-radius: 50%; animation: spin 0.7s linear infinite; }
+    .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
     @keyframes spin { to { transform: rotate(360deg); } }
+    @media (prefers-reduced-motion: reduce) {
+      .btn, .spinner { transition: none; animation: none; }
+    }
   `,
   connected() {
-    const self = this;
+    type BqButtonElement = HTMLElement & { setState(k: 'statusId', v: string): void; getState<T>(k: string): T };
+    const self = this as unknown as BqButtonElement;
+    if (!self.getState<string>('statusId')) self.setState('statusId', uniqueId('bq-button-status'));
     const handler = (e: Event) => {
       if (self.hasAttribute('disabled') || self.hasAttribute('loading')) {
         e.preventDefault(); e.stopPropagation(); return;
@@ -98,29 +113,40 @@ const definition: ComponentDefinition<BqButtonProps> = {
     const handler = (self as unknown as Record<string, unknown>)['_clickHandler'] as EventListener | undefined;
     if (handler) self.shadowRoot?.removeEventListener('click', handler);
   },
-  render({ props }) {
+  render({ props, state }) {
     const tag = props.href ? 'a' : 'button';
+    const isLink = tag === 'a';
     const disabled = props.disabled || props.loading;
+    const accessibleLabel = props.label.trim();
+    const loadingLabel = t('common.loading');
+    const statusId = state.statusId || 'bq-button-status';
+    const normalizedTarget = props.target.trim();
+    const safeRel = normalizedTarget.toLowerCase() === '_blank' ? 'noopener noreferrer' : '';
     return html`
       <${tag}
         part="button"
         class="btn"
         data-variant="${escapeHtml(props.variant)}"
         data-size="${escapeHtml(props.size)}"
-        type="${tag === 'button' ? escapeHtml(props.type) : ''}"
+        ${!isLink ? `type="${escapeHtml(props.type)}"` : ''}
         ${props.href ? `href="${escapeHtml(props.href)}"` : ''}
-        ${props.target ? `target="${escapeHtml(props.target)}"` : ''}
-        ${disabled ? (props.disabled ? 'disabled aria-disabled="true"' : 'aria-disabled="true"') : ''}
+        ${isLink && normalizedTarget ? `target="${escapeHtml(normalizedTarget)}"` : ''}
+        ${isLink && safeRel ? `rel="${escapeHtml(safeRel)}"` : ''}
+        ${!isLink && disabled ? 'disabled' : ''}
+        ${disabled ? 'aria-disabled="true"' : ''}
+        ${isLink && disabled ? 'tabindex="-1"' : ''}
         ${props.loading ? 'aria-busy="true"' : ''}
-        ${tag === 'a' ? 'role="button"' : ''}
+        ${props.loading ? `aria-describedby="${escapeHtml(statusId)}"` : ''}
+        ${accessibleLabel ? `aria-label="${escapeHtml(accessibleLabel)}"` : ''}
       >
         <slot name="prefix-icon"></slot>
         ${props.loading ? '<span class="spinner" aria-hidden="true"></span>' : ''}
         <slot></slot>
         <slot name="suffix-icon"></slot>
       </${tag}>
+      ${props.loading ? `<span class="sr-only" id="${escapeHtml(statusId)}" role="status" aria-live="polite">${escapeHtml(loadingLabel)}</span>` : ''}
     `;
   },
 };
 
-component<BqButtonProps>('bq-button', definition);
+component<BqButtonProps, BqButtonState>('bq-button', definition);

@@ -1,5 +1,6 @@
 // DOM environment is provided by tests/setup.ts (preloaded via bunfig.toml)
 import { describe, it, expect, beforeAll, afterEach } from 'bun:test';
+import { resetLocale, setLocale } from '../src/i18n/index.js';
 
 const win = (globalThis as unknown as Record<string, unknown>)['window'] as Window & typeof globalThis;
 const doc = win.document as unknown as Document;
@@ -16,10 +17,12 @@ describe('accessibility and i18n fixes', () => {
     await import('../src/components/accordion/index.js');
     await import('../src/components/progress/index.js');
     await import('../src/components/skeleton/index.js');
+    await import('../src/components/empty-state/index.js');
   });
 
   afterEach(() => {
     doc.body.innerHTML = '';
+    resetLocale();
   });
 
   // --- BqSelect aria-describedby ---
@@ -166,6 +169,37 @@ describe('accessibility and i18n fixes', () => {
 
     const styles = el.shadowRoot?.querySelector('style');
     expect(styles?.textContent).toContain('prefers-reduced-motion');
+  });
+
+  it('should use the localized default spinner label when none is provided', () => {
+    setLocale({ common: { loading: 'Wird geladen' } });
+    const el = doc.createElement('bq-spinner');
+    doc.body.appendChild(el);
+
+    const root = el.shadowRoot?.querySelector('.spinner-root');
+    const srOnly = el.shadowRoot?.querySelector('.sr-only');
+    expect(root?.getAttribute('aria-label')).toBe('Wird geladen');
+    expect(root?.getAttribute('aria-live')).toBe('polite');
+    expect(srOnly?.textContent).toBe('Wird geladen');
+  });
+
+  it('should fall back to localized empty-state copy and expose status semantics', () => {
+    setLocale({
+      emptyState: {
+        title: 'Noch nichts hier',
+        description: 'Es gibt derzeit nichts anzuzeigen.',
+      },
+    });
+    const el = doc.createElement('bq-empty-state');
+    doc.body.appendChild(el);
+
+    const empty = el.shadowRoot?.querySelector('.empty');
+    const title = el.shadowRoot?.querySelector('.title');
+    const description = el.shadowRoot?.querySelector('.description');
+    expect(empty?.getAttribute('role')).toBe('status');
+    expect(empty?.getAttribute('aria-live')).toBe('polite');
+    expect(title?.textContent).toBe('Noch nichts hier');
+    expect(description?.textContent).toBe('Es gibt derzeit nichts anzuzeigen.');
   });
 
   // --- Chip keyboard navigation ---

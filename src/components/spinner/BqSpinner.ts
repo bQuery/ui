@@ -8,6 +8,7 @@
 import { component, html } from '@bquery/bquery/component';
 import type { ComponentDefinition } from '@bquery/bquery/component';
 import { escapeHtml } from '@bquery/bquery/security';
+import { t } from '../../i18n/index.js';
 import { getBaseStyles } from '../../utils/styles.js';
 
 type BqSpinnerProps = { size: string; variant: string; label: string };
@@ -16,7 +17,7 @@ const definition: ComponentDefinition<BqSpinnerProps> = {
   props: {
     size:    { type: String, default: 'md' },
     variant: { type: String, default: 'primary' },
-    label:   { type: String, default: 'Loading…' },
+    label:   { type: String, default: '' },
   },
   styles: `
     ${getBaseStyles()}
@@ -42,8 +43,12 @@ const definition: ComponentDefinition<BqSpinnerProps> = {
     .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
   `,
   render({ props }) {
-    return html`<div part="spinner" class="spinner" data-size="${escapeHtml(props.size)}" data-variant="${escapeHtml(props.variant)}" role="status" aria-label="${escapeHtml(props.label)}"></div>
-    <span class="sr-only">${escapeHtml(props.label)}</span>`;
+    const trimmedLabel = props.label.trim();
+    const label = trimmedLabel !== '' ? trimmedLabel : t('common.loading');
+    return html`<div class="spinner-root" role="status" aria-live="polite" aria-label="${escapeHtml(label)}">
+      <div part="spinner" class="spinner" data-size="${escapeHtml(props.size)}" data-variant="${escapeHtml(props.variant)}" aria-hidden="true"></div>
+      <span class="sr-only">${escapeHtml(label)}</span>
+    </div>`;
   },
 };
 

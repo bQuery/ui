@@ -1,6 +1,6 @@
 # Button
 
-The `bq-button` component is a versatile, accessible button element supporting multiple variants, sizes, loading states, and icon slots.
+The `bq-button` component is a versatile, accessible button element supporting multiple variants, sizes, loading states, accessible naming overrides, and icon slots.
 
 ## Basic Usage
 
@@ -27,6 +27,8 @@ The `bq-button` component is a versatile, accessible button element supporting m
 <bq-button loading>Loading…</bq-button>
 ```
 
+When `loading` is enabled, the inner control exposes `aria-busy="true"` and adds a localized screen-reader-only loading announcement.
+
 ## Disabled State
 
 ```html
@@ -40,6 +42,8 @@ The `bq-button` component is a versatile, accessible button element supporting m
   Open link
 </bq-button>
 ```
+
+Links opened in a new tab automatically receive `rel="noopener noreferrer"`.
 
 ## With Icons (Slots)
 
@@ -55,6 +59,14 @@ The `bq-button` component is a versatile, accessible button element supporting m
 </bq-button>
 ```
 
+If you need an icon-only action, prefer [`bq-icon-button`](/components/icon-button). If you intentionally render `bq-button` without visible text, provide a `label` so assistive technologies still announce a meaningful name.
+
+```html
+<bq-button label="Refresh results">
+  <span slot="prefix-icon" aria-hidden="true">↻</span>
+</bq-button>
+```
+
 ## Properties
 
 | Property | Type | Default | Description |
@@ -66,6 +78,7 @@ The `bq-button` component is a versatile, accessible button element supporting m
 | `type` | `button \| submit \| reset` | `button` | Form submission type |
 | `href` | `string` | — | Renders as `<a>` when set |
 | `target` | `string` | — | Link target (used with `href`) |
+| `label` | `string` | — | Optional accessible label override, especially useful for icon-only usage |
 
 ## Events
 
@@ -86,3 +99,9 @@ The `bq-button` component is a versatile, accessible button element supporting m
 | Part | Description |
 |------|-------------|
 | `button` | The inner `<button>` or `<a>` element |
+
+## Accessibility Notes
+
+- Use the default slot for the visible button text whenever possible.
+- Provide `label` when the control has no visible text content.
+- Loading buttons keep their current content visible, set `aria-busy`, and expose a localized loading announcement for assistive technologies.

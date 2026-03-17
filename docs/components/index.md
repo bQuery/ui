@@ -30,8 +30,8 @@ Across the component library you will find the same professional capabilities th
 
 | Component | Use it for | Highlights |
 | --- | --- | --- |
-| `bq-button` | Primary and secondary actions | Variants, sizes, loading state, link rendering, icon slots |
-| `bq-icon-button` | Compact icon-only actions | Accessible label, multiple variants, loading state, link rendering |
+| `bq-button` | Primary and secondary actions | Variants, sizes, loading state, link rendering, icon slots, accessible label override |
+| `bq-icon-button` | Compact icon-only actions | Accessible label or title fallback, multiple variants, loading state, link rendering |
 
 ## Forms
 
@@ -103,4 +103,4 @@ If you are evaluating the library for a product team, start with:
 3. [Theming](/guide/theming)
 4. [Accessibility](/guide/accessibility)
 
-For component-level API examples, see the dedicated references for [Button](/components/button), [Input](/components/input), and [Card](/components/card).
+For component-level API examples, see the dedicated references for [Button](/components/button), [Icon Button](/components/icon-button), [Input](/components/input), and [Card](/components/card).
