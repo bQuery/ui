@@ -89,7 +89,7 @@ describe('accessibility and i18n fixes', () => {
     const text = loadingCell?.textContent?.trim() ?? '';
     expect(text.length).toBeGreaterThan(0);
     // The i18n default is "Loading data…"
-    expect(text).toBe('Loading data\u2026');
+    expect(text).toBe('Loading data…');
   });
 
   it('should use i18n strings for table empty state', () => {
