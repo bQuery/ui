@@ -37,7 +37,7 @@ const definition: ComponentDefinition<BqSpinnerProps> = {
     .spinner[data-variant="white"]     { border: 2.5px solid rgba(255,255,255,0.3); border-top-color: #fff; }
     @keyframes spin { to { transform: rotate(360deg); } }
     @media (prefers-reduced-motion: reduce) {
-      .spinner { animation-duration: 1.5s; }
+      .spinner { animation: none; }
     }
     .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
   `,
