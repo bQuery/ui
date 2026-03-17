@@ -93,11 +93,16 @@ const definition: ComponentDefinition<BqDialogProps, BqDialogState> = {
   },
   disconnected() {
     const s = this as unknown as Record<string, unknown>;
-    const focusRaf = s['_focusRaf'] as number | undefined; if (focusRaf !== undefined) cancelAnimationFrame(focusRaf);
-    const releaseFocus = s['_releaseFocus'] as (() => void) | undefined; if (releaseFocus) releaseFocus();
-    const kh = s['_kh'] as EventListener | undefined; if (kh) document.removeEventListener('keydown', kh);
-    const oh = s['_oh'] as EventListener | undefined; if (oh) this.shadowRoot?.removeEventListener('click', oh);
-    const ch = s['_ch'] as EventListener | undefined; if (ch) this.shadowRoot?.removeEventListener('click', ch);
+    const focusRaf = s['_focusRaf'] as number | undefined;
+    if (focusRaf !== undefined) cancelAnimationFrame(focusRaf);
+    const releaseFocus = s['_releaseFocus'] as (() => void) | undefined;
+    if (releaseFocus) releaseFocus();
+    const kh = s['_kh'] as EventListener | undefined;
+    if (kh) document.removeEventListener('keydown', kh);
+    const oh = s['_oh'] as EventListener | undefined;
+    if (oh) this.shadowRoot?.removeEventListener('click', oh);
+    const ch = s['_ch'] as EventListener | undefined;
+    if (ch) this.shadowRoot?.removeEventListener('click', ch);
   },
   updated() {
     const s = this as unknown as Record<string, unknown>;
