@@ -70,7 +70,7 @@ const definition: ComponentDefinition<BqTableProps> = {
       const ke = e as KeyboardEvent;
       const th = (ke.target as Element).closest('th.sortable') as HTMLElement | null;
       if (!th) return;
-      const isEnterKeydown = ke.type === 'keydown' && ke.key === 'Enter';
+      const isEnterKeydown = ke.type === 'keydown' && ke.key === 'Enter' && !ke.repeat;
       const isSpaceKeyup = ke.type === 'keyup' && ke.key === ' ';
       if (!isEnterKeydown && !isSpaceKeyup) return;
       e.preventDefault();

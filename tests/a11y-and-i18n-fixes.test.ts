@@ -201,6 +201,25 @@ describe('accessibility and i18n fixes', () => {
     expect(clicks).toBe(2);
   });
 
+  it('should ignore repeated Enter keydown events on the chip surface', () => {
+    const el = doc.createElement('bq-chip');
+    doc.body.appendChild(el);
+
+    const chip = el.shadowRoot?.querySelector('.chip') as HTMLElement | null;
+    expect(chip).toBeTruthy();
+
+    let clicks = 0;
+    el.addEventListener('bq-click', () => {
+      clicks += 1;
+    });
+
+    chip?.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+    chip?.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, repeat: true }));
+    chip?.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, repeat: true }));
+
+    expect(clicks).toBe(1);
+  });
+
   it('should ignore repeated Space keydown events on the chip surface', () => {
     const el = doc.createElement('bq-chip');
     doc.body.appendChild(el);
@@ -302,6 +321,30 @@ describe('accessibility and i18n fixes', () => {
       { key: 'name', dir: 'asc' },
       { key: 'name', dir: 'desc' },
     ]);
+  });
+
+  it('should ignore repeated Enter keydown events on a sortable header', () => {
+    const el = doc.createElement('bq-table');
+    el.setAttribute('columns', JSON.stringify([
+      { key: 'name', label: 'Name', sortable: true },
+    ]));
+    el.setAttribute('rows', JSON.stringify([{ name: 'Ada' }]));
+    doc.body.appendChild(el);
+
+    const header = el.shadowRoot?.querySelector('th.sortable') as HTMLElement | null;
+    expect(header).toBeTruthy();
+
+    const sorts: Array<{ key: string; dir: string }> = [];
+    el.addEventListener('bq-sort', (event) => {
+      const detail = (event as CustomEvent<{ key: string; dir: string }>).detail;
+      sorts.push(detail);
+    });
+
+    header?.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+    header?.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, repeat: true }));
+    header?.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, repeat: true }));
+
+    expect(sorts).toEqual([{ key: 'name', dir: 'asc' }]);
   });
 
   it('should ignore repeated Space keydown events on a sortable header', () => {

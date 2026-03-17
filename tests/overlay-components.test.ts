@@ -155,6 +155,30 @@ describe('overlay and utility component fixes', () => {
     expect(doc.activeElement).toBe(trigger);
   });
 
+  it('focuses the drawer container when no focusable descendants are available', async () => {
+    const trigger = doc.createElement('button');
+    trigger.textContent = 'Open drawer';
+    doc.body.appendChild(trigger);
+    trigger.focus();
+
+    const drawer = doc.createElement('bq-drawer');
+    drawer.setAttribute('title', 'Example');
+    drawer.innerHTML = '<p>Static content only.</p>';
+    doc.body.appendChild(drawer);
+
+    drawer.setAttribute('open', '');
+    const closeButton = drawer.shadowRoot?.querySelector('.close-btn');
+    closeButton?.remove();
+    await waitForFrame(2);
+
+    const drawerSurface = drawer.shadowRoot?.querySelector('.drawer') as HTMLElement | null;
+    const activeWithinDrawer = drawer.shadowRoot?.activeElement as Element | null;
+
+    expect(drawerSurface).toBeTruthy();
+    expect(drawerSurface?.getAttribute('tabindex')).toBe('-1');
+    expect(activeWithinDrawer).toBe(drawerSurface);
+  });
+
   it('does not move focus into a drawer that closes before the scheduled focus runs', async () => {
     const trigger = doc.createElement('button');
     trigger.textContent = 'Open drawer';

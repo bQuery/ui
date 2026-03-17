@@ -91,8 +91,10 @@ const definition: ComponentDefinition<BqDrawerProps, BqDrawerState> = {
     const s = this as unknown as Record<string, unknown>;
     const focusRaf = s['_focusRaf'] as number | undefined;
     if (focusRaf !== undefined) cancelAnimationFrame(focusRaf);
+    delete s['_focusRaf'];
     const releaseFocus = s['_releaseFocus'] as (() => void) | undefined;
     if (releaseFocus) releaseFocus();
+    delete s['_releaseFocus'];
     const prev = s['_previousFocus'] as HTMLElement | undefined;
     if (prev && typeof prev.focus === 'function') prev.focus();
     delete s['_previousFocus'];
@@ -121,7 +123,7 @@ const definition: ComponentDefinition<BqDrawerProps, BqDrawerState> = {
           delete s['_focusRaf'];
           if (!this.hasAttribute('open') || !this.isConnected) return;
           const focusable = drawer.querySelector<HTMLElement>('button, a[href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
-          if (focusable) focusable.focus();
+          (focusable ?? drawer).focus();
         });
       }
     } else {
@@ -143,7 +145,7 @@ const definition: ComponentDefinition<BqDrawerProps, BqDrawerState> = {
     return html`
       <div class="backdrop" part="backdrop" role="presentation">
         <div class="drawer" part="drawer" data-placement="${escapeHtml(props.placement)}" data-size="${escapeHtml(props.size)}"
-          role="dialog" aria-modal="true" aria-labelledby="${escapeHtml(titleId)}">
+          role="dialog" aria-modal="true" aria-labelledby="${escapeHtml(titleId)}" tabindex="-1">
           <div class="header" part="header">
             <h2 class="title" id="${escapeHtml(titleId)}" part="title">${escapeHtml(props.title)}</h2>
             <button class="close-btn" type="button" aria-label="${t('drawer.close')}" part="close">&#10005;</button>
