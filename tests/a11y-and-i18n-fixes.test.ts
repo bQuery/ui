@@ -22,6 +22,12 @@ describe('accessibility and i18n fixes', () => {
     doc.body.innerHTML = '';
   });
 
+  const waitForFrame = async (frames = 1): Promise<void> => {
+    for (let i = 0; i < frames; i += 1) {
+      await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+    }
+  };
+
   // --- BqSelect aria-describedby ---
   it('should link select to error message via aria-describedby', () => {
     const el = doc.createElement('bq-select');
@@ -182,6 +188,44 @@ describe('accessibility and i18n fixes', () => {
     expect(chip?.getAttribute('tabindex')).toBe('-1');
   });
 
+  it('should dispatch bq-click exactly once for Enter and Space on the chip surface', () => {
+    const el = doc.createElement('bq-chip');
+    doc.body.appendChild(el);
+
+    const chip = el.shadowRoot?.querySelector('.chip') as HTMLElement | null;
+    expect(chip).toBeTruthy();
+
+    let clicks = 0;
+    el.addEventListener('bq-click', () => {
+      clicks += 1;
+    });
+
+    chip?.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+    chip?.dispatchEvent(new KeyboardEvent('keydown', { key: ' ', bubbles: true }));
+
+    expect(clicks).toBe(2);
+  });
+
+  it('should let the native remove button click dispatch bq-remove only once', () => {
+    const el = doc.createElement('bq-chip');
+    el.setAttribute('removable', '');
+    doc.body.appendChild(el);
+
+    const removeButton = el.shadowRoot?.querySelector('.remove-btn') as HTMLButtonElement | null;
+    expect(removeButton).toBeTruthy();
+
+    let removes = 0;
+    el.addEventListener('bq-remove', () => {
+      removes += 1;
+    });
+
+    removeButton?.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+    expect(removes).toBe(0);
+
+    removeButton?.click();
+    expect(removes).toBe(1);
+  });
+
   // --- Table sortable keyboard ---
   it('should render sortable table headers with tabindex for keyboard access', () => {
     const el = doc.createElement('bq-table');
@@ -197,5 +241,50 @@ describe('accessibility and i18n fixes', () => {
     expect(headers?.[0]?.classList.contains('sortable')).toBe(true);
     // Non-sortable header should not have tabindex
     expect(headers?.[1]?.hasAttribute('tabindex')).toBe(false);
+  });
+
+  it('should apply columnheader role to sortable and non-sortable headers', () => {
+    const el = doc.createElement('bq-table');
+    el.setAttribute('columns', JSON.stringify([
+      { key: 'name', label: 'Name', sortable: true },
+      { key: 'age', label: 'Age' },
+    ]));
+    el.setAttribute('rows', '[]');
+    doc.body.appendChild(el);
+
+    const headers = Array.from(el.shadowRoot?.querySelectorAll('th') ?? []);
+    expect(headers).toHaveLength(2);
+    expect(headers[0]?.getAttribute('role')).toBe('columnheader');
+    expect(headers[1]?.getAttribute('role')).toBe('columnheader');
+  });
+
+  it('should sort the table when Enter or Space is pressed on a sortable header', () => {
+    const el = doc.createElement('bq-table');
+    el.setAttribute('columns', JSON.stringify([
+      { key: 'name', label: 'Name', sortable: true },
+    ]));
+    el.setAttribute('rows', JSON.stringify([{ name: 'Ada' }]));
+    doc.body.appendChild(el);
+
+    let header = el.shadowRoot?.querySelector('th.sortable') as HTMLElement | null;
+    expect(header).toBeTruthy();
+
+    const sorts: Array<{ key: string; dir: string }> = [];
+    el.addEventListener('bq-sort', (event) => {
+      const detail = (event as CustomEvent<{ key: string; dir: string }>).detail;
+      sorts.push(detail);
+    });
+
+    header?.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+    expect(el.getAttribute('sort-key')).toBe('name');
+    expect(el.getAttribute('sort-dir')).toBe('asc');
+
+    header = el.shadowRoot?.querySelector('th.sortable') as HTMLElement | null;
+    header?.dispatchEvent(new KeyboardEvent('keydown', { key: ' ', bubbles: true }));
+    expect(el.getAttribute('sort-dir')).toBe('desc');
+    expect(sorts).toEqual([
+      { key: 'name', dir: 'asc' },
+      { key: 'name', dir: 'desc' },
+    ]);
   });
 });

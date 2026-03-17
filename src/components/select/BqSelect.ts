@@ -82,9 +82,8 @@ const definition: ComponentDefinition<BqSelectProps, BqSelectState> = {
   },
   render({ props, state }) {
     const hasError = Boolean(props.error);
-    const hasHint = Boolean(props.error) || Boolean((props as Record<string, unknown>).hint);
     const uid = state.uid || 'bq-select';
-    const describedBy = hasError ? `${uid}-err` : hasHint ? `${uid}-hint` : '';
+    const describedBy = hasError ? `${uid}-err` : '';
     return html`
       <div class="field" part="field">
         ${props.label ? `<label class="label" for="${uid}" part="label">${escapeHtml(props.label)}${props.required ? '<span class="required-mark" aria-hidden="true"> *</span>' : ''}</label>` : ''}

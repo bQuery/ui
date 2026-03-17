@@ -16,6 +16,12 @@ describe('overlay and utility component fixes', () => {
     doc.body.innerHTML = '';
   });
 
+  const waitForFrame = async (frames = 1): Promise<void> => {
+    for (let i = 0; i < frames; i += 1) {
+      await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+    }
+  };
+
   it('assigns unique title ids to dialog instances', () => {
     const first = doc.createElement('bq-dialog');
     const second = doc.createElement('bq-dialog');
@@ -46,6 +52,58 @@ describe('overlay and utility component fixes', () => {
     expect(firstDrawer?.getAttribute('aria-labelledby')).toBe(firstTitle?.id);
     expect(secondDrawer?.getAttribute('aria-labelledby')).toBe(secondTitle?.id);
     expect(firstTitle?.id).not.toBe(secondTitle?.id);
+  });
+
+  it('moves focus into the dialog on open and restores it on close', async () => {
+    const trigger = doc.createElement('button');
+    trigger.textContent = 'Open dialog';
+    doc.body.appendChild(trigger);
+    trigger.focus();
+
+    const dialog = doc.createElement('bq-dialog');
+    dialog.setAttribute('title', 'Example');
+    doc.body.appendChild(dialog);
+
+    dialog.setAttribute('open', '');
+    await waitForFrame(2);
+
+    const closeButton = dialog.shadowRoot?.querySelector('.close-btn') as HTMLButtonElement | null;
+    const activeWithinDialog = dialog.shadowRoot?.activeElement as Element | null;
+
+    expect(closeButton).toBeTruthy();
+    expect(activeWithinDialog).toBe(closeButton);
+
+    dialog.removeAttribute('open');
+    await waitForFrame(1);
+
+    expect(doc.activeElement).toBe(trigger);
+    expect((dialog as unknown as Record<string, unknown>)['_releaseFocus']).toBeUndefined();
+  });
+
+  it('moves focus into the drawer on open and restores it on close', async () => {
+    const trigger = doc.createElement('button');
+    trigger.textContent = 'Open drawer';
+    doc.body.appendChild(trigger);
+    trigger.focus();
+
+    const drawer = doc.createElement('bq-drawer');
+    drawer.setAttribute('title', 'Example');
+    doc.body.appendChild(drawer);
+
+    drawer.setAttribute('open', '');
+    await waitForFrame(2);
+
+    const closeButton = drawer.shadowRoot?.querySelector('.close-btn') as HTMLButtonElement | null;
+    const activeWithinDrawer = drawer.shadowRoot?.activeElement as Element | null;
+
+    expect(closeButton).toBeTruthy();
+    expect(activeWithinDrawer).toBe(closeButton);
+
+    drawer.removeAttribute('open');
+    await waitForFrame(1);
+
+    expect(doc.activeElement).toBe(trigger);
+    expect((drawer as unknown as Record<string, unknown>)['_releaseFocus']).toBeUndefined();
   });
 
   it('renders breadcrumb separators from the separator prop', async () => {

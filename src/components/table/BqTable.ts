@@ -99,9 +99,9 @@ const definition: ComponentDefinition<BqTableProps> = {
         ? `<span class="sort-icon" data-active="${isSorted ? 'true' : 'false'}" aria-hidden="true">${isSorted && sortDir === 'desc' ? '&#9650;' : '&#9660;'}</span>`
         : '';
       const sortableAttrs = col.sortable
-        ? `class="sortable" data-sort-key="${escapeHtml(col.key)}" tabindex="0" role="columnheader" aria-sort="${isSorted ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'}"`
+        ? `class="sortable" data-sort-key="${escapeHtml(col.key)}" tabindex="0" aria-sort="${isSorted ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'}"`
         : '';
-      return `<th part="th" ${sortableAttrs}>${escapeHtml(col.label)}${sortIcon}</th>`;
+      return `<th part="th" role="columnheader" ${sortableAttrs}>${escapeHtml(col.label)}${sortIcon}</th>`;
     }).join('');
     const tbodies = props.loading ? `<tr><td colspan="${cols.length}" class="loading-overlay">${escapeHtml(t('table.loading'))}</td></tr>`
       : rows.length === 0 ? `<tr class="empty-row"><td colspan="${cols.length}">${escapeHtml(t('table.noData'))}</td></tr>`

@@ -71,15 +71,11 @@ const definition: ComponentDefinition<BqChipProps> = {
     const keyHandler = (e: Event) => {
       if (self.hasAttribute('disabled')) return;
       const key = (e as KeyboardEvent).key;
-      if (key === 'Enter' || key === ' ') {
-        e.preventDefault();
-        const target = e.target as Element;
-        if (target.closest('.remove-btn')) {
-          self.dispatchEvent(new CustomEvent('bq-remove', { bubbles: true, composed: true }));
-          return;
-        }
-        self.dispatchEvent(new CustomEvent('bq-click', { bubbles: true, composed: true }));
-      }
+      if (key !== 'Enter' && key !== ' ') return;
+      const target = e.target as Element | null;
+      if (!target?.classList.contains('chip')) return;
+      e.preventDefault();
+      self.dispatchEvent(new CustomEvent('bq-click', { bubbles: true, composed: true }));
     };
     (self as unknown as Record<string, unknown>)['_handler'] = handler;
     (self as unknown as Record<string, unknown>)['_keyHandler'] = keyHandler;
