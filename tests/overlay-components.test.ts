@@ -130,6 +130,27 @@ describe('overlay and utility component fixes', () => {
     expect(doc.activeElement).toBe(trigger);
   });
 
+  it('does not steal focus back on unrelated dialog updates while open', async () => {
+    const dialog = doc.createElement('bq-dialog');
+    dialog.setAttribute('title', 'Example');
+    dialog.innerHTML = '<button id="inside-dialog">Inside dialog</button>';
+    doc.body.appendChild(dialog);
+
+    dialog.setAttribute('open', '');
+    await waitForFrame(2);
+
+    const insideButton = dialog.querySelector('#inside-dialog') as HTMLButtonElement | null;
+    expect(insideButton).toBeTruthy();
+
+    insideButton?.focus();
+    expect(doc.activeElement).toBe(insideButton);
+
+    dialog.setAttribute('title', 'Updated title');
+    await waitForFrame(2);
+
+    expect(doc.activeElement).toBe(insideButton);
+  });
+
   it('moves focus into the drawer on open and restores it on close', async () => {
     const trigger = doc.createElement('button');
     trigger.textContent = 'Open drawer';
@@ -211,6 +232,27 @@ describe('overlay and utility component fixes', () => {
     drawer.remove();
 
     expect(doc.activeElement).toBe(trigger);
+  });
+
+  it('does not steal focus back on unrelated drawer updates while open', async () => {
+    const drawer = doc.createElement('bq-drawer');
+    drawer.setAttribute('title', 'Example');
+    drawer.innerHTML = '<button id="inside-drawer">Inside drawer</button>';
+    doc.body.appendChild(drawer);
+
+    drawer.setAttribute('open', '');
+    await waitForFrame(2);
+
+    const insideButton = drawer.querySelector('#inside-drawer') as HTMLButtonElement | null;
+    expect(insideButton).toBeTruthy();
+
+    insideButton?.focus();
+    expect(doc.activeElement).toBe(insideButton);
+
+    drawer.setAttribute('title', 'Updated title');
+    await waitForFrame(2);
+
+    expect(doc.activeElement).toBe(insideButton);
   });
 
   it('renders breadcrumb separators from the separator prop', async () => {

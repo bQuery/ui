@@ -100,6 +100,7 @@ const definition: ComponentDefinition<BqDialogProps, BqDialogState> = {
     const prev = s['_previousFocus'] as HTMLElement | undefined;
     if (prev && typeof prev.focus === 'function') prev.focus();
     delete s['_previousFocus'];
+    delete s['_wasOpen'];
     delete s['_focusRaf'];
     delete s['_releaseFocus'];
     const kh = s['_kh'] as EventListener | undefined;
@@ -111,8 +112,11 @@ const definition: ComponentDefinition<BqDialogProps, BqDialogState> = {
   },
   updated() {
     const s = this as unknown as Record<string, unknown>;
+    const wasOpen = s['_wasOpen'] === true;
+    const isOpen = this.hasAttribute('open');
     const releaseFocus = s['_releaseFocus'] as (() => void) | undefined;
-    if (this.hasAttribute('open')) {
+    if (isOpen && !wasOpen) {
+      s['_wasOpen'] = true;
       // Store the previously focused element for restoration on close
       if (!s['_previousFocus']) {
         s['_previousFocus'] = document.activeElement as HTMLElement | null;
@@ -130,7 +134,8 @@ const definition: ComponentDefinition<BqDialogProps, BqDialogState> = {
           (focusable ?? dialog).focus();
         });
       }
-    } else {
+    } else if (!isOpen && wasOpen) {
+      s['_wasOpen'] = false;
       const focusRaf = s['_focusRaf'] as number | undefined;
       if (focusRaf !== undefined) cancelAnimationFrame(focusRaf);
       delete s['_focusRaf'];
@@ -142,6 +147,8 @@ const definition: ComponentDefinition<BqDialogProps, BqDialogState> = {
         prev.focus();
       }
       delete s['_previousFocus'];
+    } else if (!isOpen) {
+      s['_wasOpen'] = false;
     }
   },
   render({ props, state }) {
