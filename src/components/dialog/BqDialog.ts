@@ -97,6 +97,11 @@ const definition: ComponentDefinition<BqDialogProps, BqDialogState> = {
     if (focusRaf !== undefined) cancelAnimationFrame(focusRaf);
     const releaseFocus = s['_releaseFocus'] as (() => void) | undefined;
     if (releaseFocus) releaseFocus();
+    const prev = s['_previousFocus'] as HTMLElement | undefined;
+    if (prev && typeof prev.focus === 'function') prev.focus();
+    delete s['_previousFocus'];
+    delete s['_focusRaf'];
+    delete s['_releaseFocus'];
     const kh = s['_kh'] as EventListener | undefined;
     if (kh) document.removeEventListener('keydown', kh);
     const oh = s['_oh'] as EventListener | undefined;

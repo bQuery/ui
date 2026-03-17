@@ -70,7 +70,7 @@ The `bq-table` component renders data tables with sortable columns, striped rows
 
 | Event | Detail | Description |
 |-------|--------|-------------|
-| `bq-sort` | `{ key: string, dir: string }` | Fired when a sortable column header is clicked |
+| `bq-sort` | `{ key: string, dir: string }` | Fired when a sortable column header is activated by click or keyboard (Enter/Space) |
 
 ## Slots
 

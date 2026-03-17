@@ -113,6 +113,23 @@ describe('overlay and utility component fixes', () => {
     expect(doc.activeElement).toBe(trigger);
   });
 
+  it('restores focus when an open dialog is disconnected', async () => {
+    const trigger = doc.createElement('button');
+    trigger.textContent = 'Open dialog';
+    doc.body.appendChild(trigger);
+    trigger.focus();
+
+    const dialog = doc.createElement('bq-dialog');
+    dialog.setAttribute('title', 'Example');
+    doc.body.appendChild(dialog);
+
+    dialog.setAttribute('open', '');
+    await waitForFrame(2);
+    dialog.remove();
+
+    expect(doc.activeElement).toBe(trigger);
+  });
+
   it('moves focus into the drawer on open and restores it on close', async () => {
     const trigger = doc.createElement('button');
     trigger.textContent = 'Open drawer';
