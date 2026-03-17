@@ -84,6 +84,4 @@ showToast({ variant: 'info', message: 'Update available.' });
 | Part | Description |
 |------|-------------|
 | `toast` | The toast container |
-| `icon` | Status icon area |
-| `message` | Message text element |
-| `close` | Close / dismiss button |
+| `content` | The toast content container |

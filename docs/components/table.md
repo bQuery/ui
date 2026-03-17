@@ -76,7 +76,7 @@ The `bq-table` component renders data tables with sortable columns, striped rows
 
 | Slot | Description |
 |------|-------------|
-| `empty` | Content shown when `rows` is empty and not loading |
+| *(none)* | This component does not currently expose named slots |
 
 ## CSS Parts
 
@@ -84,8 +84,8 @@ The `bq-table` component renders data tables with sortable columns, striped rows
 |------|-------------|
 | `table` | The `<table>` element |
 | `thead` | Table header section |
+| `header-row` | The table header row |
+| `th` | A header cell |
 | `tbody` | Table body section |
 | `row` | A table row |
-| `cell` | A table cell |
-| `header-cell` | A header cell |
-| `loading` | Loading overlay / indicator |
+| `td` | A table body cell |

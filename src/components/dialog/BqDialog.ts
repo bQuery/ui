@@ -93,6 +93,7 @@ const definition: ComponentDefinition<BqDialogProps, BqDialogState> = {
   },
   disconnected() {
     const s = this as unknown as Record<string, unknown>;
+    const focusRaf = s['_focusRaf'] as number | undefined; if (focusRaf !== undefined) cancelAnimationFrame(focusRaf);
     const releaseFocus = s['_releaseFocus'] as (() => void) | undefined; if (releaseFocus) releaseFocus();
     const kh = s['_kh'] as EventListener | undefined; if (kh) document.removeEventListener('keydown', kh);
     const oh = s['_oh'] as EventListener | undefined; if (oh) this.shadowRoot?.removeEventListener('click', oh);
@@ -110,12 +111,19 @@ const definition: ComponentDefinition<BqDialogProps, BqDialogState> = {
       if (dialog) {
         releaseFocus?.();
         s['_releaseFocus'] = trapFocus(dialog);
-        requestAnimationFrame(() => {
+        const focusRaf = s['_focusRaf'] as number | undefined;
+        if (focusRaf !== undefined) cancelAnimationFrame(focusRaf);
+        s['_focusRaf'] = requestAnimationFrame(() => {
+          delete s['_focusRaf'];
+          if (!this.hasAttribute('open') || !this.isConnected) return;
           const focusable = dialog.querySelector<HTMLElement>('button, a[href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
-          if (focusable) focusable.focus();
+          (focusable ?? dialog).focus();
         });
       }
     } else {
+      const focusRaf = s['_focusRaf'] as number | undefined;
+      if (focusRaf !== undefined) cancelAnimationFrame(focusRaf);
+      delete s['_focusRaf'];
       releaseFocus?.();
       delete s['_releaseFocus'];
       // Restore focus to the element that was focused before opening

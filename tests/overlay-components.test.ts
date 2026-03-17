@@ -74,6 +74,45 @@ describe('overlay and utility component fixes', () => {
     expect(doc.activeElement).toBe(trigger);
   });
 
+  it('focuses the dialog container when no focusable descendants are available', async () => {
+    const trigger = doc.createElement('button');
+    trigger.textContent = 'Open dialog';
+    doc.body.appendChild(trigger);
+    trigger.focus();
+
+    const dialog = doc.createElement('bq-dialog');
+    dialog.setAttribute('title', 'Example');
+    dialog.setAttribute('dismissible', 'false');
+    dialog.innerHTML = '<p>Static content only.</p>';
+    doc.body.appendChild(dialog);
+
+    dialog.setAttribute('open', '');
+    await waitForFrame(2);
+
+    const dialogSurface = dialog.shadowRoot?.querySelector('.dialog') as HTMLElement | null;
+    const activeWithinDialog = dialog.shadowRoot?.activeElement as Element | null;
+
+    expect(dialogSurface).toBeTruthy();
+    expect(activeWithinDialog).toBe(dialogSurface);
+  });
+
+  it('does not move focus into a dialog that closes before the scheduled focus runs', async () => {
+    const trigger = doc.createElement('button');
+    trigger.textContent = 'Open dialog';
+    doc.body.appendChild(trigger);
+    trigger.focus();
+
+    const dialog = doc.createElement('bq-dialog');
+    dialog.setAttribute('title', 'Example');
+    doc.body.appendChild(dialog);
+
+    dialog.setAttribute('open', '');
+    dialog.removeAttribute('open');
+    await waitForFrame(2);
+
+    expect(doc.activeElement).toBe(trigger);
+  });
+
   it('moves focus into the drawer on open and restores it on close', async () => {
     const trigger = doc.createElement('button');
     trigger.textContent = 'Open drawer';
@@ -95,6 +134,40 @@ describe('overlay and utility component fixes', () => {
 
     drawer.removeAttribute('open');
     await waitForFrame(1);
+
+    expect(doc.activeElement).toBe(trigger);
+  });
+
+  it('does not move focus into a drawer that closes before the scheduled focus runs', async () => {
+    const trigger = doc.createElement('button');
+    trigger.textContent = 'Open drawer';
+    doc.body.appendChild(trigger);
+    trigger.focus();
+
+    const drawer = doc.createElement('bq-drawer');
+    drawer.setAttribute('title', 'Example');
+    doc.body.appendChild(drawer);
+
+    drawer.setAttribute('open', '');
+    drawer.removeAttribute('open');
+    await waitForFrame(2);
+
+    expect(doc.activeElement).toBe(trigger);
+  });
+
+  it('restores focus when an open drawer is disconnected', async () => {
+    const trigger = doc.createElement('button');
+    trigger.textContent = 'Open drawer';
+    doc.body.appendChild(trigger);
+    trigger.focus();
+
+    const drawer = doc.createElement('bq-drawer');
+    drawer.setAttribute('title', 'Example');
+    doc.body.appendChild(drawer);
+
+    drawer.setAttribute('open', '');
+    await waitForFrame(2);
+    drawer.remove();
 
     expect(doc.activeElement).toBe(trigger);
   });

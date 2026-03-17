@@ -64,7 +64,8 @@ The `bq-checkbox` component is an accessible checkbox input supporting checked, 
 
 | Part | Description |
 |------|-------------|
-| `checkbox` | The checkbox container |
+| `wrapper` | The outer checkbox wrapper |
 | `control` | The checkbox input control |
+| `input` | The native checkbox input |
 | `label` | Label text element |
 | `hint` | Hint text element |

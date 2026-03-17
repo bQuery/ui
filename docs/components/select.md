@@ -90,7 +90,7 @@ The `bq-select` component is a dropdown selection input with label, error state,
 
 | Part | Description |
 |------|-------------|
-| `select` | The outer select container |
+| `field` | The outer field wrapper |
 | `label` | Label text element |
-| `control` | The native select control |
+| `select` | The native select control |
 | `error` | Error message element |
