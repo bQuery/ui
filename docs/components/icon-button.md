@@ -28,7 +28,7 @@ If you already need a tooltip-like title, you can use `title` as the accessible-
 </bq-icon-button>
 ```
 
-Loading icon buttons expose `aria-busy="true"` and announce a localized loading message to assistive technologies.
+Loading icon buttons expose `aria-busy="true"` and attach a localized status description without changing the control's accessible name.
 
 ## As a Link
 
@@ -74,7 +74,7 @@ Loading icon buttons expose `aria-busy="true"` and announce a localized loading 
 
 ## Accessibility Notes
 
-- Always provide `label` unless `title` already conveys the full action name.
+- Prefer `label` as the explicit accessible name. When `label` is omitted, `title` is used as the fallback name before the component falls back to a localized generic label.
 - If neither `label` nor `title` is provided, the component falls back to a localized generic label so the control never becomes unnamed.
 - Mark decorative icon content with `aria-hidden="true"` so screen readers announce only the control label.
 - Prefer `bq-button` when the action should show visible text.

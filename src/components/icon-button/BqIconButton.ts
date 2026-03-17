@@ -5,8 +5,8 @@
  * @prop {string}  size     - sm | md | lg
  * @prop {boolean} disabled
  * @prop {boolean} loading
- * @prop {string}  label    - Accessible label (required)
- * @prop {string}  title    - Optional tooltip and label fallback
+ * @prop {string}  label    - Preferred accessible label
+ * @prop {string}  title    - Optional tooltip and accessible-name fallback
  * @prop {string}  href
  * @slot - Icon content
  * @fires bq-click
@@ -15,14 +15,16 @@ import { component, html } from '@bquery/bquery/component';
 import type { ComponentDefinition } from '@bquery/bquery/component';
 import { escapeHtml } from '@bquery/bquery/security';
 import { t } from '../../i18n/index.js';
+import { uniqueId } from '../../utils/dom.js';
 import { getBaseStyles } from '../../utils/styles.js';
 
 type BqIconButtonProps = {
   variant: string; size: string; disabled: boolean; loading: boolean;
   label: string; href: string; title: string;
 };
+type BqIconButtonState = { statusId: string };
 
-const definition: ComponentDefinition<BqIconButtonProps> = {
+const definition: ComponentDefinition<BqIconButtonProps, BqIconButtonState> = {
   props: {
     variant: { type: String, default: 'ghost' },
     size:    { type: String, default: 'md' },
@@ -31,6 +33,9 @@ const definition: ComponentDefinition<BqIconButtonProps> = {
     label:   { type: String, default: '' },
     href:    { type: String, default: '' },
     title:   { type: String, default: '' },
+  },
+  state: {
+    statusId: '',
   },
   styles: `
     ${getBaseStyles()}
@@ -64,7 +69,9 @@ const definition: ComponentDefinition<BqIconButtonProps> = {
     }
   `,
   connected() {
-    const self = this;
+    type BqIconButtonElement = HTMLElement & { setState(k: 'statusId', v: string): void; getState<T>(k: string): T };
+    const self = this as unknown as BqIconButtonElement;
+    if (!self.getState<string>('statusId')) self.setState('statusId', uniqueId('bq-icon-button-status'));
     const handler = (e: Event) => {
       if (self.hasAttribute('disabled') || self.hasAttribute('loading')) { e.preventDefault(); e.stopPropagation(); return; }
       self.dispatchEvent(new CustomEvent('bq-click', { detail: { originalEvent: e }, bubbles: true, composed: true }));
@@ -76,20 +83,39 @@ const definition: ComponentDefinition<BqIconButtonProps> = {
     const handler = (this as unknown as Record<string, unknown>)['_clickHandler'] as EventListener | undefined;
     if (handler) this.shadowRoot?.removeEventListener('click', handler);
   },
-  render({ props }) {
+  render({ props, state }) {
     const tag = props.href ? 'a' : 'button';
+    const isLink = tag === 'a';
     const disabled = props.disabled || props.loading;
     const trimmedLabel = props.label.trim();
     const trimmedTitle = props.title.trim();
     const accessibleLabel = trimmedLabel || trimmedTitle || t('iconButton.defaultLabel');
     const loadingLabel = t('common.loading');
-    return html`<${tag} part="button" class="btn" data-variant="${escapeHtml(props.variant)}" data-size="${escapeHtml(props.size)}"
-      aria-label="${escapeHtml(accessibleLabel)}" ${props.title ? `title="${escapeHtml(props.title)}"` : ''} type="${tag==='button'?'button':''}"
-      ${props.href?`href="${escapeHtml(props.href)}"`:''} ${disabled?(props.disabled?'disabled aria-disabled="true"':'aria-disabled="true"'):''}
-      ${props.loading?'aria-busy="true"':''} ${tag==='a'?'role="button"':''}
-    >${props.loading ? `<span class="spinner" aria-hidden="true"></span><span class="sr-only">${escapeHtml(loadingLabel)}</span>` : ''}
-    <slot></slot></${tag}>`;
+    const statusId = state.statusId || 'bq-icon-button-status';
+    const statusMarkup = props.loading
+      ? `<span class="sr-only" id="${escapeHtml(statusId)}" role="status" aria-live="polite">${escapeHtml(loadingLabel)}</span>`
+      : '';
+    return html`
+      <${tag}
+        part="button"
+        class="btn"
+        data-variant="${escapeHtml(props.variant)}"
+        data-size="${escapeHtml(props.size)}"
+        aria-label="${escapeHtml(accessibleLabel)}"
+        ${trimmedTitle ? `title="${escapeHtml(trimmedTitle)}"` : ''}
+        ${!isLink ? 'type="button"' : ''}
+        ${props.href ? `href="${escapeHtml(props.href)}"` : ''}
+        ${!isLink && disabled ? 'disabled' : ''}
+        ${disabled ? 'aria-disabled="true"' : ''}
+        ${isLink && disabled ? 'tabindex="-1"' : ''}
+        ${props.loading ? `aria-busy="true" aria-describedby="${escapeHtml(statusId)}"` : ''}
+      >
+        ${props.loading ? '<span class="spinner" aria-hidden="true"></span>' : ''}
+        <slot></slot>
+      </${tag}>
+      ${statusMarkup}
+    `;
   },
 };
 
-component<BqIconButtonProps>('bq-icon-button', definition);
+component<BqIconButtonProps, BqIconButtonState>('bq-icon-button', definition);

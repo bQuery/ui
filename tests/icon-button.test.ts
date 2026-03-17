@@ -33,11 +33,34 @@ describe('BqIconButton', () => {
     expect(btn?.getAttribute('aria-label')).toBe('Refresh data');
   });
 
+  it('should trim title before reflecting it as a tooltip fallback', () => {
+    const el = doc.createElement('bq-icon-button');
+    el.setAttribute('title', '  Refresh data  ');
+    doc.body.appendChild(el);
+    const btn = el.shadowRoot?.querySelector('button');
+    expect(btn?.getAttribute('title')).toBe('Refresh data');
+    expect(btn?.getAttribute('aria-label')).toBe('Refresh data');
+  });
+
   it('should fall back to a localized default accessible name when no label is provided', () => {
     const el = doc.createElement('bq-icon-button');
     doc.body.appendChild(el);
     const btn = el.shadowRoot?.querySelector('button');
     expect(btn?.getAttribute('aria-label')).toBe('Icon button');
+  });
+
+  it('should not emit button-only attributes on anchor rendering', () => {
+    const el = doc.createElement('bq-icon-button');
+    el.setAttribute('href', 'https://example.com');
+    el.setAttribute('loading', '');
+    doc.body.appendChild(el);
+    const anchor = el.shadowRoot?.querySelector('a');
+    const status = el.shadowRoot?.querySelector('[role="status"]');
+    expect(anchor?.hasAttribute('type')).toBe(false);
+    expect(anchor?.hasAttribute('disabled')).toBe(false);
+    expect(anchor?.getAttribute('aria-disabled')).toBe('true');
+    expect(anchor?.getAttribute('tabindex')).toBe('-1');
+    expect(anchor?.getAttribute('aria-describedby')).toBe(status?.id);
   });
 
   afterAll(() => {

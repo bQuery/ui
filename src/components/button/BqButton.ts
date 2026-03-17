@@ -18,6 +18,7 @@ import { component, html } from '@bquery/bquery/component';
 import type { ComponentDefinition } from '@bquery/bquery/component';
 import { escapeHtml } from '@bquery/bquery/security';
 import { t } from '../../i18n/index.js';
+import { uniqueId } from '../../utils/dom.js';
 import { getBaseStyles } from '../../utils/styles.js';
 
 type BqButtonProps = {
@@ -30,8 +31,9 @@ type BqButtonProps = {
   target: string;
   label: string;
 };
+type BqButtonState = { statusId: string };
 
-const definition: ComponentDefinition<BqButtonProps> = {
+const definition: ComponentDefinition<BqButtonProps, BqButtonState> = {
   props: {
     variant: { type: String, default: 'primary' },
     size:    { type: String, default: 'md' },
@@ -41,6 +43,9 @@ const definition: ComponentDefinition<BqButtonProps> = {
     href:    { type: String, default: '' },
     target:  { type: String, default: '' },
     label:   { type: String, default: '' },
+  },
+  state: {
+    statusId: '',
   },
   styles: `
     ${getBaseStyles()}
@@ -91,7 +96,9 @@ const definition: ComponentDefinition<BqButtonProps> = {
     }
   `,
   connected() {
-    const self = this;
+    type BqButtonElement = HTMLElement & { setState(k: 'statusId', v: string): void; getState<T>(k: string): T };
+    const self = this as unknown as BqButtonElement;
+    if (!self.getState<string>('statusId')) self.setState('statusId', uniqueId('bq-button-status'));
     const handler = (e: Event) => {
       if (self.hasAttribute('disabled') || self.hasAttribute('loading')) {
         e.preventDefault(); e.stopPropagation(); return;
@@ -106,32 +113,37 @@ const definition: ComponentDefinition<BqButtonProps> = {
     const handler = (self as unknown as Record<string, unknown>)['_clickHandler'] as EventListener | undefined;
     if (handler) self.shadowRoot?.removeEventListener('click', handler);
   },
-  render({ props }) {
+  render({ props, state }) {
     const tag = props.href ? 'a' : 'button';
+    const isLink = tag === 'a';
     const disabled = props.disabled || props.loading;
     const accessibleLabel = props.label.trim();
     const loadingLabel = t('common.loading');
+    const statusId = state.statusId || 'bq-button-status';
     return html`
       <${tag}
         part="button"
         class="btn"
         data-variant="${escapeHtml(props.variant)}"
         data-size="${escapeHtml(props.size)}"
-        type="${tag === 'button' ? escapeHtml(props.type) : ''}"
+        ${!isLink ? `type="${escapeHtml(props.type)}"` : ''}
         ${props.href ? `href="${escapeHtml(props.href)}"` : ''}
         ${props.target ? `target="${escapeHtml(props.target)}"` : ''}
-        ${disabled ? (props.disabled ? 'disabled aria-disabled="true"' : 'aria-disabled="true"') : ''}
+        ${!isLink && disabled ? 'disabled' : ''}
+        ${disabled ? 'aria-disabled="true"' : ''}
+        ${isLink && disabled ? 'tabindex="-1"' : ''}
         ${props.loading ? 'aria-busy="true"' : ''}
+        ${props.loading ? `aria-describedby="${escapeHtml(statusId)}"` : ''}
         ${accessibleLabel ? `aria-label="${escapeHtml(accessibleLabel)}"` : ''}
-        ${tag === 'a' ? 'role="button"' : ''}
       >
         <slot name="prefix-icon"></slot>
-        ${props.loading ? `<span class="spinner" aria-hidden="true"></span><span class="sr-only">${escapeHtml(loadingLabel)}</span>` : ''}
+        ${props.loading ? '<span class="spinner" aria-hidden="true"></span>' : ''}
         <slot></slot>
         <slot name="suffix-icon"></slot>
       </${tag}>
+      ${props.loading ? `<span class="sr-only" id="${escapeHtml(statusId)}" role="status" aria-live="polite">${escapeHtml(loadingLabel)}</span>` : ''}
     `;
   },
 };
 
-component<BqButtonProps>('bq-button', definition);
+component<BqButtonProps, BqButtonState>('bq-button', definition);

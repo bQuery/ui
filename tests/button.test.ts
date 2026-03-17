@@ -77,6 +77,30 @@ describe('BqButton', () => {
     expect(anchor?.getAttribute('href')).toBe('https://example.com');
   });
 
+  it('should not emit button-only attributes on anchor rendering', () => {
+    const el = doc.createElement('bq-button');
+    el.setAttribute('href', 'https://example.com');
+    el.setAttribute('disabled', '');
+    doc.body.appendChild(el);
+    const anchor = el.shadowRoot?.querySelector('a');
+    expect(anchor?.hasAttribute('type')).toBe(false);
+    expect(anchor?.hasAttribute('disabled')).toBe(false);
+    expect(anchor?.getAttribute('aria-disabled')).toBe('true');
+    expect(anchor?.getAttribute('tabindex')).toBe('-1');
+  });
+
+  it('should describe loading state without changing the button accessible name', () => {
+    const el = doc.createElement('bq-button');
+    el.setAttribute('label', 'Save changes');
+    el.setAttribute('loading', '');
+    doc.body.appendChild(el);
+    const btn = el.shadowRoot?.querySelector('button');
+    const status = el.shadowRoot?.querySelector('[role="status"]');
+    expect(btn?.getAttribute('aria-label')).toBe('Save changes');
+    expect(btn?.getAttribute('aria-describedby')).toBe(status?.id);
+    expect(status?.textContent).toBe('Loading');
+  });
+
   it('should apply size class', () => {
     const el = doc.createElement('bq-button');
     el.setAttribute('size', 'lg');
