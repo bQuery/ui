@@ -9,6 +9,7 @@
 import { component, html } from '@bquery/bquery/component';
 import type { ComponentDefinition } from '@bquery/bquery/component';
 import { escapeHtml } from '@bquery/bquery/security';
+import { t } from '../../i18n/index.js';
 import { getBaseStyles } from '../../utils/styles.js';
 
 type BqEmptyStateProps = { title: string; description: string; icon: string };
@@ -34,12 +35,14 @@ const definition: ComponentDefinition<BqEmptyStateProps> = {
     .actions { display: flex; gap: var(--bq-space-3,0.75rem); flex-wrap: wrap; justify-content: center; }
   `,
   render({ props }) {
+    const title = props.title.trim() || t('emptyState.title');
+    const description = props.description.trim() || t('emptyState.description');
     return html`
-      <div part="empty-state" class="empty">
+      <div part="empty-state" class="empty" role="status" aria-live="polite">
         ${props.icon ? `<span class="icon" part="icon" aria-hidden="true">${escapeHtml(props.icon)}</span>` : ''}
-        ${props.title ? `<h3 class="title" part="title">${escapeHtml(props.title)}</h3>` : ''}
-        ${props.description ? `<p class="description" part="description">${escapeHtml(props.description)}</p>` : ''}
-        <div class="actions"><slot></slot></div>
+        <h3 class="title" part="title">${escapeHtml(title)}</h3>
+        <p class="description" part="description">${escapeHtml(description)}</p>
+        <div class="actions" part="actions"><slot></slot></div>
       </div>
     `;
   },

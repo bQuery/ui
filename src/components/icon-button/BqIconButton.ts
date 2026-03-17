@@ -6,6 +6,7 @@
  * @prop {boolean} disabled
  * @prop {boolean} loading
  * @prop {string}  label    - Accessible label (required)
+ * @prop {string}  title    - Optional tooltip and label fallback
  * @prop {string}  href
  * @slot - Icon content
  * @fires bq-click
@@ -13,11 +14,12 @@
 import { component, html } from '@bquery/bquery/component';
 import type { ComponentDefinition } from '@bquery/bquery/component';
 import { escapeHtml } from '@bquery/bquery/security';
+import { t } from '../../i18n/index.js';
 import { getBaseStyles } from '../../utils/styles.js';
 
 type BqIconButtonProps = {
   variant: string; size: string; disabled: boolean; loading: boolean;
-  label: string; href: string;
+  label: string; href: string; title: string;
 };
 
 const definition: ComponentDefinition<BqIconButtonProps> = {
@@ -28,6 +30,7 @@ const definition: ComponentDefinition<BqIconButtonProps> = {
     loading: { type: Boolean, default: false },
     label:   { type: String, default: '' },
     href:    { type: String, default: '' },
+    title:   { type: String, default: '' },
   },
   styles: `
     ${getBaseStyles()}
@@ -54,7 +57,11 @@ const definition: ComponentDefinition<BqIconButtonProps> = {
     .btn:focus-visible { outline: 2px solid transparent; box-shadow: var(--bq-focus-ring); }
     .btn:disabled, .btn[aria-disabled="true"] { opacity: 0.5; cursor: not-allowed; }
     .spinner { width: 1em; height: 1em; border: 2px solid currentColor; border-top-color: transparent; border-radius: 50%; animation: spin 0.7s linear infinite; }
+    .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
     @keyframes spin { to { transform: rotate(360deg); } }
+    @media (prefers-reduced-motion: reduce) {
+      .btn, .spinner { transition: none; animation: none; }
+    }
   `,
   connected() {
     const self = this;
@@ -72,11 +79,13 @@ const definition: ComponentDefinition<BqIconButtonProps> = {
   render({ props }) {
     const tag = props.href ? 'a' : 'button';
     const disabled = props.disabled || props.loading;
+    const accessibleLabel = props.label.trim() || props.title.trim();
+    const loadingLabel = t('common.loading');
     return html`<${tag} part="button" class="btn" data-variant="${escapeHtml(props.variant)}" data-size="${escapeHtml(props.size)}"
-      aria-label="${escapeHtml(props.label)}" type="${tag==='button'?'button':''}"
+      ${accessibleLabel ? `aria-label="${escapeHtml(accessibleLabel)}"` : ''} ${props.title ? `title="${escapeHtml(props.title)}"` : ''} type="${tag==='button'?'button':''}"
       ${props.href?`href="${escapeHtml(props.href)}"`:''} ${disabled?(props.disabled?'disabled aria-disabled="true"':'aria-disabled="true"'):''}
       ${props.loading?'aria-busy="true"':''} ${tag==='a'?'role="button"':''}
-    >${props.loading?'<span class="spinner" aria-hidden="true"></span>':''}
+    >${props.loading ? `<span class="spinner" aria-hidden="true"></span><span class="sr-only">${escapeHtml(loadingLabel)}</span>` : ''}
     <slot></slot></${tag}>`;
   },
 };

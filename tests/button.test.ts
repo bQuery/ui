@@ -60,6 +60,14 @@ describe('BqButton', () => {
     expect(spinner).not.toBeNull();
   });
 
+  it('should apply an explicit accessible label when label attribute is set', () => {
+    const el = doc.createElement('bq-button');
+    el.setAttribute('label', 'Save changes');
+    doc.body.appendChild(el);
+    const btn = el.shadowRoot?.querySelector('button');
+    expect(btn?.getAttribute('aria-label')).toBe('Save changes');
+  });
+
   it('should render anchor tag when href is provided', () => {
     const el = doc.createElement('bq-button');
     el.setAttribute('href', 'https://example.com');
