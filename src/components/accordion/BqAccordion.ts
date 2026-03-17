@@ -45,6 +45,11 @@ const definition: ComponentDefinition<BqAccordionProps> = {
     .panel { overflow: hidden; max-height: 0; transition: max-height var(--bq-duration-slow,300ms) var(--bq-easing-standard); }
     :host([open]) .panel { max-height: 2000px; }
     .panel-inner { padding: 0 var(--bq-space-4,1rem) var(--bq-space-4,1rem); color: var(--bq-text-muted,#475569); font-size: var(--bq-font-size-sm,0.875rem); line-height: var(--bq-line-height-relaxed,1.625); }
+    @media (prefers-reduced-motion: reduce) {
+      .panel { transition: none; }
+      .icon { transition: none; }
+      .trigger { transition: none; }
+    }
   `,
   connected() {
     const self = this;

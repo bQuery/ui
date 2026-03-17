@@ -1,5 +1,6 @@
 // DOM environment is provided by tests/setup.ts (preloaded via bunfig.toml)
 import { describe, it, expect, beforeAll, afterEach } from 'bun:test';
+import { waitForFrame } from './helpers.js';
 
 const win = (globalThis as unknown as Record<string, unknown>)['window'] as Window & typeof globalThis;
 const doc = win.document as unknown as Document;
@@ -46,6 +47,212 @@ describe('overlay and utility component fixes', () => {
     expect(firstDrawer?.getAttribute('aria-labelledby')).toBe(firstTitle?.id);
     expect(secondDrawer?.getAttribute('aria-labelledby')).toBe(secondTitle?.id);
     expect(firstTitle?.id).not.toBe(secondTitle?.id);
+  });
+
+  it('moves focus into the dialog on open and restores it on close', async () => {
+    const trigger = doc.createElement('button');
+    trigger.textContent = 'Open dialog';
+    doc.body.appendChild(trigger);
+    trigger.focus();
+
+    const dialog = doc.createElement('bq-dialog');
+    dialog.setAttribute('title', 'Example');
+    doc.body.appendChild(dialog);
+
+    dialog.setAttribute('open', '');
+    await waitForFrame(2);
+
+    const closeButton = dialog.shadowRoot?.querySelector('.close-btn') as HTMLButtonElement | null;
+    const activeWithinDialog = dialog.shadowRoot?.activeElement as Element | null;
+
+    expect(closeButton).toBeTruthy();
+    expect(activeWithinDialog).toBe(closeButton);
+
+    dialog.removeAttribute('open');
+    await waitForFrame(1);
+
+    expect(doc.activeElement).toBe(trigger);
+  });
+
+  it('focuses the dialog container when no focusable descendants are available', async () => {
+    const trigger = doc.createElement('button');
+    trigger.textContent = 'Open dialog';
+    doc.body.appendChild(trigger);
+    trigger.focus();
+
+    const dialog = doc.createElement('bq-dialog');
+    dialog.setAttribute('title', 'Example');
+    dialog.setAttribute('dismissible', 'false');
+    dialog.innerHTML = '<p>Static content only.</p>';
+    doc.body.appendChild(dialog);
+
+    dialog.setAttribute('open', '');
+    await waitForFrame(2);
+
+    const dialogSurface = dialog.shadowRoot?.querySelector('.dialog') as HTMLElement | null;
+    const activeWithinDialog = dialog.shadowRoot?.activeElement as Element | null;
+
+    expect(dialogSurface).toBeTruthy();
+    expect(activeWithinDialog).toBe(dialogSurface);
+  });
+
+  it('does not move focus into a dialog that closes before the scheduled focus runs', async () => {
+    const trigger = doc.createElement('button');
+    trigger.textContent = 'Open dialog';
+    doc.body.appendChild(trigger);
+    trigger.focus();
+
+    const dialog = doc.createElement('bq-dialog');
+    dialog.setAttribute('title', 'Example');
+    doc.body.appendChild(dialog);
+
+    dialog.setAttribute('open', '');
+    dialog.removeAttribute('open');
+    await waitForFrame(2);
+
+    expect(doc.activeElement).toBe(trigger);
+  });
+
+  it('restores focus when an open dialog is disconnected', async () => {
+    const trigger = doc.createElement('button');
+    trigger.textContent = 'Open dialog';
+    doc.body.appendChild(trigger);
+    trigger.focus();
+
+    const dialog = doc.createElement('bq-dialog');
+    dialog.setAttribute('title', 'Example');
+    doc.body.appendChild(dialog);
+
+    dialog.setAttribute('open', '');
+    await waitForFrame(2);
+    dialog.remove();
+
+    expect(doc.activeElement).toBe(trigger);
+  });
+
+  it('does not steal focus back on unrelated dialog updates while open', async () => {
+    const dialog = doc.createElement('bq-dialog');
+    dialog.setAttribute('title', 'Example');
+    dialog.innerHTML = '<button id="inside-dialog">Inside dialog</button>';
+    doc.body.appendChild(dialog);
+
+    dialog.setAttribute('open', '');
+    await waitForFrame(2);
+
+    const insideButton = dialog.querySelector('#inside-dialog') as HTMLButtonElement | null;
+    expect(insideButton).toBeTruthy();
+
+    insideButton?.focus();
+    expect(doc.activeElement).toBe(insideButton);
+
+    dialog.setAttribute('title', 'Updated title');
+    await waitForFrame(2);
+
+    expect(doc.activeElement).toBe(insideButton);
+  });
+
+  it('moves focus into the drawer on open and restores it on close', async () => {
+    const trigger = doc.createElement('button');
+    trigger.textContent = 'Open drawer';
+    doc.body.appendChild(trigger);
+    trigger.focus();
+
+    const drawer = doc.createElement('bq-drawer');
+    drawer.setAttribute('title', 'Example');
+    doc.body.appendChild(drawer);
+
+    drawer.setAttribute('open', '');
+    await waitForFrame(2);
+
+    const closeButton = drawer.shadowRoot?.querySelector('.close-btn') as HTMLButtonElement | null;
+    const activeWithinDrawer = drawer.shadowRoot?.activeElement as Element | null;
+
+    expect(closeButton).toBeTruthy();
+    expect(activeWithinDrawer).toBe(closeButton);
+
+    drawer.removeAttribute('open');
+    await waitForFrame(1);
+
+    expect(doc.activeElement).toBe(trigger);
+  });
+
+  it('focuses the drawer container when no focusable descendants are available', async () => {
+    const trigger = doc.createElement('button');
+    trigger.textContent = 'Open drawer';
+    doc.body.appendChild(trigger);
+    trigger.focus();
+
+    const drawer = doc.createElement('bq-drawer');
+    drawer.setAttribute('title', 'Example');
+    drawer.innerHTML = '<p>Static content only.</p>';
+    doc.body.appendChild(drawer);
+
+    drawer.setAttribute('open', '');
+    const closeButton = drawer.shadowRoot?.querySelector('.close-btn');
+    closeButton?.remove();
+    await waitForFrame(2);
+
+    const drawerSurface = drawer.shadowRoot?.querySelector('.drawer') as HTMLElement | null;
+    const activeWithinDrawer = drawer.shadowRoot?.activeElement as Element | null;
+
+    expect(drawerSurface).toBeTruthy();
+    expect(drawerSurface?.getAttribute('tabindex')).toBe('-1');
+    expect(activeWithinDrawer).toBe(drawerSurface);
+  });
+
+  it('does not move focus into a drawer that closes before the scheduled focus runs', async () => {
+    const trigger = doc.createElement('button');
+    trigger.textContent = 'Open drawer';
+    doc.body.appendChild(trigger);
+    trigger.focus();
+
+    const drawer = doc.createElement('bq-drawer');
+    drawer.setAttribute('title', 'Example');
+    doc.body.appendChild(drawer);
+
+    drawer.setAttribute('open', '');
+    drawer.removeAttribute('open');
+    await waitForFrame(2);
+
+    expect(doc.activeElement).toBe(trigger);
+  });
+
+  it('restores focus when an open drawer is disconnected', async () => {
+    const trigger = doc.createElement('button');
+    trigger.textContent = 'Open drawer';
+    doc.body.appendChild(trigger);
+    trigger.focus();
+
+    const drawer = doc.createElement('bq-drawer');
+    drawer.setAttribute('title', 'Example');
+    doc.body.appendChild(drawer);
+
+    drawer.setAttribute('open', '');
+    await waitForFrame(2);
+    drawer.remove();
+
+    expect(doc.activeElement).toBe(trigger);
+  });
+
+  it('does not steal focus back on unrelated drawer updates while open', async () => {
+    const drawer = doc.createElement('bq-drawer');
+    drawer.setAttribute('title', 'Example');
+    drawer.innerHTML = '<button id="inside-drawer">Inside drawer</button>';
+    doc.body.appendChild(drawer);
+
+    drawer.setAttribute('open', '');
+    await waitForFrame(2);
+
+    const insideButton = drawer.querySelector('#inside-drawer') as HTMLButtonElement | null;
+    expect(insideButton).toBeTruthy();
+
+    insideButton?.focus();
+    expect(doc.activeElement).toBe(insideButton);
+
+    drawer.setAttribute('title', 'Updated title');
+    await waitForFrame(2);
+
+    expect(doc.activeElement).toBe(insideButton);
   });
 
   it('renders breadcrumb separators from the separator prop', async () => {

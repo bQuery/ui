@@ -14,7 +14,7 @@ import type { ComponentDefinition } from '@bquery/bquery/component';
 import { escapeHtml } from '@bquery/bquery/security';
 import { getBaseStyles } from '../../utils/styles.js';
 import { t } from '../../i18n/index.js';
-import { uniqueId } from '../../utils/dom.js';
+import { trapFocus, uniqueId } from '../../utils/dom.js';
 
 type BqDrawerProps = { open: boolean; title: string; placement: string; size: string };
 type BqDrawerState = { titleId: string };
@@ -68,6 +68,10 @@ const definition: ComponentDefinition<BqDrawerProps, BqDrawerState> = {
     .close-btn:focus-visible { outline: 2px solid transparent; box-shadow: var(--bq-focus-ring); }
     .body { padding: var(--bq-space-6,1.5rem); overflow-y: auto; flex: 1; }
     .footer { padding: var(--bq-space-4,1rem) var(--bq-space-6,1.5rem); border-top: 1px solid var(--bq-border-base,#e2e8f0); display: flex; gap: var(--bq-space-3,0.75rem); justify-content: flex-end; flex-shrink: 0; background: var(--bq-bg-subtle,#f8fafc); }
+    @media (prefers-reduced-motion: reduce) {
+      .backdrop, .drawer { animation: none; }
+      .close-btn { transition: none; }
+    }
   `,
   connected() {
     type BQEl = HTMLElement & { setState(k: 'titleId', v: string): void; getState<T>(k: string): T };
@@ -85,16 +89,70 @@ const definition: ComponentDefinition<BqDrawerProps, BqDrawerState> = {
   },
   disconnected() {
     const s = this as unknown as Record<string, unknown>;
-    const kh = s['_kh'] as EventListener | undefined; if (kh) document.removeEventListener('keydown', kh);
-    const bh = s['_bh'] as EventListener | undefined; if (bh) this.shadowRoot?.removeEventListener('click', bh);
-    const ch = s['_ch'] as EventListener | undefined; if (ch) this.shadowRoot?.removeEventListener('click', ch);
+    const focusRaf = s['_focusRaf'] as number | undefined;
+    if (focusRaf !== undefined) cancelAnimationFrame(focusRaf);
+    delete s['_focusRaf'];
+    const releaseFocus = s['_releaseFocus'] as (() => void) | undefined;
+    if (releaseFocus) releaseFocus();
+    delete s['_releaseFocus'];
+    const prev = s['_previousFocus'] as HTMLElement | undefined;
+    if (prev && typeof prev.focus === 'function') prev.focus();
+    delete s['_previousFocus'];
+    delete s['_wasOpen'];
+    const kh = s['_kh'] as EventListener | undefined;
+    if (kh) document.removeEventListener('keydown', kh);
+    const bh = s['_bh'] as EventListener | undefined;
+    if (bh) this.shadowRoot?.removeEventListener('click', bh);
+    const ch = s['_ch'] as EventListener | undefined;
+    if (ch) this.shadowRoot?.removeEventListener('click', ch);
+  },
+  updated() {
+    const s = this as unknown as Record<string, unknown>;
+    const wasOpen = s['_wasOpen'] === true;
+    const isOpen = this.hasAttribute('open');
+    const releaseFocus = s['_releaseFocus'] as (() => void) | undefined;
+    if (isOpen && !wasOpen) {
+      s['_wasOpen'] = true;
+      // Store the previously focused element for restoration on close
+      if (!s['_previousFocus']) {
+        s['_previousFocus'] = document.activeElement as HTMLElement | null;
+      }
+      const drawer = this.shadowRoot?.querySelector('.drawer') as HTMLElement | null;
+      if (drawer) {
+        releaseFocus?.();
+        s['_releaseFocus'] = trapFocus(drawer);
+        const focusRaf = s['_focusRaf'] as number | undefined;
+        if (focusRaf !== undefined) cancelAnimationFrame(focusRaf);
+        s['_focusRaf'] = requestAnimationFrame(() => {
+          delete s['_focusRaf'];
+          if (!this.hasAttribute('open') || !this.isConnected) return;
+          const focusable = drawer.querySelector<HTMLElement>('button, a[href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+          (focusable ?? drawer).focus();
+        });
+      }
+    } else if (!isOpen && wasOpen) {
+      s['_wasOpen'] = false;
+      const focusRaf = s['_focusRaf'] as number | undefined;
+      if (focusRaf !== undefined) cancelAnimationFrame(focusRaf);
+      delete s['_focusRaf'];
+      releaseFocus?.();
+      delete s['_releaseFocus'];
+      // Restore focus to the element that was focused before opening
+      const prev = s['_previousFocus'] as HTMLElement | undefined;
+      if (prev && typeof prev.focus === 'function') {
+        prev.focus();
+      }
+      delete s['_previousFocus'];
+    } else if (!isOpen) {
+      s['_wasOpen'] = false;
+    }
   },
   render({ props, state }) {
     const titleId = state.titleId || 'bq-drawer-title';
     return html`
       <div class="backdrop" part="backdrop" role="presentation">
         <div class="drawer" part="drawer" data-placement="${escapeHtml(props.placement)}" data-size="${escapeHtml(props.size)}"
-          role="dialog" aria-modal="true" aria-labelledby="${escapeHtml(titleId)}">
+          role="dialog" aria-modal="true" aria-labelledby="${escapeHtml(titleId)}" tabindex="-1">
           <div class="header" part="header">
             <h2 class="title" id="${escapeHtml(titleId)}" part="title">${escapeHtml(props.title)}</h2>
             <button class="close-btn" type="button" aria-label="${t('drawer.close')}" part="close">&#10005;</button>

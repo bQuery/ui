@@ -62,6 +62,10 @@ const definition: ComponentDefinition<BqDialogProps, BqDialogState> = {
     .close-btn:focus-visible { outline: 2px solid transparent; box-shadow: var(--bq-focus-ring); }
     .body { padding: var(--bq-space-6,1.5rem); overflow-y: auto; flex: 1; color: var(--bq-text-muted,#475569); font-size: var(--bq-font-size-md,1rem); line-height: var(--bq-line-height-relaxed,1.625); }
     .footer { padding: var(--bq-space-4,1rem) var(--bq-space-6,1.5rem); border-top: 1px solid var(--bq-border-base,#e2e8f0); display: flex; align-items: center; justify-content: flex-end; gap: var(--bq-space-3,0.75rem); flex-shrink: 0; background: var(--bq-bg-subtle,#f8fafc); }
+    @media (prefers-reduced-motion: reduce) {
+      .overlay, .dialog { animation: none; }
+      .close-btn { transition: none; }
+    }
   `,
   connected() {
     type BQEl = HTMLElement & { setState(k: 'titleId', v: string): void; getState<T>(k: string): T };
@@ -89,27 +93,62 @@ const definition: ComponentDefinition<BqDialogProps, BqDialogState> = {
   },
   disconnected() {
     const s = this as unknown as Record<string, unknown>;
-    const releaseFocus = s['_releaseFocus'] as (() => void) | undefined; if (releaseFocus) releaseFocus();
-    const kh = s['_kh'] as EventListener | undefined; if (kh) document.removeEventListener('keydown', kh);
-    const oh = s['_oh'] as EventListener | undefined; if (oh) this.shadowRoot?.removeEventListener('click', oh);
-    const ch = s['_ch'] as EventListener | undefined; if (ch) this.shadowRoot?.removeEventListener('click', ch);
+    const focusRaf = s['_focusRaf'] as number | undefined;
+    if (focusRaf !== undefined) cancelAnimationFrame(focusRaf);
+    const releaseFocus = s['_releaseFocus'] as (() => void) | undefined;
+    if (releaseFocus) releaseFocus();
+    const prev = s['_previousFocus'] as HTMLElement | undefined;
+    if (prev && typeof prev.focus === 'function') prev.focus();
+    delete s['_previousFocus'];
+    delete s['_wasOpen'];
+    delete s['_focusRaf'];
+    delete s['_releaseFocus'];
+    const kh = s['_kh'] as EventListener | undefined;
+    if (kh) document.removeEventListener('keydown', kh);
+    const oh = s['_oh'] as EventListener | undefined;
+    if (oh) this.shadowRoot?.removeEventListener('click', oh);
+    const ch = s['_ch'] as EventListener | undefined;
+    if (ch) this.shadowRoot?.removeEventListener('click', ch);
   },
   updated() {
     const s = this as unknown as Record<string, unknown>;
+    const wasOpen = s['_wasOpen'] === true;
+    const isOpen = this.hasAttribute('open');
     const releaseFocus = s['_releaseFocus'] as (() => void) | undefined;
-    if (this.hasAttribute('open')) {
+    if (isOpen && !wasOpen) {
+      s['_wasOpen'] = true;
+      // Store the previously focused element for restoration on close
+      if (!s['_previousFocus']) {
+        s['_previousFocus'] = document.activeElement as HTMLElement | null;
+      }
       const dialog = this.shadowRoot?.querySelector('.dialog') as HTMLElement | null;
       if (dialog) {
         releaseFocus?.();
         s['_releaseFocus'] = trapFocus(dialog);
-        requestAnimationFrame(() => {
+        const focusRaf = s['_focusRaf'] as number | undefined;
+        if (focusRaf !== undefined) cancelAnimationFrame(focusRaf);
+        s['_focusRaf'] = requestAnimationFrame(() => {
+          delete s['_focusRaf'];
+          if (!this.hasAttribute('open') || !this.isConnected) return;
           const focusable = dialog.querySelector<HTMLElement>('button, a[href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
-          if (focusable) focusable.focus();
+          (focusable ?? dialog).focus();
         });
       }
-    } else {
+    } else if (!isOpen && wasOpen) {
+      s['_wasOpen'] = false;
+      const focusRaf = s['_focusRaf'] as number | undefined;
+      if (focusRaf !== undefined) cancelAnimationFrame(focusRaf);
+      delete s['_focusRaf'];
       releaseFocus?.();
       delete s['_releaseFocus'];
+      // Restore focus to the element that was focused before opening
+      const prev = s['_previousFocus'] as HTMLElement | undefined;
+      if (prev && typeof prev.focus === 'function') {
+        prev.focus();
+      }
+      delete s['_previousFocus'];
+    } else if (!isOpen) {
+      s['_wasOpen'] = false;
     }
   },
   render({ props, state }) {

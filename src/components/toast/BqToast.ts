@@ -43,6 +43,9 @@ const definition: ComponentDefinition<BqToastProps> = {
     .close { flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center; background: none; border: none; cursor: pointer; color: inherit; padding: 0.125rem; border-radius: var(--bq-radius-sm,0.25rem); opacity: 0.7; font-size: 0.875rem; }
     .close:hover { opacity: 1; background: rgba(0,0,0,0.08); }
     .close:focus-visible { outline: 2px solid transparent; box-shadow: var(--bq-focus-ring); }
+    @media (prefers-reduced-motion: reduce) {
+      .toast { animation: none; }
+    }
   `,
   connected() {
     const self = this;
