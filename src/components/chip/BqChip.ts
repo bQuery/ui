@@ -72,7 +72,7 @@ const definition: ComponentDefinition<BqChipProps> = {
       if (self.hasAttribute('disabled')) return;
       const key = (e as KeyboardEvent).key;
       if (key !== 'Enter' && key !== ' ') return;
-      const target = e.target as Element | null;
+      const target = e.target as HTMLElement | null;
       if (!target?.classList.contains('chip')) return;
       e.preventDefault();
       self.dispatchEvent(new CustomEvent('bq-click', { bubbles: true, composed: true }));
