@@ -11,23 +11,33 @@
  * @prop {string}  hint
  * @fires bq-change - { checked: boolean, value: string }
  */
-import { component, html } from '@bquery/bquery/component';
 import type { ComponentDefinition } from '@bquery/bquery/component';
+import { component, html } from '@bquery/bquery/component';
 import { escapeHtml } from '@bquery/bquery/security';
+import { createFormProxy, type FormProxy } from '../../utils/form.js';
 import { getBaseStyles } from '../../utils/styles.js';
 
-type BqCheckboxProps = { label: string; name: string; value: string; checked: boolean; indeterminate: boolean; disabled: boolean; required: boolean; hint: string };
+type BqCheckboxProps = {
+  label: string;
+  name: string;
+  value: string;
+  checked: boolean;
+  indeterminate: boolean;
+  disabled: boolean;
+  required: boolean;
+  hint: string;
+};
 
 const definition: ComponentDefinition<BqCheckboxProps> = {
   props: {
-    label:         { type: String, default: '' },
-    name:          { type: String, default: '' },
-    value:         { type: String, default: '' },
-    checked:       { type: Boolean, default: false },
+    label: { type: String, default: '' },
+    name: { type: String, default: '' },
+    value: { type: String, default: '' },
+    checked: { type: Boolean, default: false },
     indeterminate: { type: Boolean, default: false },
-    disabled:      { type: Boolean, default: false },
-    required:      { type: Boolean, default: false },
-    hint:          { type: String, default: '' },
+    disabled: { type: Boolean, default: false },
+    required: { type: Boolean, default: false },
+    hint: { type: String, default: '' },
   },
   styles: `
     ${getBaseStyles()}
@@ -50,33 +60,82 @@ const definition: ComponentDefinition<BqCheckboxProps> = {
   `,
   connected() {
     const self = this;
+
+    // Form proxy for native <form> participation
+    const name = self.getAttribute('name') ?? '';
+    const value = self.hasAttribute('checked')
+      ? self.getAttribute('value') || 'on'
+      : '';
+    const disabled = self.hasAttribute('disabled');
+    const proxy = createFormProxy(self, name, value, disabled);
+    (self as unknown as Record<string, unknown>)['_formProxy'] = proxy;
+
     const handler = (e: Event) => {
       const input = e.target as HTMLInputElement | null;
       if (input?.type !== 'checkbox') return;
-      if (input.checked) self.setAttribute('checked', ''); else self.removeAttribute('checked');
-      self.dispatchEvent(new CustomEvent('bq-change', { detail: { checked: input.checked, value: self.getAttribute('value') ?? '' }, bubbles: true, composed: true }));
+      if (input.checked) self.setAttribute('checked', '');
+      else self.removeAttribute('checked');
+      proxy.setValue(input.checked ? self.getAttribute('value') || 'on' : '');
+      self.dispatchEvent(
+        new CustomEvent('bq-change', {
+          detail: {
+            checked: input.checked,
+            value: self.getAttribute('value') ?? '',
+          },
+          bubbles: true,
+          composed: true,
+        })
+      );
     };
     (self as unknown as Record<string, unknown>)['_handler'] = handler;
     self.shadowRoot?.addEventListener('change', handler);
   },
   disconnected() {
-    const h = (this as unknown as Record<string, unknown>)['_handler'] as EventListener | undefined;
+    const h = (this as unknown as Record<string, unknown>)['_handler'] as
+      | EventListener
+      | undefined;
     if (h) this.shadowRoot?.removeEventListener('change', h);
+    (
+      (this as unknown as Record<string, unknown>)['_formProxy'] as
+        | FormProxy
+        | undefined
+    )?.cleanup();
   },
   updated() {
-    const input = this.shadowRoot?.querySelector('input') as HTMLInputElement | null;
+    const input = this.shadowRoot?.querySelector(
+      'input'
+    ) as HTMLInputElement | null;
     if (input) input.indeterminate = this.hasAttribute('indeterminate');
+    const s = this as unknown as Record<string, unknown>;
+    const proxy = s['_formProxy'] as FormProxy | undefined;
+    if (proxy) {
+      proxy.setName(this.getAttribute('name') ?? '');
+      proxy.setValue(
+        this.hasAttribute('checked') ? this.getAttribute('value') || 'on' : ''
+      );
+      proxy.setDisabled(this.hasAttribute('disabled'));
+    }
   },
   render({ props }) {
     return html`
       <div class="wrapper" part="wrapper">
         <label class="control" part="control">
-          <input type="checkbox" part="input" name="${escapeHtml(props.name)}" value="${escapeHtml(props.value)}"
-            ${props.checked ? 'checked' : ''} ${props.disabled ? 'disabled' : ''} ${props.required ? 'required' : ''}
-            aria-label="${escapeHtml(props.label)}" />
-          ${props.label ? `<span class="label-text" part="label">${escapeHtml(props.label)}${props.required ? '<span class="required-mark" aria-hidden="true"> *</span>' : ''}</span>` : ''}
+          <input
+            type="checkbox"
+            part="input"
+            name="${escapeHtml(props.name)}"
+            value="${escapeHtml(props.value)}"
+            ${props.checked ? 'checked' : ''}
+            ${props.disabled ? 'disabled' : ''}
+            ${props.required ? 'required' : ''}
+          />
+          ${props.label
+            ? `<span class="label-text" part="label">${escapeHtml(props.label)}${props.required ? '<span class="required-mark" aria-hidden="true"> *</span>' : ''}</span>`
+            : ''}
         </label>
-        ${props.hint ? `<span class="hint" part="hint">${escapeHtml(props.hint)}</span>` : ''}
+        ${props.hint
+          ? `<span class="hint" part="hint">${escapeHtml(props.hint)}</span>`
+          : ''}
       </div>
     `;
   },

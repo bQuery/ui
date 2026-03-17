@@ -7,7 +7,7 @@ export function dispatch<T = unknown>(
   element: HTMLElement,
   name: string,
   detail?: T,
-  options?: Partial<CustomEventInit<T>>,
+  options?: Partial<CustomEventInit<T>>
 ): boolean {
   const init: CustomEventInit<T> = {
     bubbles: true,
@@ -23,10 +23,7 @@ export function dispatch<T = unknown>(
 }
 
 /** Query a slot's assigned elements (flattened). */
-export function getSlotted(
-  shadow: ShadowRoot,
-  slotName?: string,
-): Element[] {
+export function getSlotted(shadow: ShadowRoot, slotName?: string): Element[] {
   const selector = slotName ? `slot[name="${slotName}"]` : 'slot:not([name])';
   const slot = shadow.querySelector<HTMLSlotElement>(selector);
   return slot ? slot.assignedElements({ flatten: true }) : [];
@@ -46,8 +43,8 @@ export function isFocusable(el: Element): el is HTMLElement {
 export function getFocusableElements(container: Element): HTMLElement[] {
   const candidates = Array.from(
     container.querySelectorAll<HTMLElement>(
-      'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"]), details > summary',
-    ),
+      'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"]), details > summary'
+    )
   );
   return candidates.filter(isFocusable);
 }
@@ -85,4 +82,71 @@ export function trapFocus(container: HTMLElement): () => void {
 let _counter = 0;
 export function uniqueId(prefix = 'bq'): string {
   return `${prefix}-${++_counter}`;
+}
+
+/**
+ * Manages focus trapping, initial focus, and focus restoration for overlay
+ * components (Dialog, Drawer). Call from `updated()`.
+ */
+export interface OverlayFocusState {
+  _wasOpen?: boolean;
+  _previousFocus?: HTMLElement | null;
+  _focusRaf?: number;
+  _releaseFocus?: () => void;
+}
+
+export function updateOverlayFocus(
+  host: HTMLElement,
+  state: OverlayFocusState,
+  panelSelector: string
+): void {
+  const wasOpen = state._wasOpen === true;
+  const isOpen = host.hasAttribute('open');
+
+  if (isOpen && !wasOpen) {
+    state._wasOpen = true;
+    if (!state._previousFocus) {
+      state._previousFocus = document.activeElement as HTMLElement | null;
+    }
+    const panel = host.shadowRoot?.querySelector(
+      panelSelector
+    ) as HTMLElement | null;
+    if (panel) {
+      state._releaseFocus?.();
+      state._releaseFocus = trapFocus(panel);
+      if (state._focusRaf !== undefined) cancelAnimationFrame(state._focusRaf);
+      state._focusRaf = requestAnimationFrame(() => {
+        delete state._focusRaf;
+        if (!host.hasAttribute('open') || !host.isConnected) return;
+        const focusable = panel.querySelector<HTMLElement>(
+          'button, a[href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+        );
+        (focusable ?? panel).focus();
+      });
+    }
+  } else if (!isOpen && wasOpen) {
+    state._wasOpen = false;
+    if (state._focusRaf !== undefined) cancelAnimationFrame(state._focusRaf);
+    delete state._focusRaf;
+    state._releaseFocus?.();
+    delete state._releaseFocus;
+    const prev = state._previousFocus;
+    if (prev && typeof prev.focus === 'function') {
+      prev.focus();
+    }
+    delete state._previousFocus;
+  } else if (!isOpen) {
+    state._wasOpen = false;
+  }
+}
+
+export function cleanupOverlayFocus(state: OverlayFocusState): void {
+  if (state._focusRaf !== undefined) cancelAnimationFrame(state._focusRaf);
+  state._releaseFocus?.();
+  const prev = state._previousFocus;
+  if (prev && typeof prev.focus === 'function') prev.focus();
+  delete state._previousFocus;
+  delete state._wasOpen;
+  delete state._focusRaf;
+  delete state._releaseFocus;
 }

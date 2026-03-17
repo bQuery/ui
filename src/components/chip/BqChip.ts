@@ -10,19 +10,25 @@
  * @fires bq-remove
  * @fires bq-click
  */
-import { component, html } from '@bquery/bquery/component';
 import type { ComponentDefinition } from '@bquery/bquery/component';
+import { component, html } from '@bquery/bquery/component';
 import { escapeHtml } from '@bquery/bquery/security';
-import { getBaseStyles } from '../../utils/styles.js';
 import { t } from '../../i18n/index.js';
+import { getBaseStyles } from '../../utils/styles.js';
 
-type BqChipProps = { variant: string; size: string; removable: boolean; selected: boolean; disabled: boolean };
+type BqChipProps = {
+  variant: string;
+  size: string;
+  removable: boolean;
+  selected: boolean;
+  disabled: boolean;
+};
 
 const definition: ComponentDefinition<BqChipProps> = {
   props: {
-    variant:  { type: String, default: 'primary' },
-    size:     { type: String, default: 'md' },
-    removable:{ type: Boolean, default: false },
+    variant: { type: String, default: 'primary' },
+    size: { type: String, default: 'md' },
+    removable: { type: Boolean, default: false },
     selected: { type: Boolean, default: false },
     disabled: { type: Boolean, default: false },
   },
@@ -55,6 +61,9 @@ const definition: ComponentDefinition<BqChipProps> = {
     }
     .remove-btn:hover { opacity: 1; }
     .remove-btn:focus-visible { outline: 2px solid transparent; box-shadow: var(--bq-focus-ring); }
+    @media (prefers-reduced-motion: reduce) {
+      .chip { transition: none; }
+    }
   `,
   connected() {
     const self = this;
@@ -63,10 +72,14 @@ const definition: ComponentDefinition<BqChipProps> = {
       const target = e.target as Element;
       if (target.closest('.remove-btn')) {
         e.stopPropagation();
-        self.dispatchEvent(new CustomEvent('bq-remove', { bubbles: true, composed: true }));
+        self.dispatchEvent(
+          new CustomEvent('bq-remove', { bubbles: true, composed: true })
+        );
         return;
       }
-      self.dispatchEvent(new CustomEvent('bq-click', { bubbles: true, composed: true }));
+      self.dispatchEvent(
+        new CustomEvent('bq-click', { bubbles: true, composed: true })
+      );
     };
     const keyHandler = (e: Event) => {
       if (self.hasAttribute('disabled')) return;
@@ -74,7 +87,8 @@ const definition: ComponentDefinition<BqChipProps> = {
       const target = e.target as HTMLElement | null;
       if (!target?.classList.contains('chip')) return;
       const isSpaceKeydown = ke.type === 'keydown' && ke.key === ' ';
-      const isEnterKeydown = ke.type === 'keydown' && ke.key === 'Enter' && !ke.repeat;
+      const isEnterKeydown =
+        ke.type === 'keydown' && ke.key === 'Enter' && !ke.repeat;
       const isSpaceKeyup = ke.type === 'keyup' && ke.key === ' ';
       if (isSpaceKeydown) {
         e.preventDefault();
@@ -82,7 +96,9 @@ const definition: ComponentDefinition<BqChipProps> = {
       }
       if (!isEnterKeydown && !isSpaceKeyup) return;
       e.preventDefault();
-      self.dispatchEvent(new CustomEvent('bq-click', { bubbles: true, composed: true }));
+      self.dispatchEvent(
+        new CustomEvent('bq-click', { bubbles: true, composed: true })
+      );
     };
     (self as unknown as Record<string, unknown>)['_handler'] = handler;
     (self as unknown as Record<string, unknown>)['_keyHandler'] = keyHandler;
@@ -91,19 +107,32 @@ const definition: ComponentDefinition<BqChipProps> = {
     self.shadowRoot?.addEventListener('keyup', keyHandler);
   },
   disconnected() {
-    const handler = (this as unknown as Record<string, unknown>)['_handler'] as EventListener | undefined;
-    const keyHandler = (this as unknown as Record<string, unknown>)['_keyHandler'] as EventListener | undefined;
+    const handler = (this as unknown as Record<string, unknown>)['_handler'] as
+      | EventListener
+      | undefined;
+    const keyHandler = (this as unknown as Record<string, unknown>)[
+      '_keyHandler'
+    ] as EventListener | undefined;
     if (handler) this.shadowRoot?.removeEventListener('click', handler);
     if (keyHandler) this.shadowRoot?.removeEventListener('keydown', keyHandler);
     if (keyHandler) this.shadowRoot?.removeEventListener('keyup', keyHandler);
   },
   render({ props }) {
     return html`
-      <span part="chip" class="chip" data-variant="${escapeHtml(props.variant)}" data-size="${escapeHtml(props.size)}"
-        role="button" tabindex="${props.disabled ? '-1' : '0'}"
-        aria-pressed="${props.selected ? 'true' : 'false'}" aria-disabled="${props.disabled ? 'true' : 'false'}">
+      <span
+        part="chip"
+        class="chip"
+        data-variant="${escapeHtml(props.variant)}"
+        data-size="${escapeHtml(props.size)}"
+        role="button"
+        tabindex="${props.disabled ? '-1' : '0'}"
+        aria-pressed="${props.selected ? 'true' : 'false'}"
+        aria-disabled="${props.disabled ? 'true' : 'false'}"
+      >
         <slot></slot>
-        ${props.removable ? `<button type="button" class="remove-btn" aria-label="${t('chip.remove')}">✕</button>` : ''}
+        ${props.removable
+          ? `<button type="button" class="remove-btn" aria-label="${t('chip.remove')}">✕</button>`
+          : ''}
       </span>
     `;
   },

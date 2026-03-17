@@ -8,18 +8,23 @@
  * @slot - Accordion panel content
  * @fires bq-toggle - { open: boolean }
  */
-import { component, html } from '@bquery/bquery/component';
 import type { ComponentDefinition } from '@bquery/bquery/component';
+import { component, html } from '@bquery/bquery/component';
 import { escapeHtml } from '@bquery/bquery/security';
 import { getBaseStyles } from '../../utils/styles.js';
 
-type BqAccordionProps = { label: string; open: boolean; disabled: boolean; variant: string };
+type BqAccordionProps = {
+  label: string;
+  open: boolean;
+  disabled: boolean;
+  variant: string;
+};
 
 const definition: ComponentDefinition<BqAccordionProps> = {
   props: {
-    label:   { type: String, default: '' },
-    open:    { type: Boolean, default: false },
-    disabled:{ type: Boolean, default: false },
+    label: { type: String, default: '' },
+    open: { type: Boolean, default: false },
+    disabled: { type: Boolean, default: false },
     variant: { type: String, default: 'default' },
   },
   styles: `
@@ -57,8 +62,15 @@ const definition: ComponentDefinition<BqAccordionProps> = {
       if ((e.target as Element).closest('.trigger')) {
         if (self.hasAttribute('disabled')) return;
         const newOpen = !self.hasAttribute('open');
-        if (newOpen) self.setAttribute('open', ''); else self.removeAttribute('open');
-        self.dispatchEvent(new CustomEvent('bq-toggle', { detail: { open: newOpen }, bubbles: true, composed: true }));
+        if (newOpen) self.setAttribute('open', '');
+        else self.removeAttribute('open');
+        self.dispatchEvent(
+          new CustomEvent('bq-toggle', {
+            detail: { open: newOpen },
+            bubbles: true,
+            composed: true,
+          })
+        );
       }
     };
     (self as unknown as Record<string, unknown>)['_handler'] = handler;
@@ -66,8 +78,12 @@ const definition: ComponentDefinition<BqAccordionProps> = {
     // Keyboard: Enter/Space on trigger
     const kh = (e: Event) => {
       const ke = e as KeyboardEvent;
-      if ((ke.key === 'Enter' || ke.key === ' ') && (e.target as Element).closest('.trigger')) {
-        ke.preventDefault(); handler(e);
+      if (
+        (ke.key === 'Enter' || ke.key === ' ') &&
+        (e.target as Element).closest('.trigger')
+      ) {
+        ke.preventDefault();
+        handler(e);
       }
     };
     (self as unknown as Record<string, unknown>)['_kh'] = kh;
@@ -82,14 +98,27 @@ const definition: ComponentDefinition<BqAccordionProps> = {
   },
   render({ props }) {
     return html`
-      <div part="accordion" class="accordion" data-variant="${escapeHtml(props.variant)}">
-        <button part="trigger" class="trigger" type="button"
+      <div
+        part="accordion"
+        class="accordion"
+        data-variant="${escapeHtml(props.variant)}"
+      >
+        <button
+          part="trigger"
+          class="trigger"
+          type="button"
           aria-expanded="${props.open ? 'true' : 'false'}"
-          ${props.disabled ? 'disabled aria-disabled="true"' : ''}>
+          ${props.disabled ? 'disabled aria-disabled="true"' : ''}
+        >
           <span part="label">${escapeHtml(props.label)}</span>
           <span class="icon" aria-hidden="true">&#9662;</span>
         </button>
-        <div part="panel" class="panel" role="region" ${!props.open ? 'hidden' : ''}>
+        <div
+          part="panel"
+          class="panel"
+          role="region"
+          aria-hidden="${!props.open ? 'true' : 'false'}"
+        >
           <div class="panel-inner"><slot></slot></div>
         </div>
       </div>

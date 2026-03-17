@@ -8,20 +8,27 @@
  * @prop {string}  size    - sm | md | lg
  * @fires bq-change - { checked: boolean }
  */
-import { component, html } from '@bquery/bquery/component';
 import type { ComponentDefinition } from '@bquery/bquery/component';
+import { component, html } from '@bquery/bquery/component';
 import { escapeHtml } from '@bquery/bquery/security';
+import { createFormProxy, type FormProxy } from '../../utils/form.js';
 import { getBaseStyles } from '../../utils/styles.js';
 
-type BqSwitchProps = { label: string; name: string; checked: boolean; disabled: boolean; size: string };
+type BqSwitchProps = {
+  label: string;
+  name: string;
+  checked: boolean;
+  disabled: boolean;
+  size: string;
+};
 
 const definition: ComponentDefinition<BqSwitchProps> = {
   props: {
-    label:   { type: String, default: '' },
-    name:    { type: String, default: '' },
+    label: { type: String, default: '' },
+    name: { type: String, default: '' },
     checked: { type: Boolean, default: false },
-    disabled:{ type: Boolean, default: false },
-    size:    { type: String, default: 'md' },
+    disabled: { type: Boolean, default: false },
+    size: { type: String, default: 'md' },
   },
   styles: `
     ${getBaseStyles()}
@@ -53,33 +60,76 @@ const definition: ComponentDefinition<BqSwitchProps> = {
     :host([checked]) .track[data-size="lg"]  .thumb { transform: translateX(1.375rem); }
     input:focus-visible + .thumb { box-shadow: var(--bq-focus-ring); }
     .label-text { font-size: var(--bq-font-size-sm,0.875rem); color: var(--bq-text-base,#0f172a); }
+    @media (prefers-reduced-motion: reduce) {
+      .track, .thumb { transition: none; }
+    }
   `,
   connected() {
     const self = this;
+
+    // Form proxy for native <form> participation
+    const name = self.getAttribute('name') ?? '';
+    const value = self.hasAttribute('checked') ? 'on' : '';
+    const disabled = self.hasAttribute('disabled');
+    const proxy = createFormProxy(self, name, value, disabled);
+    (self as unknown as Record<string, unknown>)['_formProxy'] = proxy;
+
     const handler = (e: Event) => {
       const input = e.target as HTMLInputElement | null;
       if (input?.type !== 'checkbox') return;
-      if (input.checked) self.setAttribute('checked', ''); else self.removeAttribute('checked');
-      self.dispatchEvent(new CustomEvent('bq-change', { detail: { checked: input.checked }, bubbles: true, composed: true }));
+      if (input.checked) self.setAttribute('checked', '');
+      else self.removeAttribute('checked');
+      proxy.setValue(input.checked ? 'on' : '');
+      self.dispatchEvent(
+        new CustomEvent('bq-change', {
+          detail: { checked: input.checked },
+          bubbles: true,
+          composed: true,
+        })
+      );
     };
     (self as unknown as Record<string, unknown>)['_handler'] = handler;
     self.shadowRoot?.addEventListener('change', handler);
   },
   disconnected() {
-    const h = (this as unknown as Record<string, unknown>)['_handler'] as EventListener | undefined;
+    const h = (this as unknown as Record<string, unknown>)['_handler'] as
+      | EventListener
+      | undefined;
     if (h) this.shadowRoot?.removeEventListener('change', h);
+    (
+      (this as unknown as Record<string, unknown>)['_formProxy'] as
+        | FormProxy
+        | undefined
+    )?.cleanup();
+  },
+  updated() {
+    const s = this as unknown as Record<string, unknown>;
+    const proxy = s['_formProxy'] as FormProxy | undefined;
+    if (proxy) {
+      proxy.setName(this.getAttribute('name') ?? '');
+      proxy.setValue(this.hasAttribute('checked') ? 'on' : '');
+      proxy.setDisabled(this.hasAttribute('disabled'));
+    }
   },
   render({ props }) {
     return html`
       <label class="control" part="control">
         <span class="track" data-size="${escapeHtml(props.size)}">
-          <input type="checkbox" part="input" name="${escapeHtml(props.name)}"
-            ${props.checked ? 'checked' : ''} ${props.disabled ? 'disabled' : ''}
-            role="switch" aria-checked="${props.checked ? 'true' : 'false'}"
-            aria-label="${escapeHtml(props.label)}" />
+          <input
+            type="checkbox"
+            part="input"
+            name="${escapeHtml(props.name)}"
+            ${props.checked ? 'checked' : ''}
+            ${props.disabled ? 'disabled' : ''}
+            role="switch"
+            aria-checked="${props.checked ? 'true' : 'false'}"
+            aria-label="${escapeHtml(props.label)}"
+          />
           <span class="thumb" part="thumb"></span>
         </span>
-        ${props.label ? `<span class="label-text" part="label">${escapeHtml(props.label)}</span>` : ''}
+        ${props.label
+          ? `<span class="label-text" part="label">${escapeHtml(props.label)}</span>`
+          : ''}
       </label>
     `;
   },

@@ -79,6 +79,9 @@ export const en = {
   chip: {
     remove: 'Remove',
   },
+  breadcrumbs: {
+    nav: 'Breadcrumb',
+  },
   iconButton: {
     defaultLabel: 'Icon button',
   },

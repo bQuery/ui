@@ -4,9 +4,9 @@
  * @prop {string} separator - Separator character or text (default: /)
  * @slot - <a> or other link elements
  */
-import { component, html } from '@bquery/bquery/component';
 import type { ComponentDefinition } from '@bquery/bquery/component';
-import { escapeHtml } from '@bquery/bquery/security';
+import { component, html } from '@bquery/bquery/component';
+import { t } from '../../i18n/index.js';
 import { getBaseStyles } from '../../utils/styles.js';
 
 type BqBreadcrumbsProps = { separator: string };
@@ -31,13 +31,20 @@ const definition: ComponentDefinition<BqBreadcrumbsProps> = {
     ::slotted(a:hover) { color: var(--bq-color-primary-600,#2563eb); text-decoration: underline; }
     ::slotted([aria-current="page"]) { color: var(--bq-text-base,#0f172a); font-weight: var(--bq-font-weight-medium,500); pointer-events: none; }
     ::slotted([data-bq-breadcrumb-separator]) { color: var(--bq-text-subtle,#94a3b8); margin: 0 var(--bq-space-2,0.5rem); user-select: none; }
+    @media (prefers-reduced-motion: reduce) {
+      ::slotted(a) { transition: none; }
+    }
   `,
   connected() {
     const self = this;
     const applyAttrs = () => {
-      const slot = self.shadowRoot?.querySelector('slot') as HTMLSlotElement | null;
+      const slot = self.shadowRoot?.querySelector(
+        'slot'
+      ) as HTMLSlotElement | null;
       if (!slot) return;
-      const items = slot.assignedElements({ flatten: true }).filter((item) => !isSeparatorElement(item));
+      const items = slot
+        .assignedElements({ flatten: true })
+        .filter((item) => !isSeparatorElement(item));
       const separatorText = self.getAttribute('separator') || '/';
       const state = self as unknown as Record<string, unknown>;
       if (state['_syncingSeparators']) return;
@@ -48,15 +55,22 @@ const definition: ComponentDefinition<BqBreadcrumbsProps> = {
         else item.removeAttribute('aria-current');
       });
 
-      const separatorCount = self.querySelectorAll<HTMLElement>(`[${SEPARATOR_ATTR}]`).length;
-      if (state['_separatorSignature'] === signature && separatorCount === Math.max(0, items.length - 1)) {
+      const separatorCount = self.querySelectorAll<HTMLElement>(
+        `[${SEPARATOR_ATTR}]`
+      ).length;
+      if (
+        state['_separatorSignature'] === signature &&
+        separatorCount === Math.max(0, items.length - 1)
+      ) {
         return;
       }
 
       state['_syncingSeparators'] = true;
       state['_separatorSignature'] = signature;
       try {
-        self.querySelectorAll<HTMLElement>(`[${SEPARATOR_ATTR}]`).forEach((separator) => separator.remove());
+        self
+          .querySelectorAll<HTMLElement>(`[${SEPARATOR_ATTR}]`)
+          .forEach((separator) => separator.remove());
         items.forEach((item, i) => {
           if (i < items.length - 1) {
             const separator = document.createElement('span');
@@ -72,7 +86,9 @@ const definition: ComponentDefinition<BqBreadcrumbsProps> = {
     };
     (self as unknown as Record<string, unknown>)['_applyAttrs'] = applyAttrs;
     queueMicrotask(() => {
-      const slot = self.shadowRoot?.querySelector('slot') as HTMLSlotElement | null;
+      const slot = self.shadowRoot?.querySelector(
+        'slot'
+      ) as HTMLSlotElement | null;
       if (!slot) return;
       slot.addEventListener('slotchange', applyAttrs);
       (self as unknown as Record<string, unknown>)['_slot'] = slot;
@@ -86,12 +102,14 @@ const definition: ComponentDefinition<BqBreadcrumbsProps> = {
     if (slot && applyAttrs) slot.removeEventListener('slotchange', applyAttrs);
   },
   updated() {
-    const applyAttrs = (this as unknown as Record<string, unknown>)['_applyAttrs'] as (() => void) | undefined;
+    const applyAttrs = (this as unknown as Record<string, unknown>)[
+      '_applyAttrs'
+    ] as (() => void) | undefined;
     applyAttrs?.();
   },
   render({ props }) {
     return html`
-      <nav aria-label="Breadcrumb" part="nav">
+      <nav aria-label="${t('breadcrumbs.nav')}" part="nav">
         <ol class="breadcrumbs" part="list">
           <slot></slot>
         </ol>

@@ -2,31 +2,41 @@
  * Textarea form field.
  * @element bq-textarea
  */
-import { component, html } from '@bquery/bquery/component';
 import type { ComponentDefinition } from '@bquery/bquery/component';
+import { component, html } from '@bquery/bquery/component';
 import { escapeHtml } from '@bquery/bquery/security';
 import { uniqueId } from '../../utils/dom.js';
+import { createFormProxy, type FormProxy } from '../../utils/form.js';
 import { getBaseStyles } from '../../utils/styles.js';
 
 type BqTextareaProps = {
-  label: string; value: string; placeholder: string; name: string; rows: number;
-  disabled: boolean; readonly: boolean; required: boolean; error: string; hint: string; maxlength: string;
+  label: string;
+  value: string;
+  placeholder: string;
+  name: string;
+  rows: number;
+  disabled: boolean;
+  readonly: boolean;
+  required: boolean;
+  error: string;
+  hint: string;
+  maxlength: string;
 };
 type BqTextareaState = { uid: string };
 
 const definition: ComponentDefinition<BqTextareaProps, BqTextareaState> = {
   props: {
-    label:      { type: String, default: '' },
-    value:      { type: String, default: '' },
-    placeholder:{ type: String, default: '' },
-    name:       { type: String, default: '' },
-    rows:       { type: Number, default: 4 },
-    disabled:   { type: Boolean, default: false },
-    readonly:   { type: Boolean, default: false },
-    required:   { type: Boolean, default: false },
-    error:      { type: String, default: '' },
-    hint:       { type: String, default: '' },
-    maxlength:  { type: String, default: '' },
+    label: { type: String, default: '' },
+    value: { type: String, default: '' },
+    placeholder: { type: String, default: '' },
+    name: { type: String, default: '' },
+    rows: { type: Number, default: 4 },
+    disabled: { type: Boolean, default: false },
+    readonly: { type: Boolean, default: false },
+    required: { type: Boolean, default: false },
+    error: { type: String, default: '' },
+    hint: { type: String, default: '' },
+    maxlength: { type: String, default: '' },
   },
   state: {
     uid: '',
@@ -53,17 +63,66 @@ const definition: ComponentDefinition<BqTextareaProps, BqTextareaState> = {
     textarea::placeholder { color: var(--bq-text-subtle,#94a3b8); }
     .hint { font-size: var(--bq-font-size-sm,0.875rem); color: var(--bq-text-muted,#475569); font-family: var(--bq-font-family-sans); }
     .error-msg { font-size: var(--bq-font-size-sm,0.875rem); color: var(--bq-color-danger-600,#dc2626); font-family: var(--bq-font-family-sans); }
+    @media (prefers-reduced-motion: reduce) {
+      textarea { transition: none; }
+    }
   `,
   connected() {
-    type BQEl = HTMLElement & { setState(k: 'uid', v: string): void; getState<T>(k: string): T };
+    type BQEl = HTMLElement & {
+      setState(k: 'uid', v: string): void;
+      getState<T>(k: string): T;
+    };
     const self = this as unknown as BQEl;
     if (!self.getState<string>('uid')) self.setState('uid', uniqueId('bq-ta'));
-    const ih = (e: Event) => { const t = e.target as HTMLTextAreaElement | null; if (t?.tagName === 'TEXTAREA') self.dispatchEvent(new CustomEvent('bq-input', { detail: { value: t.value }, bubbles: true, composed: true })); };
-    const ch = (e: Event) => { const t = e.target as HTMLTextAreaElement | null; if (t?.tagName === 'TEXTAREA') self.dispatchEvent(new CustomEvent('bq-change', { detail: { value: t.value }, bubbles: true, composed: true })); };
-    const fh = (e: Event) => { if ((e.target as Element)?.tagName === 'TEXTAREA') self.dispatchEvent(new CustomEvent('bq-focus', { bubbles: true, composed: true })); };
-    const bh = (e: Event) => { if ((e.target as Element)?.tagName === 'TEXTAREA') self.dispatchEvent(new CustomEvent('bq-blur', { bubbles: true, composed: true })); };
+
+    // Form proxy for native <form> participation
+    const name = self.getAttribute('name') ?? '';
+    const value = self.getAttribute('value') ?? '';
+    const disabled = self.hasAttribute('disabled');
+    const proxy = createFormProxy(self, name, value, disabled);
+    (self as unknown as Record<string, unknown>)['_formProxy'] = proxy;
+
+    const ih = (e: Event) => {
+      const t = e.target as HTMLTextAreaElement | null;
+      if (t?.tagName === 'TEXTAREA') {
+        proxy.setValue(t.value);
+        self.dispatchEvent(
+          new CustomEvent('bq-input', {
+            detail: { value: t.value },
+            bubbles: true,
+            composed: true,
+          })
+        );
+      }
+    };
+    const ch = (e: Event) => {
+      const t = e.target as HTMLTextAreaElement | null;
+      if (t?.tagName === 'TEXTAREA')
+        self.dispatchEvent(
+          new CustomEvent('bq-change', {
+            detail: { value: t.value },
+            bubbles: true,
+            composed: true,
+          })
+        );
+    };
+    const fh = (e: Event) => {
+      if ((e.target as Element)?.tagName === 'TEXTAREA')
+        self.dispatchEvent(
+          new CustomEvent('bq-focus', { bubbles: true, composed: true })
+        );
+    };
+    const bh = (e: Event) => {
+      if ((e.target as Element)?.tagName === 'TEXTAREA')
+        self.dispatchEvent(
+          new CustomEvent('bq-blur', { bubbles: true, composed: true })
+        );
+    };
     const s = self as unknown as Record<string, unknown>;
-    s['_ih'] = ih; s['_ch'] = ch; s['_fh'] = fh; s['_bh'] = bh;
+    s['_ih'] = ih;
+    s['_ch'] = ch;
+    s['_fh'] = fh;
+    s['_bh'] = bh;
     self.shadowRoot?.addEventListener('input', ih);
     self.shadowRoot?.addEventListener('change', ch);
     self.shadowRoot?.addEventListener('focusin', fh);
@@ -72,23 +131,64 @@ const definition: ComponentDefinition<BqTextareaProps, BqTextareaState> = {
   disconnected() {
     const s = this as unknown as Record<string, unknown>;
     const sr = this.shadowRoot;
-    (['_ih','_ch','_fh','_bh'] as const).forEach(k => { const h = s[k] as EventListener | undefined; if (h) sr?.removeEventListener(k === '_ih' ? 'input' : k === '_ch' ? 'change' : k === '_fh' ? 'focusin' : 'focusout', h); });
+    (['_ih', '_ch', '_fh', '_bh'] as const).forEach((k) => {
+      const h = s[k] as EventListener | undefined;
+      if (h)
+        sr?.removeEventListener(
+          k === '_ih'
+            ? 'input'
+            : k === '_ch'
+              ? 'change'
+              : k === '_fh'
+                ? 'focusin'
+                : 'focusout',
+          h
+        );
+    });
+    (s['_formProxy'] as FormProxy | undefined)?.cleanup();
+  },
+  updated() {
+    const s = this as unknown as Record<string, unknown>;
+    const proxy = s['_formProxy'] as FormProxy | undefined;
+    if (proxy) {
+      proxy.setName(this.getAttribute('name') ?? '');
+      proxy.setValue(this.getAttribute('value') ?? '');
+      proxy.setDisabled(this.hasAttribute('disabled'));
+    }
   },
   render({ props, state }) {
     const hasError = Boolean(props.error);
     const uid = state.uid || 'bq-ta';
     return html`
       <div class="field" part="field">
-        ${props.label ? `<label class="label" for="${uid}" part="label">${escapeHtml(props.label)}${props.required ? '<span class="required-mark" aria-hidden="true"> *</span>' : ''}</label>` : ''}
-        <textarea part="textarea" id="${uid}" name="${escapeHtml(props.name)}" rows="${String(props.rows)}"
+        ${props.label
+          ? `<label class="label" for="${uid}" part="label">${escapeHtml(props.label)}${props.required ? '<span class="required-mark" aria-hidden="true"> *</span>' : ''}</label>`
+          : ''}
+        <textarea
+          part="textarea"
+          id="${uid}"
+          name="${escapeHtml(props.name)}"
+          rows="${String(props.rows)}"
           placeholder="${escapeHtml(props.placeholder)}"
           ${props.maxlength ? `maxlength="${escapeHtml(props.maxlength)}"` : ''}
-          ${props.disabled ? 'disabled' : ''} ${props.readonly ? 'readonly' : ''} ${props.required ? 'required' : ''}
+          ${props.disabled ? 'disabled' : ''}
+          ${props.readonly ? 'readonly' : ''}
+          ${props.required ? 'required' : ''}
           aria-invalid="${hasError ? 'true' : 'false'}"
-          ${hasError ? `aria-describedby="${uid}-err"` : (props.hint ? `aria-describedby="${uid}-hint"` : '')}
-        >${escapeHtml(props.value)}</textarea>
-        ${hasError ? `<span class="error-msg" id="${uid}-err" role="alert" part="error">${escapeHtml(props.error)}</span>` : ''}
-        ${(props.hint && !hasError) ? `<span class="hint" id="${uid}-hint" part="hint">${escapeHtml(props.hint)}</span>` : ''}
+          ${hasError
+            ? `aria-describedby="${uid}-err"`
+            : props.hint
+              ? `aria-describedby="${uid}-hint"`
+              : ''}
+        >
+${escapeHtml(props.value)}</textarea
+        >
+        ${hasError
+          ? `<span class="error-msg" id="${uid}-err" role="alert" part="error">${escapeHtml(props.error)}</span>`
+          : ''}
+        ${props.hint && !hasError
+          ? `<span class="hint" id="${uid}-hint" part="hint">${escapeHtml(props.hint)}</span>`
+          : ''}
       </div>
     `;
   },

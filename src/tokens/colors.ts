@@ -65,9 +65,14 @@ export const colors = {
   // Info (Blue alias)
   info50: '#eff6ff',
   info100: '#dbeafe',
+  info200: '#bfdbfe',
+  info300: '#93c5fd',
+  info400: '#60a5fa',
   info500: '#3b82f6',
   info600: '#2563eb',
   info700: '#1d4ed8',
+  info800: '#1e40af',
+  info900: '#1e3a8a',
 
   // Neutral
   white: '#ffffff',

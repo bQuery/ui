@@ -9,21 +9,29 @@
  * @prop {string}  hint
  * @fires bq-change - { value: string, checked: boolean }
  */
-import { component, html } from '@bquery/bquery/component';
 import type { ComponentDefinition } from '@bquery/bquery/component';
+import { component, html } from '@bquery/bquery/component';
 import { escapeHtml } from '@bquery/bquery/security';
+import { createFormProxy, type FormProxy } from '../../utils/form.js';
 import { getBaseStyles } from '../../utils/styles.js';
 
-type BqRadioProps = { label: string; name: string; value: string; checked: boolean; disabled: boolean; hint: string };
+type BqRadioProps = {
+  label: string;
+  name: string;
+  value: string;
+  checked: boolean;
+  disabled: boolean;
+  hint: string;
+};
 
 const definition: ComponentDefinition<BqRadioProps> = {
   props: {
-    label:   { type: String, default: '' },
-    name:    { type: String, default: '' },
-    value:   { type: String, default: '' },
+    label: { type: String, default: '' },
+    name: { type: String, default: '' },
+    value: { type: String, default: '' },
     checked: { type: Boolean, default: false },
-    disabled:{ type: Boolean, default: false },
-    hint:    { type: String, default: '' },
+    disabled: { type: Boolean, default: false },
+    hint: { type: String, default: '' },
   },
   styles: `
     ${getBaseStyles()}
@@ -44,29 +52,77 @@ const definition: ComponentDefinition<BqRadioProps> = {
   `,
   connected() {
     const self = this;
+
+    // Form proxy for native <form> participation
+    const name = self.getAttribute('name') ?? '';
+    const value = self.hasAttribute('checked')
+      ? (self.getAttribute('value') ?? '')
+      : '';
+    const disabled = self.hasAttribute('disabled');
+    const proxy = createFormProxy(self, name, value, disabled);
+    (self as unknown as Record<string, unknown>)['_formProxy'] = proxy;
+
     const handler = (e: Event) => {
       const input = e.target as HTMLInputElement | null;
       if (input?.type !== 'radio') return;
-      if (input.checked) self.setAttribute('checked', ''); else self.removeAttribute('checked');
-      self.dispatchEvent(new CustomEvent('bq-change', { detail: { value: self.getAttribute('value') ?? '', checked: input.checked }, bubbles: true, composed: true }));
+      if (input.checked) self.setAttribute('checked', '');
+      else self.removeAttribute('checked');
+      proxy.setValue(input.checked ? (self.getAttribute('value') ?? '') : '');
+      self.dispatchEvent(
+        new CustomEvent('bq-change', {
+          detail: {
+            value: self.getAttribute('value') ?? '',
+            checked: input.checked,
+          },
+          bubbles: true,
+          composed: true,
+        })
+      );
     };
     (self as unknown as Record<string, unknown>)['_handler'] = handler;
     self.shadowRoot?.addEventListener('change', handler);
   },
   disconnected() {
-    const h = (this as unknown as Record<string, unknown>)['_handler'] as EventListener | undefined;
+    const h = (this as unknown as Record<string, unknown>)['_handler'] as
+      | EventListener
+      | undefined;
     if (h) this.shadowRoot?.removeEventListener('change', h);
+    (
+      (this as unknown as Record<string, unknown>)['_formProxy'] as
+        | FormProxy
+        | undefined
+    )?.cleanup();
+  },
+  updated() {
+    const s = this as unknown as Record<string, unknown>;
+    const proxy = s['_formProxy'] as FormProxy | undefined;
+    if (proxy) {
+      proxy.setName(this.getAttribute('name') ?? '');
+      proxy.setValue(
+        this.hasAttribute('checked') ? (this.getAttribute('value') ?? '') : ''
+      );
+      proxy.setDisabled(this.hasAttribute('disabled'));
+    }
   },
   render({ props }) {
     return html`
       <div class="wrapper" part="wrapper">
         <label class="control" part="control">
-          <input type="radio" part="input" name="${escapeHtml(props.name)}" value="${escapeHtml(props.value)}"
-            ${props.checked ? 'checked' : ''} ${props.disabled ? 'disabled' : ''}
-            aria-label="${escapeHtml(props.label)}" />
-          ${props.label ? `<span class="label-text" part="label">${escapeHtml(props.label)}</span>` : ''}
+          <input
+            type="radio"
+            part="input"
+            name="${escapeHtml(props.name)}"
+            value="${escapeHtml(props.value)}"
+            ${props.checked ? 'checked' : ''}
+            ${props.disabled ? 'disabled' : ''}
+          />
+          ${props.label
+            ? `<span class="label-text" part="label">${escapeHtml(props.label)}</span>`
+            : ''}
         </label>
-        ${props.hint ? `<span class="hint" part="hint">${escapeHtml(props.hint)}</span>` : ''}
+        ${props.hint
+          ? `<span class="hint" part="hint">${escapeHtml(props.hint)}</span>`
+          : ''}
       </div>
     `;
   },

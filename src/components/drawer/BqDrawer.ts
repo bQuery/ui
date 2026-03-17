@@ -9,22 +9,32 @@
  * @slot footer - Footer actions
  * @fires bq-close
  */
-import { component, html } from '@bquery/bquery/component';
 import type { ComponentDefinition } from '@bquery/bquery/component';
+import { component, html } from '@bquery/bquery/component';
 import { escapeHtml } from '@bquery/bquery/security';
-import { getBaseStyles } from '../../utils/styles.js';
 import { t } from '../../i18n/index.js';
-import { trapFocus, uniqueId } from '../../utils/dom.js';
+import type { OverlayFocusState } from '../../utils/dom.js';
+import {
+  cleanupOverlayFocus,
+  uniqueId,
+  updateOverlayFocus,
+} from '../../utils/dom.js';
+import { getBaseStyles } from '../../utils/styles.js';
 
-type BqDrawerProps = { open: boolean; title: string; placement: string; size: string };
+type BqDrawerProps = {
+  open: boolean;
+  title: string;
+  placement: string;
+  size: string;
+};
 type BqDrawerState = { titleId: string };
 
 const definition: ComponentDefinition<BqDrawerProps, BqDrawerState> = {
   props: {
-    open:      { type: Boolean, default: false },
-    title:     { type: String, default: '' },
+    open: { type: Boolean, default: false },
+    title: { type: String, default: '' },
     placement: { type: String, default: 'right' },
-    size:      { type: String, default: 'md' },
+    size: { type: String, default: 'md' },
   },
   state: {
     titleId: '',
@@ -74,31 +84,40 @@ const definition: ComponentDefinition<BqDrawerProps, BqDrawerState> = {
     }
   `,
   connected() {
-    type BQEl = HTMLElement & { setState(k: 'titleId', v: string): void; getState<T>(k: string): T };
+    type BQEl = HTMLElement & {
+      setState(k: 'titleId', v: string): void;
+      getState<T>(k: string): T;
+    };
     const self = this as unknown as BQEl;
-    if (!self.getState<string>('titleId')) self.setState('titleId', uniqueId('bq-drawer-title'));
-    const close = () => { self.removeAttribute('open'); self.dispatchEvent(new CustomEvent('bq-close', { bubbles: true, composed: true })); };
-    const kh = (e: Event) => { if ((e as KeyboardEvent).key === 'Escape' && self.hasAttribute('open')) close(); };
-    const bh = (e: Event) => { if ((e.target as Element).classList.contains('backdrop')) close(); };
-    const ch = (e: Event) => { if ((e.target as Element).closest('.close-btn')) close(); };
+    if (!self.getState<string>('titleId'))
+      self.setState('titleId', uniqueId('bq-drawer-title'));
+    const close = () => {
+      self.removeAttribute('open');
+      self.dispatchEvent(
+        new CustomEvent('bq-close', { bubbles: true, composed: true })
+      );
+    };
+    const kh = (e: Event) => {
+      if ((e as KeyboardEvent).key === 'Escape' && self.hasAttribute('open'))
+        close();
+    };
+    const bh = (e: Event) => {
+      if ((e.target as Element).classList.contains('backdrop')) close();
+    };
+    const ch = (e: Event) => {
+      if ((e.target as Element).closest('.close-btn')) close();
+    };
     const s = self as unknown as Record<string, unknown>;
-    s['_kh'] = kh; s['_bh'] = bh; s['_ch'] = ch;
+    s['_kh'] = kh;
+    s['_bh'] = bh;
+    s['_ch'] = ch;
     document.addEventListener('keydown', kh);
     self.shadowRoot?.addEventListener('click', bh);
     self.shadowRoot?.addEventListener('click', ch);
   },
   disconnected() {
     const s = this as unknown as Record<string, unknown>;
-    const focusRaf = s['_focusRaf'] as number | undefined;
-    if (focusRaf !== undefined) cancelAnimationFrame(focusRaf);
-    delete s['_focusRaf'];
-    const releaseFocus = s['_releaseFocus'] as (() => void) | undefined;
-    if (releaseFocus) releaseFocus();
-    delete s['_releaseFocus'];
-    const prev = s['_previousFocus'] as HTMLElement | undefined;
-    if (prev && typeof prev.focus === 'function') prev.focus();
-    delete s['_previousFocus'];
-    delete s['_wasOpen'];
+    cleanupOverlayFocus(s as unknown as OverlayFocusState);
     const kh = s['_kh'] as EventListener | undefined;
     if (kh) document.removeEventListener('keydown', kh);
     const bh = s['_bh'] as EventListener | undefined;
@@ -107,55 +126,34 @@ const definition: ComponentDefinition<BqDrawerProps, BqDrawerState> = {
     if (ch) this.shadowRoot?.removeEventListener('click', ch);
   },
   updated() {
-    const s = this as unknown as Record<string, unknown>;
-    const wasOpen = s['_wasOpen'] === true;
-    const isOpen = this.hasAttribute('open');
-    const releaseFocus = s['_releaseFocus'] as (() => void) | undefined;
-    if (isOpen && !wasOpen) {
-      s['_wasOpen'] = true;
-      // Store the previously focused element for restoration on close
-      if (!s['_previousFocus']) {
-        s['_previousFocus'] = document.activeElement as HTMLElement | null;
-      }
-      const drawer = this.shadowRoot?.querySelector('.drawer') as HTMLElement | null;
-      if (drawer) {
-        releaseFocus?.();
-        s['_releaseFocus'] = trapFocus(drawer);
-        const focusRaf = s['_focusRaf'] as number | undefined;
-        if (focusRaf !== undefined) cancelAnimationFrame(focusRaf);
-        s['_focusRaf'] = requestAnimationFrame(() => {
-          delete s['_focusRaf'];
-          if (!this.hasAttribute('open') || !this.isConnected) return;
-          const focusable = drawer.querySelector<HTMLElement>('button, a[href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
-          (focusable ?? drawer).focus();
-        });
-      }
-    } else if (!isOpen && wasOpen) {
-      s['_wasOpen'] = false;
-      const focusRaf = s['_focusRaf'] as number | undefined;
-      if (focusRaf !== undefined) cancelAnimationFrame(focusRaf);
-      delete s['_focusRaf'];
-      releaseFocus?.();
-      delete s['_releaseFocus'];
-      // Restore focus to the element that was focused before opening
-      const prev = s['_previousFocus'] as HTMLElement | undefined;
-      if (prev && typeof prev.focus === 'function') {
-        prev.focus();
-      }
-      delete s['_previousFocus'];
-    } else if (!isOpen) {
-      s['_wasOpen'] = false;
-    }
+    updateOverlayFocus(this, this as unknown as OverlayFocusState, '.drawer');
   },
   render({ props, state }) {
     const titleId = state.titleId || 'bq-drawer-title';
     return html`
       <div class="backdrop" part="backdrop" role="presentation">
-        <div class="drawer" part="drawer" data-placement="${escapeHtml(props.placement)}" data-size="${escapeHtml(props.size)}"
-          role="dialog" aria-modal="true" aria-labelledby="${escapeHtml(titleId)}" tabindex="-1">
+        <div
+          class="drawer"
+          part="drawer"
+          data-placement="${escapeHtml(props.placement)}"
+          data-size="${escapeHtml(props.size)}"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="${escapeHtml(titleId)}"
+          tabindex="-1"
+        >
           <div class="header" part="header">
-            <h2 class="title" id="${escapeHtml(titleId)}" part="title">${escapeHtml(props.title)}</h2>
-            <button class="close-btn" type="button" aria-label="${t('drawer.close')}" part="close">&#10005;</button>
+            <h2 class="title" id="${escapeHtml(titleId)}" part="title">
+              ${escapeHtml(props.title)}
+            </h2>
+            <button
+              class="close-btn"
+              type="button"
+              aria-label="${t('drawer.close')}"
+              part="close"
+            >
+              &#10005;
+            </button>
           </div>
           <div class="body" part="body"><slot></slot></div>
           <div class="footer" part="footer"><slot name="footer"></slot></div>

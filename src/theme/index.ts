@@ -1,8 +1,8 @@
 /**
  * Theme system for @bquery/ui
  */
-export { defaultTheme, getDefaultThemeCSS } from './default.js';
 export { darkTheme, getDarkThemeCSS } from './dark.js';
+export { defaultTheme, getDefaultThemeCSS } from './default.js';
 
 export type ColorScheme = 'light' | 'dark' | 'auto';
 
@@ -13,11 +13,33 @@ export interface BqTheme {
 }
 
 let currentTheme: ColorScheme = 'auto';
+let autoListener: ((e: MediaQueryListEvent) => void) | null = null;
+
+function applyAutoScheme(): void {
+  const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+  const root = document.documentElement;
+  if (prefersDark) {
+    root.setAttribute('data-theme', 'dark');
+  } else {
+    root.removeAttribute('data-theme');
+  }
+}
+
+function cleanupAutoListener(): void {
+  if (autoListener) {
+    window
+      .matchMedia('(prefers-color-scheme: dark)')
+      .removeEventListener('change', autoListener);
+    autoListener = null;
+  }
+}
 
 /**
- * Set the global color scheme. Pass 'auto' to follow the user's OS preference.
+ * Set the global color scheme. Pass 'auto' to follow the user's OS preference
+ * (listens for changes in real time).
  */
 export function setColorScheme(scheme: ColorScheme): void {
+  cleanupAutoListener();
   currentTheme = scheme;
   const root = document.documentElement;
   if (scheme === 'dark') {
@@ -25,12 +47,11 @@ export function setColorScheme(scheme: ColorScheme): void {
   } else if (scheme === 'light') {
     root.removeAttribute('data-theme');
   } else {
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    if (prefersDark) {
-      root.setAttribute('data-theme', 'dark');
-    } else {
-      root.removeAttribute('data-theme');
-    }
+    applyAutoScheme();
+    autoListener = () => applyAutoScheme();
+    window
+      .matchMedia('(prefers-color-scheme: dark)')
+      .addEventListener('change', autoListener);
   }
 }
 

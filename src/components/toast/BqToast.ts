@@ -7,20 +7,25 @@
  * @prop {boolean} dismissible
  * @fires bq-close
  */
-import { component, html } from '@bquery/bquery/component';
 import type { ComponentDefinition } from '@bquery/bquery/component';
+import { component, html } from '@bquery/bquery/component';
 import { escapeHtml } from '@bquery/bquery/security';
-import { getBaseStyles } from '../../utils/styles.js';
 import { t } from '../../i18n/index.js';
+import { getBaseStyles } from '../../utils/styles.js';
 
-type BqToastProps = { variant: string; message: string; duration: number; dismissible: boolean };
+type BqToastProps = {
+  variant: string;
+  message: string;
+  duration: number;
+  dismissible: boolean;
+};
 
 const definition: ComponentDefinition<BqToastProps> = {
   props: {
-    variant:    { type: String, default: 'info' },
-    message:    { type: String, default: '' },
-    duration:   { type: Number, default: 4000 },
-    dismissible:{ type: Boolean, default: true },
+    variant: { type: String, default: 'info' },
+    message: { type: String, default: '' },
+    duration: { type: Number, default: 4000 },
+    dismissible: { type: Boolean, default: true },
   },
   styles: `
     ${getBaseStyles()}
@@ -49,8 +54,15 @@ const definition: ComponentDefinition<BqToastProps> = {
   `,
   connected() {
     const self = this;
-    const close = () => { self.dispatchEvent(new CustomEvent('bq-close', { bubbles: true, composed: true })); self.remove(); };
-    const ch = (e: Event) => { if ((e.target as Element).closest('.close')) close(); };
+    const close = () => {
+      self.dispatchEvent(
+        new CustomEvent('bq-close', { bubbles: true, composed: true })
+      );
+      self.remove();
+    };
+    const ch = (e: Event) => {
+      if ((e.target as Element).closest('.close')) close();
+    };
     const dur = parseInt(self.getAttribute('duration') ?? '4000', 10);
     if (dur > 0) {
       const timer = setTimeout(close, dur);
@@ -61,32 +73,78 @@ const definition: ComponentDefinition<BqToastProps> = {
   },
   disconnected() {
     const s = this as unknown as Record<string, unknown>;
-    const timer = s['_timer'] as ReturnType<typeof setTimeout> | undefined; if (timer) clearTimeout(timer);
-    const ch = s['_ch'] as EventListener | undefined; if (ch) this.shadowRoot?.removeEventListener('click', ch);
+    const timer = s['_timer'] as ReturnType<typeof setTimeout> | undefined;
+    if (timer) clearTimeout(timer);
+    const ch = s['_ch'] as EventListener | undefined;
+    if (ch) this.shadowRoot?.removeEventListener('click', ch);
   },
   render({ props }) {
-    const icons: Record<string, string> = { success: '✓', error: '✕', warning: '⚠', info: 'ℹ' };
+    const icons: Record<string, string> = {
+      success: '✓',
+      error: '✕',
+      warning: '⚠',
+      info: 'ℹ',
+    };
     const icon = icons[props.variant] ?? 'ℹ';
     const isAlert = props.variant === 'error' || props.variant === 'warning';
     return html`
-      <div part="toast" class="toast" data-variant="${escapeHtml(props.variant)}"
-        role="${isAlert ? 'alert' : 'status'}" aria-live="${isAlert ? 'assertive' : 'polite'}" aria-atomic="true">
+      <div
+        part="toast"
+        class="toast"
+        data-variant="${escapeHtml(props.variant)}"
+        role="${isAlert ? 'alert' : 'status'}"
+        aria-live="${isAlert ? 'assertive' : 'polite'}"
+        aria-atomic="true"
+      >
         <span class="icon" aria-hidden="true">${icon}</span>
-        <span class="content" part="content"><slot>${escapeHtml(props.message)}</slot></span>
-        ${props.dismissible ? `<button type="button" class="close" aria-label="${t('toast.close')}">&#10005;</button>` : ''}
+        <span class="content" part="content"
+          ><slot>${escapeHtml(props.message)}</slot></span
+        >
+        ${props.dismissible
+          ? `<button type="button" class="close" aria-label="${t('toast.close')}">&#10005;</button>`
+          : ''}
       </div>
     `;
   },
 };
 
 /** Imperative toast API */
-export interface ToastOptions { message: string; variant?: 'success' | 'error' | 'warning' | 'info'; duration?: number; }
-export function showToast(options: ToastOptions, container?: HTMLElement): HTMLElement {
-  const host = container ?? document.body;
+export interface ToastOptions {
+  message: string;
+  variant?: 'success' | 'error' | 'warning' | 'info';
+  duration?: number;
+}
+
+const TOAST_CONTAINER_ID = 'bq-toast-container';
+
+function getOrCreateContainer(): HTMLElement {
+  let container = document.getElementById(TOAST_CONTAINER_ID);
+  if (!container) {
+    container = document.createElement('div');
+    container.id = TOAST_CONTAINER_ID;
+    container.setAttribute('role', 'region');
+    container.setAttribute('aria-label', 'Notifications');
+    container.style.cssText = `
+      position: fixed; top: 1rem; right: 1rem; z-index: var(--bq-z-toast, 600);
+      display: flex; flex-direction: column; gap: 0.5rem; pointer-events: none;
+      max-height: 100vh; overflow: hidden;
+    `.replace(/\s+/g, ' ');
+    document.body.appendChild(container);
+  }
+  return container;
+}
+
+export function showToast(
+  options: ToastOptions,
+  container?: HTMLElement
+): HTMLElement {
+  const host = container ?? getOrCreateContainer();
   const toast = document.createElement('bq-toast');
+  toast.style.pointerEvents = 'auto';
   toast.setAttribute('message', options.message);
   if (options.variant) toast.setAttribute('variant', options.variant);
-  if (options.duration !== undefined) toast.setAttribute('duration', String(options.duration));
+  if (options.duration !== undefined)
+    toast.setAttribute('duration', String(options.duration));
   host.appendChild(toast);
   return toast;
 }

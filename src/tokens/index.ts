@@ -43,30 +43,50 @@ export function getTokensCSS(): string {
   /* === Colors: Danger === */
   --bq-color-danger-50: #fef2f2;
   --bq-color-danger-100: #fee2e2;
+  --bq-color-danger-200: #fecaca;
+  --bq-color-danger-300: #fca5a5;
+  --bq-color-danger-400: #f87171;
   --bq-color-danger-500: #ef4444;
   --bq-color-danger-600: #dc2626;
   --bq-color-danger-700: #b91c1c;
+  --bq-color-danger-800: #991b1b;
+  --bq-color-danger-900: #7f1d1d;
 
   /* === Colors: Success === */
   --bq-color-success-50: #f0fdf4;
   --bq-color-success-100: #dcfce7;
+  --bq-color-success-200: #bbf7d0;
+  --bq-color-success-300: #86efac;
+  --bq-color-success-400: #4ade80;
   --bq-color-success-500: #22c55e;
   --bq-color-success-600: #16a34a;
   --bq-color-success-700: #15803d;
+  --bq-color-success-800: #166534;
+  --bq-color-success-900: #14532d;
 
   /* === Colors: Warning === */
   --bq-color-warning-50: #fffbeb;
   --bq-color-warning-100: #fef3c7;
+  --bq-color-warning-200: #fde68a;
+  --bq-color-warning-300: #fcd34d;
+  --bq-color-warning-400: #fbbf24;
   --bq-color-warning-500: #f59e0b;
   --bq-color-warning-600: #d97706;
   --bq-color-warning-700: #b45309;
+  --bq-color-warning-800: #92400e;
+  --bq-color-warning-900: #78350f;
 
   /* === Colors: Info === */
   --bq-color-info-50: #eff6ff;
   --bq-color-info-100: #dbeafe;
+  --bq-color-info-200: #bfdbfe;
+  --bq-color-info-300: #93c5fd;
+  --bq-color-info-400: #60a5fa;
   --bq-color-info-500: #3b82f6;
   --bq-color-info-600: #2563eb;
   --bq-color-info-700: #1d4ed8;
+  --bq-color-info-800: #1e40af;
+  --bq-color-info-900: #1e3a8a;
 
   /* === Typography === */
   --bq-font-family-sans: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;

@@ -6,18 +6,18 @@
  * Tabs: add elements with [data-tab-item] and id attribute; panels: [data-tab="<id>"]
  * @fires bq-tab-change - { tabId: string }
  */
-import { component, html } from '@bquery/bquery/component';
 import type { ComponentDefinition } from '@bquery/bquery/component';
+import { component, html } from '@bquery/bquery/component';
 import { escapeHtml } from '@bquery/bquery/security';
-import { getBaseStyles } from '../../utils/styles.js';
 import { t } from '../../i18n/index.js';
+import { getBaseStyles } from '../../utils/styles.js';
 
 type BqTabsProps = { 'active-tab': string; variant: string };
 
 const definition: ComponentDefinition<BqTabsProps> = {
   props: {
     'active-tab': { type: String, default: '' },
-    variant:      { type: String, default: 'default' },
+    variant: { type: String, default: 'default' },
   },
   styles: `
     ${getBaseStyles()}
@@ -45,13 +45,23 @@ const definition: ComponentDefinition<BqTabsProps> = {
     .tab[disabled] { opacity: 0.45; cursor: not-allowed; }
     .tab:focus-visible { outline: 2px solid transparent; box-shadow: var(--bq-focus-ring); }
     .panels { padding-top: var(--bq-space-4,1rem); }
+    @media (prefers-reduced-motion: reduce) {
+      .tab { transition: none; }
+    }
   `,
   connected() {
-    type BQEl = HTMLElement & { setState(k: string, v: unknown): void; getState<T>(k: string): T };
-    const self = this as unknown as BQEl & HTMLElement & Record<string, unknown>;
+    type BQEl = HTMLElement & {
+      setState(k: string, v: unknown): void;
+      getState<T>(k: string): T;
+    };
+    const self = this as unknown as BQEl &
+      HTMLElement &
+      Record<string, unknown>;
 
     const readTabs = () => {
-      const items = Array.from((self as HTMLElement).querySelectorAll('[data-tab-item]')).map(el => ({
+      const items = Array.from(
+        (self as HTMLElement).querySelectorAll('[data-tab-item]')
+      ).map((el) => ({
         id: el.getAttribute('id') ?? el.getAttribute('data-tab-item') ?? '',
         label: el.getAttribute('label') ?? el.textContent?.trim() ?? '',
         disabled: el.hasAttribute('disabled'),
@@ -67,34 +77,58 @@ const definition: ComponentDefinition<BqTabsProps> = {
       const cur = (self as HTMLElement).getAttribute('active-tab') ?? '';
       (self as HTMLElement).setAttribute('active-tab', cur);
     });
-    obs.observe(self as HTMLElement, { childList: true, subtree: true, attributes: true, attributeFilter: ['label','disabled','id'] });
+    obs.observe(self as HTMLElement, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ['label', 'disabled', 'id'],
+    });
     self['_obs'] = obs;
 
     const clickH = (e: Event) => {
-      const btn = (e.target as Element).closest('[data-tab-id]') as HTMLElement | null;
+      const btn = (e.target as Element).closest(
+        '[data-tab-id]'
+      ) as HTMLElement | null;
       if (!btn || btn.hasAttribute('disabled')) return;
       const tabId = btn.getAttribute('data-tab-id') ?? '';
       (self as HTMLElement).setAttribute('active-tab', tabId);
-      (self as HTMLElement).dispatchEvent(new CustomEvent('bq-tab-change', { detail: { tabId }, bubbles: true, composed: true }));
+      (self as HTMLElement).dispatchEvent(
+        new CustomEvent('bq-tab-change', {
+          detail: { tabId },
+          bubbles: true,
+          composed: true,
+        })
+      );
       updatePanels(tabId);
     };
     const keyH = (e: Event) => {
       const ke = e as KeyboardEvent;
-      const tablist = (self as HTMLElement).shadowRoot?.querySelector('.tablist');
+      const shadow = (self as HTMLElement).shadowRoot;
+      const tablist = shadow?.querySelector('.tablist');
       if (!tablist) return;
-      const btns = Array.from(tablist.querySelectorAll<HTMLElement>('.tab:not([disabled])'));
-      const idx = btns.findIndex(b => b === document.activeElement);
+      const btns = Array.from(
+        tablist.querySelectorAll<HTMLElement>('.tab:not([disabled])')
+      );
+      // Use shadowRoot.activeElement — document.activeElement returns the host in shadow DOM
+      const active = shadow?.activeElement as HTMLElement | null;
+      const idx = btns.findIndex((b) => b === active);
       let next = -1;
       if (ke.key === 'ArrowRight') next = (idx + 1) % btns.length;
-      if (ke.key === 'ArrowLeft')  next = (idx - 1 + btns.length) % btns.length;
+      if (ke.key === 'ArrowLeft') next = (idx - 1 + btns.length) % btns.length;
       if (ke.key === 'Home') next = 0;
-      if (ke.key === 'End')  next = btns.length - 1;
-      if (next >= 0) { ke.preventDefault(); btns[next]?.focus(); btns[next]?.click(); }
+      if (ke.key === 'End') next = btns.length - 1;
+      if (next >= 0) {
+        ke.preventDefault();
+        btns[next]?.focus();
+        btns[next]?.click();
+      }
     };
     const updatePanels = (activeId: string) => {
-      (self as HTMLElement).querySelectorAll<HTMLElement>('[data-tab]').forEach(panel => {
-        panel.hidden = panel.getAttribute('data-tab') !== activeId;
-      });
+      (self as HTMLElement)
+        .querySelectorAll<HTMLElement>('[data-tab]')
+        .forEach((panel) => {
+          panel.hidden = panel.getAttribute('data-tab') !== activeId;
+        });
     };
     self['_clickH'] = clickH;
     self['_keyH'] = keyH;
@@ -103,33 +137,51 @@ const definition: ComponentDefinition<BqTabsProps> = {
   },
   disconnected() {
     const s = this as unknown as Record<string, unknown>;
-    const obs = s['_obs'] as MutationObserver | undefined; if (obs) obs.disconnect();
-    const ch = s['_clickH'] as EventListener | undefined; if (ch) this.shadowRoot?.removeEventListener('click', ch);
-    const kh = s['_keyH'] as EventListener | undefined; if (kh) this.shadowRoot?.removeEventListener('keydown', kh);
+    const obs = s['_obs'] as MutationObserver | undefined;
+    if (obs) obs.disconnect();
+    const ch = s['_clickH'] as EventListener | undefined;
+    if (ch) this.shadowRoot?.removeEventListener('click', ch);
+    const kh = s['_keyH'] as EventListener | undefined;
+    if (kh) this.shadowRoot?.removeEventListener('keydown', kh);
   },
   updated() {
     // Sync panel visibility after each render
     const active = this.getAttribute('active-tab') ?? '';
-    this.querySelectorAll<HTMLElement>('[data-tab]').forEach(panel => {
+    this.querySelectorAll<HTMLElement>('[data-tab]').forEach((panel) => {
       panel.hidden = panel.getAttribute('data-tab') !== active;
       panel.setAttribute('role', 'tabpanel');
       panel.setAttribute('tabindex', '0');
     });
   },
   render({ props, state }) {
-    const items = (state['tabs'] as Array<{ id: string; label: string; disabled: boolean }> | undefined) ?? [];
+    const items =
+      (state['tabs'] as
+        | Array<{ id: string; label: string; disabled: boolean }>
+        | undefined) ?? [];
     const active = props['active-tab'] || items[0]?.id || '';
-    const tabsHtml = items.map(tab => `
+    const tabsHtml = items
+      .map(
+        (tab) => `
       <button part="tab" class="tab" data-variant="${escapeHtml(props.variant)}"
         role="tab" data-tab-id="${escapeHtml(tab.id)}"
         aria-selected="${tab.id === active ? 'true' : 'false'}"
         tabindex="${tab.id === active ? '0' : '-1'}"
         ${tab.disabled ? 'disabled aria-disabled="true"' : ''}
       >${escapeHtml(tab.label)}</button>
-    `).join('');
+    `
+      )
+      .join('');
     return html`
       <div class="tabs" part="tabs">
-        <div class="tablist" part="tablist" role="tablist" aria-label="${t('tabs.listLabel')}" data-variant="${escapeHtml(props.variant)}">${tabsHtml}</div>
+        <div
+          class="tablist"
+          part="tablist"
+          role="tablist"
+          aria-label="${t('tabs.listLabel')}"
+          data-variant="${escapeHtml(props.variant)}"
+        >
+          ${tabsHtml}
+        </div>
         <div class="panels" part="panels"><slot></slot></div>
       </div>
     `;
