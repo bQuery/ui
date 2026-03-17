@@ -70,10 +70,12 @@ const definition: ComponentDefinition<BqChipProps> = {
     };
     const keyHandler = (e: Event) => {
       if (self.hasAttribute('disabled')) return;
-      const key = (e as KeyboardEvent).key;
-      if (key !== 'Enter' && key !== ' ') return;
+      const ke = e as KeyboardEvent;
       const target = e.target as HTMLElement | null;
       if (!target?.classList.contains('chip')) return;
+      const isEnterKeydown = ke.type === 'keydown' && ke.key === 'Enter';
+      const isSpaceKeyup = ke.type === 'keyup' && ke.key === ' ';
+      if (!isEnterKeydown && !isSpaceKeyup) return;
       e.preventDefault();
       self.dispatchEvent(new CustomEvent('bq-click', { bubbles: true, composed: true }));
     };
@@ -81,12 +83,14 @@ const definition: ComponentDefinition<BqChipProps> = {
     (self as unknown as Record<string, unknown>)['_keyHandler'] = keyHandler;
     self.shadowRoot?.addEventListener('click', handler);
     self.shadowRoot?.addEventListener('keydown', keyHandler);
+    self.shadowRoot?.addEventListener('keyup', keyHandler);
   },
   disconnected() {
     const handler = (this as unknown as Record<string, unknown>)['_handler'] as EventListener | undefined;
     const keyHandler = (this as unknown as Record<string, unknown>)['_keyHandler'] as EventListener | undefined;
     if (handler) this.shadowRoot?.removeEventListener('click', handler);
     if (keyHandler) this.shadowRoot?.removeEventListener('keydown', keyHandler);
+    if (keyHandler) this.shadowRoot?.removeEventListener('keyup', keyHandler);
   },
   render({ props }) {
     return html`

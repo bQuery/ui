@@ -182,7 +182,7 @@ describe('accessibility and i18n fixes', () => {
     expect(chip?.getAttribute('tabindex')).toBe('-1');
   });
 
-  it('should dispatch bq-click exactly once for Enter and Space on the chip surface', () => {
+  it('should dispatch bq-click once for Enter keydown and Space keyup on the chip surface', () => {
     const el = doc.createElement('bq-chip');
     doc.body.appendChild(el);
 
@@ -196,8 +196,28 @@ describe('accessibility and i18n fixes', () => {
 
     chip?.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
     chip?.dispatchEvent(new KeyboardEvent('keydown', { key: ' ', bubbles: true }));
+    chip?.dispatchEvent(new KeyboardEvent('keyup', { key: ' ', bubbles: true }));
 
     expect(clicks).toBe(2);
+  });
+
+  it('should ignore repeated Space keydown events on the chip surface', () => {
+    const el = doc.createElement('bq-chip');
+    doc.body.appendChild(el);
+
+    const chip = el.shadowRoot?.querySelector('.chip') as HTMLElement | null;
+    expect(chip).toBeTruthy();
+
+    let clicks = 0;
+    el.addEventListener('bq-click', () => {
+      clicks += 1;
+    });
+
+    chip?.dispatchEvent(new KeyboardEvent('keydown', { key: ' ', bubbles: true, repeat: true }));
+    chip?.dispatchEvent(new KeyboardEvent('keydown', { key: ' ', bubbles: true, repeat: true }));
+    chip?.dispatchEvent(new KeyboardEvent('keyup', { key: ' ', bubbles: true }));
+
+    expect(clicks).toBe(1);
   });
 
   it('should let the native remove button click dispatch bq-remove only once', () => {
@@ -252,7 +272,7 @@ describe('accessibility and i18n fixes', () => {
     expect(headers[1]?.getAttribute('role')).toBe('columnheader');
   });
 
-  it('should sort the table when Enter or Space is pressed on a sortable header', () => {
+  it('should sort the table on Enter keydown and Space keyup for a sortable header', () => {
     const el = doc.createElement('bq-table');
     el.setAttribute('columns', JSON.stringify([
       { key: 'name', label: 'Name', sortable: true },
@@ -275,10 +295,37 @@ describe('accessibility and i18n fixes', () => {
 
     header = el.shadowRoot?.querySelector('th.sortable') as HTMLElement | null;
     header?.dispatchEvent(new KeyboardEvent('keydown', { key: ' ', bubbles: true }));
+    expect(sorts).toEqual([{ key: 'name', dir: 'asc' }]);
+    header?.dispatchEvent(new KeyboardEvent('keyup', { key: ' ', bubbles: true }));
     expect(el.getAttribute('sort-dir')).toBe('desc');
     expect(sorts).toEqual([
       { key: 'name', dir: 'asc' },
       { key: 'name', dir: 'desc' },
     ]);
+  });
+
+  it('should ignore repeated Space keydown events on a sortable header', () => {
+    const el = doc.createElement('bq-table');
+    el.setAttribute('columns', JSON.stringify([
+      { key: 'name', label: 'Name', sortable: true },
+    ]));
+    el.setAttribute('rows', JSON.stringify([{ name: 'Ada' }]));
+    doc.body.appendChild(el);
+
+    const header = el.shadowRoot?.querySelector('th.sortable') as HTMLElement | null;
+    expect(header).toBeTruthy();
+
+    const sorts: Array<{ key: string; dir: string }> = [];
+    el.addEventListener('bq-sort', (event) => {
+      const detail = (event as CustomEvent<{ key: string; dir: string }>).detail;
+      sorts.push(detail);
+    });
+
+    header?.dispatchEvent(new KeyboardEvent('keydown', { key: ' ', bubbles: true, repeat: true }));
+    header?.dispatchEvent(new KeyboardEvent('keydown', { key: ' ', bubbles: true, repeat: true }));
+    expect(sorts).toEqual([]);
+
+    header?.dispatchEvent(new KeyboardEvent('keyup', { key: ' ', bubbles: true }));
+    expect(sorts).toEqual([{ key: 'name', dir: 'asc' }]);
   });
 });

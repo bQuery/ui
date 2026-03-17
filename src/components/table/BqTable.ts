@@ -68,9 +68,11 @@ const definition: ComponentDefinition<BqTableProps> = {
     };
     const keyHandler = (e: Event) => {
       const ke = e as KeyboardEvent;
-      if (ke.key !== 'Enter' && ke.key !== ' ') return;
       const th = (ke.target as Element).closest('th.sortable') as HTMLElement | null;
       if (!th) return;
+      const isEnterKeydown = ke.type === 'keydown' && ke.key === 'Enter';
+      const isSpaceKeyup = ke.type === 'keyup' && ke.key === ' ';
+      if (!isEnterKeydown && !isSpaceKeyup) return;
       e.preventDefault();
       sortHandler(th);
     };
@@ -78,6 +80,7 @@ const definition: ComponentDefinition<BqTableProps> = {
     (self as unknown as Record<string, unknown>)['_keyHandler'] = keyHandler;
     self.shadowRoot?.addEventListener('click', handler);
     self.shadowRoot?.addEventListener('keydown', keyHandler);
+    self.shadowRoot?.addEventListener('keyup', keyHandler);
   },
   disconnected() {
     const s = this as unknown as Record<string, unknown>;
@@ -85,6 +88,7 @@ const definition: ComponentDefinition<BqTableProps> = {
     const kh = s['_keyHandler'] as EventListener | undefined;
     if (h) this.shadowRoot?.removeEventListener('click', h);
     if (kh) this.shadowRoot?.removeEventListener('keydown', kh);
+    if (kh) this.shadowRoot?.removeEventListener('keyup', kh);
   },
   render({ props }) {
     let cols: ColDef[] = [];
