@@ -68,18 +68,35 @@ const definition: ComponentDefinition<BqChipProps> = {
       }
       self.dispatchEvent(new CustomEvent('bq-click', { bubbles: true, composed: true }));
     };
+    const keyHandler = (e: Event) => {
+      if (self.hasAttribute('disabled')) return;
+      const key = (e as KeyboardEvent).key;
+      if (key === 'Enter' || key === ' ') {
+        e.preventDefault();
+        const target = e.target as Element;
+        if (target.closest('.remove-btn')) {
+          self.dispatchEvent(new CustomEvent('bq-remove', { bubbles: true, composed: true }));
+          return;
+        }
+        self.dispatchEvent(new CustomEvent('bq-click', { bubbles: true, composed: true }));
+      }
+    };
     (self as unknown as Record<string, unknown>)['_handler'] = handler;
+    (self as unknown as Record<string, unknown>)['_keyHandler'] = keyHandler;
     self.shadowRoot?.addEventListener('click', handler);
+    self.shadowRoot?.addEventListener('keydown', keyHandler);
   },
   disconnected() {
     const handler = (this as unknown as Record<string, unknown>)['_handler'] as EventListener | undefined;
+    const keyHandler = (this as unknown as Record<string, unknown>)['_keyHandler'] as EventListener | undefined;
     if (handler) this.shadowRoot?.removeEventListener('click', handler);
+    if (keyHandler) this.shadowRoot?.removeEventListener('keydown', keyHandler);
   },
   render({ props }) {
     return html`
       <span part="chip" class="chip" data-variant="${escapeHtml(props.variant)}" data-size="${escapeHtml(props.size)}"
         role="button" tabindex="${props.disabled ? '-1' : '0'}"
-        aria-pressed="${props.selected}" aria-disabled="${props.disabled}">
+        aria-pressed="${props.selected ? 'true' : 'false'}" aria-disabled="${props.disabled ? 'true' : 'false'}">
         <slot></slot>
         ${props.removable ? `<button type="button" class="remove-btn" aria-label="${t('chip.remove')}">✕</button>` : ''}
       </span>

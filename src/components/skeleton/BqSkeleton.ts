@@ -46,6 +46,9 @@ const definition: ComponentDefinition<BqSkeletonProps> = {
       animation: shimmer 1.5s infinite;
     }
     @keyframes shimmer { from { transform: translateX(-100%); } to { transform: translateX(100%); } }
+    @media (prefers-reduced-motion: reduce) {
+      .skeleton::after { animation: none; }
+    }
     .skeleton[data-variant="circle"] { border-radius: var(--bq-radius-full,9999px); }
     .skeleton[data-variant="text"]   { height: 1em; margin-bottom: 0.5em; }
     .skeleton[data-variant="text"]:last-child { width: 70%; }

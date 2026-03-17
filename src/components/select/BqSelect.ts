@@ -82,20 +82,23 @@ const definition: ComponentDefinition<BqSelectProps, BqSelectState> = {
   },
   render({ props, state }) {
     const hasError = Boolean(props.error);
+    const hasHint = Boolean(props.error) || Boolean((props as Record<string, unknown>).hint);
     const uid = state.uid || 'bq-select';
+    const describedBy = hasError ? `${uid}-err` : hasHint ? `${uid}-hint` : '';
     return html`
       <div class="field" part="field">
         ${props.label ? `<label class="label" for="${uid}" part="label">${escapeHtml(props.label)}${props.required ? '<span class="required-mark" aria-hidden="true"> *</span>' : ''}</label>` : ''}
         <div class="select-wrap">
           <select part="select" id="${uid}" name="${escapeHtml(props.name)}"
             ${props.disabled ? 'disabled' : ''} ${props.required ? 'required' : ''}
-            aria-invalid="${hasError ? 'true' : 'false'}">
+            aria-invalid="${hasError ? 'true' : 'false'}"
+            ${describedBy ? `aria-describedby="${describedBy}"` : ''}>
             ${props.placeholder ? `<option value="" ${!props.value ? 'selected' : ''} disabled>${escapeHtml(props.placeholder)}</option>` : ''}
             <slot></slot>
           </select>
           <span class="arrow" aria-hidden="true">&#9660;</span>
         </div>
-        ${hasError ? `<span class="error-msg" role="alert" part="error">${escapeHtml(props.error)}</span>` : ''}
+        ${hasError ? `<span class="error-msg" id="${uid}-err" role="alert" part="error">${escapeHtml(props.error)}</span>` : ''}
       </div>
     `;
   },

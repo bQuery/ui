@@ -49,6 +49,10 @@ const definition: ComponentDefinition<BqProgressProps> = {
     @keyframes indeterminate { 0% { transform: translateX(-150%); } 100% { transform: translateX(350%); } }
     .label { font-size: var(--bq-font-size-sm,0.875rem); color: var(--bq-text-muted,#475569); margin-bottom: 0.375rem; font-family: var(--bq-font-family-sans); }
     .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+    @media (prefers-reduced-motion: reduce) {
+      .bar { transition: none; }
+      :host([indeterminate]) .bar { animation: none; width: 100% !important; opacity: 0.7; }
+    }
   `,
   render({ props }) {
     const pct = props.indeterminate ? 0 : Math.min(100, Math.max(0, (props.value / props.max) * 100));

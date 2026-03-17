@@ -15,6 +15,7 @@ import { component, html } from '@bquery/bquery/component';
 import type { ComponentDefinition } from '@bquery/bquery/component';
 import { escapeHtml } from '@bquery/bquery/security';
 import { getBaseStyles } from '../../utils/styles.js';
+import { t } from '../../i18n/index.js';
 
 type ColDef = { key: string; label: string; sortable?: boolean };
 type BqTableProps = { columns: string; rows: string; 'sort-key': string; 'sort-dir': string; striped: boolean; bordered: boolean; hover: boolean; loading: boolean };
@@ -51,9 +52,7 @@ const definition: ComponentDefinition<BqTableProps> = {
   `,
   connected() {
     const self = this;
-    const handler = (e: Event) => {
-      const th = (e.target as Element).closest('th.sortable') as HTMLElement | null;
-      if (!th) return;
+    const sortHandler = (th: HTMLElement) => {
       const key = th.getAttribute('data-sort-key') ?? '';
       const curDir = self.getAttribute('sort-dir') ?? 'asc';
       const curKey = self.getAttribute('sort-key') ?? '';
@@ -62,12 +61,30 @@ const definition: ComponentDefinition<BqTableProps> = {
       self.setAttribute('sort-dir', newDir);
       self.dispatchEvent(new CustomEvent('bq-sort', { detail: { key, dir: newDir }, bubbles: true, composed: true }));
     };
+    const handler = (e: Event) => {
+      const th = (e.target as Element).closest('th.sortable') as HTMLElement | null;
+      if (!th) return;
+      sortHandler(th);
+    };
+    const keyHandler = (e: Event) => {
+      const ke = e as KeyboardEvent;
+      if (ke.key !== 'Enter' && ke.key !== ' ') return;
+      const th = (ke.target as Element).closest('th.sortable') as HTMLElement | null;
+      if (!th) return;
+      e.preventDefault();
+      sortHandler(th);
+    };
     (self as unknown as Record<string, unknown>)['_handler'] = handler;
+    (self as unknown as Record<string, unknown>)['_keyHandler'] = keyHandler;
     self.shadowRoot?.addEventListener('click', handler);
+    self.shadowRoot?.addEventListener('keydown', keyHandler);
   },
   disconnected() {
-    const h = (this as unknown as Record<string, unknown>)['_handler'] as EventListener | undefined;
+    const s = this as unknown as Record<string, unknown>;
+    const h = s['_handler'] as EventListener | undefined;
+    const kh = s['_keyHandler'] as EventListener | undefined;
     if (h) this.shadowRoot?.removeEventListener('click', h);
+    if (kh) this.shadowRoot?.removeEventListener('keydown', kh);
   },
   render({ props }) {
     let cols: ColDef[] = [];
@@ -79,10 +96,10 @@ const definition: ComponentDefinition<BqTableProps> = {
     const theads = cols.map(col => {
       const isSorted = col.key === sortKey;
       const sortIcon = col.sortable ? `<span class="sort-icon" data-active="${isSorted ? 'true' : 'false'}" aria-hidden="true">${isSorted && sortDir === 'desc' ? '&#9650;' : '&#9660;'}</span>` : '';
-      return `<th part="th" ${col.sortable ? `class="sortable" data-sort-key="${escapeHtml(col.key)}" tabindex="0" aria-sort="${isSorted ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'}"` : ''}>${escapeHtml(col.label)}${sortIcon}</th>`;
+      return `<th part="th" ${col.sortable ? `class="sortable" data-sort-key="${escapeHtml(col.key)}" tabindex="0" role="columnheader" aria-sort="${isSorted ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'}"` : ''}>${escapeHtml(col.label)}${sortIcon}</th>`;
     }).join('');
-    const tbodies = props.loading ? `<tr><td colspan="${cols.length}" class="loading-overlay">Loading&#8230;</td></tr>`
-      : rows.length === 0 ? `<tr class="empty-row"><td colspan="${cols.length}">No data</td></tr>`
+    const tbodies = props.loading ? `<tr><td colspan="${cols.length}" class="loading-overlay">${escapeHtml(t('table.loading'))}</td></tr>`
+      : rows.length === 0 ? `<tr class="empty-row"><td colspan="${cols.length}">${escapeHtml(t('table.noData'))}</td></tr>`
       : rows.map(row => `<tr part="row">${cols.map(col => `<td part="td">${escapeHtml(String(row[col.key] ?? ''))}</td>`).join('')}</tr>`).join('');
     return html`
       <table part="table" role="grid">
