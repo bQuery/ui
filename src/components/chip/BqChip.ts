@@ -73,8 +73,13 @@ const definition: ComponentDefinition<BqChipProps> = {
       const ke = e as KeyboardEvent;
       const target = e.target as HTMLElement | null;
       if (!target?.classList.contains('chip')) return;
+      const isSpaceKeydown = ke.type === 'keydown' && ke.key === ' ';
       const isEnterKeydown = ke.type === 'keydown' && ke.key === 'Enter' && !ke.repeat;
       const isSpaceKeyup = ke.type === 'keyup' && ke.key === ' ';
+      if (isSpaceKeydown) {
+        e.preventDefault();
+        return;
+      }
       if (!isEnterKeydown && !isSpaceKeyup) return;
       e.preventDefault();
       self.dispatchEvent(new CustomEvent('bq-click', { bubbles: true, composed: true }));

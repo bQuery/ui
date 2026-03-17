@@ -239,6 +239,30 @@ describe('accessibility and i18n fixes', () => {
     expect(clicks).toBe(1);
   });
 
+  it('should prevent default on Space keydown for the chip surface without activating until keyup', () => {
+    const el = doc.createElement('bq-chip');
+    doc.body.appendChild(el);
+
+    const chip = el.shadowRoot?.querySelector('.chip') as HTMLElement | null;
+    expect(chip).toBeTruthy();
+
+    let clicks = 0;
+    el.addEventListener('bq-click', () => {
+      clicks += 1;
+    });
+
+    const keydown = new KeyboardEvent('keydown', { key: ' ', bubbles: true, cancelable: true });
+    const keyup = new KeyboardEvent('keyup', { key: ' ', bubbles: true, cancelable: true });
+
+    expect(chip?.dispatchEvent(keydown)).toBe(false);
+    expect(keydown.defaultPrevented).toBe(true);
+    expect(clicks).toBe(0);
+
+    chip?.dispatchEvent(keyup);
+    expect(keyup.defaultPrevented).toBe(true);
+    expect(clicks).toBe(1);
+  });
+
   it('should let the native remove button click dispatch bq-remove only once', () => {
     const el = doc.createElement('bq-chip');
     el.setAttribute('removable', '');
@@ -369,6 +393,35 @@ describe('accessibility and i18n fixes', () => {
     expect(sorts).toEqual([]);
 
     header?.dispatchEvent(new KeyboardEvent('keyup', { key: ' ', bubbles: true }));
+    expect(sorts).toEqual([{ key: 'name', dir: 'asc' }]);
+  });
+
+  it('should prevent default on Space keydown for a sortable header without sorting until keyup', () => {
+    const el = doc.createElement('bq-table');
+    el.setAttribute('columns', JSON.stringify([
+      { key: 'name', label: 'Name', sortable: true },
+    ]));
+    el.setAttribute('rows', JSON.stringify([{ name: 'Ada' }]));
+    doc.body.appendChild(el);
+
+    const header = el.shadowRoot?.querySelector('th.sortable') as HTMLElement | null;
+    expect(header).toBeTruthy();
+
+    const sorts: Array<{ key: string; dir: string }> = [];
+    el.addEventListener('bq-sort', (event) => {
+      const detail = (event as CustomEvent<{ key: string; dir: string }>).detail;
+      sorts.push(detail);
+    });
+
+    const keydown = new KeyboardEvent('keydown', { key: ' ', bubbles: true, cancelable: true });
+    const keyup = new KeyboardEvent('keyup', { key: ' ', bubbles: true, cancelable: true });
+
+    expect(header?.dispatchEvent(keydown)).toBe(false);
+    expect(keydown.defaultPrevented).toBe(true);
+    expect(sorts).toEqual([]);
+
+    header?.dispatchEvent(keyup);
+    expect(keyup.defaultPrevented).toBe(true);
     expect(sorts).toEqual([{ key: 'name', dir: 'asc' }]);
   });
 });
