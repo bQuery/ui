@@ -63,6 +63,13 @@ describe('BqIconButton', () => {
     expect(anchor?.getAttribute('aria-describedby')).toBe(status?.id);
   });
 
+  it('should prevent hover selectors from matching aria-disabled links', () => {
+    const el = doc.createElement('bq-icon-button');
+    doc.body.appendChild(el);
+    const styles = el.shadowRoot?.querySelector('style')?.textContent ?? '';
+    expect(styles).toContain(':hover:not(:disabled):not([aria-disabled="true"])');
+  });
+
   afterAll(() => {
     doc.body.innerHTML = '';
   });

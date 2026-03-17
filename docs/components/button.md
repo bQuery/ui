@@ -43,6 +43,8 @@ When `loading` is enabled, the inner control exposes `aria-busy="true"` and adds
 </bq-button>
 ```
 
+Links opened in a new tab automatically receive `rel="noopener noreferrer"`.
+
 ## With Icons (Slots)
 
 ```html

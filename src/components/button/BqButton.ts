@@ -74,15 +74,15 @@ const definition: ComponentDefinition<BqButtonProps, BqButtonState> = {
     .btn[data-size="xl"] { font-size: 1.25rem; padding: 0.75rem 1.5rem; min-height: 3.5rem; }
     /* Variants */
     .btn[data-variant="primary"] { background-color: var(--bq-color-primary-600,#2563eb); color: #fff; border-color: var(--bq-color-primary-600,#2563eb); }
-    .btn[data-variant="primary"]:hover:not(:disabled) { background-color: var(--bq-color-primary-700,#1d4ed8); border-color: var(--bq-color-primary-700,#1d4ed8); }
+    .btn[data-variant="primary"]:hover:not(:disabled):not([aria-disabled="true"]) { background-color: var(--bq-color-primary-700,#1d4ed8); border-color: var(--bq-color-primary-700,#1d4ed8); }
     .btn[data-variant="secondary"] { background-color: var(--bq-color-secondary-100,#f1f5f9); color: var(--bq-color-secondary-700,#334155); border-color: var(--bq-color-secondary-200,#e2e8f0); }
-    .btn[data-variant="secondary"]:hover:not(:disabled) { background-color: var(--bq-color-secondary-200,#e2e8f0); }
+    .btn[data-variant="secondary"]:hover:not(:disabled):not([aria-disabled="true"]) { background-color: var(--bq-color-secondary-200,#e2e8f0); }
     .btn[data-variant="outline"] { background-color: transparent; color: var(--bq-color-primary-600,#2563eb); border-color: var(--bq-color-primary-600,#2563eb); }
-    .btn[data-variant="outline"]:hover:not(:disabled) { background-color: var(--bq-color-primary-50,#eff6ff); }
+    .btn[data-variant="outline"]:hover:not(:disabled):not([aria-disabled="true"]) { background-color: var(--bq-color-primary-50,#eff6ff); }
     .btn[data-variant="ghost"] { background-color: transparent; color: var(--bq-color-secondary-700,#334155); border-color: transparent; }
-    .btn[data-variant="ghost"]:hover:not(:disabled) { background-color: var(--bq-color-secondary-100,#f1f5f9); }
+    .btn[data-variant="ghost"]:hover:not(:disabled):not([aria-disabled="true"]) { background-color: var(--bq-color-secondary-100,#f1f5f9); }
     .btn[data-variant="danger"] { background-color: var(--bq-color-danger-600,#dc2626); color: #fff; border-color: var(--bq-color-danger-600,#dc2626); }
-    .btn[data-variant="danger"]:hover:not(:disabled) { background-color: var(--bq-color-danger-700,#b91c1c); }
+    .btn[data-variant="danger"]:hover:not(:disabled):not([aria-disabled="true"]) { background-color: var(--bq-color-danger-700,#b91c1c); }
     /* States */
     .btn:focus-visible { outline: 2px solid transparent; box-shadow: var(--bq-focus-ring); }
     .btn[data-variant="danger"]:focus-visible { box-shadow: var(--bq-focus-ring-danger); }
@@ -120,6 +120,7 @@ const definition: ComponentDefinition<BqButtonProps, BqButtonState> = {
     const accessibleLabel = props.label.trim();
     const loadingLabel = t('common.loading');
     const statusId = state.statusId || 'bq-button-status';
+    const safeRel = props.target === '_blank' ? 'noopener noreferrer' : '';
     return html`
       <${tag}
         part="button"
@@ -129,6 +130,7 @@ const definition: ComponentDefinition<BqButtonProps, BqButtonState> = {
         ${!isLink ? `type="${escapeHtml(props.type)}"` : ''}
         ${props.href ? `href="${escapeHtml(props.href)}"` : ''}
         ${props.target ? `target="${escapeHtml(props.target)}"` : ''}
+        ${isLink && safeRel ? `rel="${escapeHtml(safeRel)}"` : ''}
         ${!isLink && disabled ? 'disabled' : ''}
         ${disabled ? 'aria-disabled="true"' : ''}
         ${isLink && disabled ? 'tabindex="-1"' : ''}

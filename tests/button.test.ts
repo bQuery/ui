@@ -89,6 +89,15 @@ describe('BqButton', () => {
     expect(anchor?.getAttribute('tabindex')).toBe('-1');
   });
 
+  it('should default blank-target links to a safe rel value', () => {
+    const el = doc.createElement('bq-button');
+    el.setAttribute('href', 'https://example.com');
+    el.setAttribute('target', '_blank');
+    doc.body.appendChild(el);
+    const anchor = el.shadowRoot?.querySelector('a');
+    expect(anchor?.getAttribute('rel')).toBe('noopener noreferrer');
+  });
+
   it('should describe loading state without changing the button accessible name', () => {
     const el = doc.createElement('bq-button');
     el.setAttribute('label', 'Save changes');
@@ -117,6 +126,13 @@ describe('BqButton', () => {
     const btn = el.shadowRoot?.querySelector('button');
     btn?.dispatchEvent(new (win as unknown as Record<string, typeof MouseEvent>)['MouseEvent']('click', { bubbles: true, composed: true }));
     expect(fired).toBe(true);
+  });
+
+  it('should prevent hover selectors from matching aria-disabled links', () => {
+    const el = doc.createElement('bq-button');
+    doc.body.appendChild(el);
+    const styles = el.shadowRoot?.querySelector('style')?.textContent ?? '';
+    expect(styles).toContain(':hover:not(:disabled):not([aria-disabled="true"])');
   });
 
   afterAll(() => {
