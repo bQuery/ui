@@ -98,6 +98,25 @@ describe('BqButton', () => {
     expect(anchor?.getAttribute('rel')).toBe('noopener noreferrer');
   });
 
+  it('should normalize blank targets before applying the safe rel value', () => {
+    const el = doc.createElement('bq-button');
+    el.setAttribute('href', 'https://example.com');
+    el.setAttribute('target', '  _BlAnK  ');
+    doc.body.appendChild(el);
+    const anchor = el.shadowRoot?.querySelector('a');
+    expect(anchor?.getAttribute('target')).toBe('_BlAnK');
+    expect(anchor?.getAttribute('rel')).toBe('noopener noreferrer');
+  });
+
+  it('should not emit target on native button rendering', () => {
+    const el = doc.createElement('bq-button');
+    el.setAttribute('target', '_blank');
+    doc.body.appendChild(el);
+    const btn = el.shadowRoot?.querySelector('button');
+    expect(btn?.hasAttribute('target')).toBe(false);
+    expect(btn?.hasAttribute('rel')).toBe(false);
+  });
+
   it('should describe loading state without changing the button accessible name', () => {
     const el = doc.createElement('bq-button');
     el.setAttribute('label', 'Save changes');

@@ -120,7 +120,8 @@ const definition: ComponentDefinition<BqButtonProps, BqButtonState> = {
     const accessibleLabel = props.label.trim();
     const loadingLabel = t('common.loading');
     const statusId = state.statusId || 'bq-button-status';
-    const safeRel = props.target === '_blank' ? 'noopener noreferrer' : '';
+    const normalizedTarget = props.target.trim();
+    const safeRel = normalizedTarget.toLowerCase() === '_blank' ? 'noopener noreferrer' : '';
     return html`
       <${tag}
         part="button"
@@ -129,7 +130,7 @@ const definition: ComponentDefinition<BqButtonProps, BqButtonState> = {
         data-size="${escapeHtml(props.size)}"
         ${!isLink ? `type="${escapeHtml(props.type)}"` : ''}
         ${props.href ? `href="${escapeHtml(props.href)}"` : ''}
-        ${props.target ? `target="${escapeHtml(props.target)}"` : ''}
+        ${isLink && normalizedTarget ? `target="${escapeHtml(normalizedTarget)}"` : ''}
         ${isLink && safeRel ? `rel="${escapeHtml(safeRel)}"` : ''}
         ${!isLink && disabled ? 'disabled' : ''}
         ${disabled ? 'aria-disabled="true"' : ''}
