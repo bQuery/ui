@@ -1,5 +1,6 @@
 // DOM environment is provided by tests/setup.ts (preloaded via bunfig.toml)
 import { describe, it, expect, beforeAll, afterEach } from 'bun:test';
+import { waitForFrame } from './helpers.js';
 
 const win = (globalThis as unknown as Record<string, unknown>)['window'] as Window & typeof globalThis;
 const doc = win.document as unknown as Document;
@@ -21,12 +22,6 @@ describe('accessibility and i18n fixes', () => {
   afterEach(() => {
     doc.body.innerHTML = '';
   });
-
-  const waitForFrame = async (frames = 1): Promise<void> => {
-    for (let i = 0; i < frames; i += 1) {
-      await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
-    }
-  };
 
   // --- BqSelect aria-describedby ---
   it('should link select to error message via aria-describedby', () => {

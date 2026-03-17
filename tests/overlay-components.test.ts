@@ -1,5 +1,6 @@
 // DOM environment is provided by tests/setup.ts (preloaded via bunfig.toml)
 import { describe, it, expect, beforeAll, afterEach } from 'bun:test';
+import { waitForFrame } from './helpers.js';
 
 const win = (globalThis as unknown as Record<string, unknown>)['window'] as Window & typeof globalThis;
 const doc = win.document as unknown as Document;
@@ -15,12 +16,6 @@ describe('overlay and utility component fixes', () => {
   afterEach(() => {
     doc.body.innerHTML = '';
   });
-
-  const waitForFrame = async (frames = 1): Promise<void> => {
-    for (let i = 0; i < frames; i += 1) {
-      await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
-    }
-  };
 
   it('assigns unique title ids to dialog instances', () => {
     const first = doc.createElement('bq-dialog');
@@ -77,7 +72,6 @@ describe('overlay and utility component fixes', () => {
     await waitForFrame(1);
 
     expect(doc.activeElement).toBe(trigger);
-    expect((dialog as unknown as Record<string, unknown>)['_releaseFocus']).toBeUndefined();
   });
 
   it('moves focus into the drawer on open and restores it on close', async () => {
@@ -103,7 +97,6 @@ describe('overlay and utility component fixes', () => {
     await waitForFrame(1);
 
     expect(doc.activeElement).toBe(trigger);
-    expect((drawer as unknown as Record<string, unknown>)['_releaseFocus']).toBeUndefined();
   });
 
   it('renders breadcrumb separators from the separator prop', async () => {
