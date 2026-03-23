@@ -38,6 +38,25 @@ The `bq-textarea` component is a multi-line text input with label, error, hint, 
 <bq-textarea label="Notes" hint="Max 500 characters." maxlength="500"></bq-textarea>
 ```
 
+## Character Counter
+
+Use `show-counter` together with `maxlength` to display a live character count below the textarea.
+
+```html
+<bq-textarea
+  label="Bio"
+  maxlength="200"
+  show-counter
+  placeholder="Tell us about yourself"
+></bq-textarea>
+```
+
+The counter:
+- Displays in the format "{count} of {max} characters"
+- Turns red when the character limit is exceeded
+- Includes `aria-live="polite"` for screen reader announcements
+- Is linked to the textarea via `aria-describedby`
+
 ## Disabled & Readonly
 
 ```html
@@ -47,38 +66,48 @@ The `bq-textarea` component is a multi-line text input with label, error, hint, 
 
 ## Properties
 
-| Property      | Type      | Default | Description                  |
-| ------------- | --------- | ------- | ---------------------------- |
-| `label`       | `string`  | —       | Visible label text           |
-| `value`       | `string`  | —       | Current value                |
-| `placeholder` | `string`  | —       | Placeholder text             |
-| `name`        | `string`  | —       | Form field name              |
-| `rows`        | `number`  | `4`     | Visible row count            |
-| `disabled`    | `boolean` | `false` | Disables the textarea        |
-| `readonly`    | `boolean` | `false` | Makes the textarea read-only |
-| `required`    | `boolean` | `false` | Marks as required            |
-| `error`       | `string`  | —       | Error message                |
-| `hint`        | `string`  | —       | Hint text                    |
-| `maxlength`   | `string`  | —       | Maximum character count      |
+| Property | Type | Default | Description |
+| ------------- | --------- | ------- | --------------------------------------------- |
+| `label` | `string` | — | Visible label text |
+| `value` | `string` | — | Current value |
+| `placeholder` | `string` | — | Placeholder text |
+| `name` | `string` | — | Form field name |
+| `rows` | `number` | `4` | Visible row count |
+| `disabled` | `boolean` | `false` | Disables the textarea |
+| `readonly` | `boolean` | `false` | Makes the textarea read-only |
+| `required` | `boolean` | `false` | Marks as required |
+| `error` | `string` | — | Error message |
+| `hint` | `string` | — | Hint text |
+| `maxlength` | `string` | — | Maximum character count |
+| `show-counter` | `boolean` | `false` | Show character counter (requires `maxlength`) |
 
 ## Events
 
-| Event       | Detail              | Description             |
+| Event | Detail | Description |
 | ----------- | ------------------- | ----------------------- |
-| `bq-input`  | `{ value: string }` | Fired on each keystroke |
-| `bq-change` | `{ value: string }` | Fired on commit/blur    |
-| `bq-focus`  | —                   | Fired on focus          |
-| `bq-blur`   | —                   | Fired on blur           |
+| `bq-input` | `{ value: string }` | Fired on each keystroke |
+| `bq-change` | `{ value: string }` | Fired on commit/blur |
+| `bq-focus` | — | Fired on focus |
+| `bq-blur` | — | Fired on blur |
 
 ## CSS Parts
 
-| Part       | Description           |
+| Part | Description |
 | ---------- | --------------------- |
-| `field`    | The field wrapper     |
-| `label`    | Label text element    |
-| `textarea` | The native textarea   |
-| `error`    | Error message element |
-| `hint`     | Hint text element     |
+| `field` | The field wrapper |
+| `label` | Label text element |
+| `textarea` | The native textarea |
+| `footer` | The footer area below the textarea |
+| `error` | Error message element |
+| `hint` | Hint text element |
+| `counter` | Character counter element |
+
+## Accessibility
+
+- Links label to textarea via `for`/`id`
+- Sets `aria-invalid` when error is present
+- Links error/hint/counter to textarea via `aria-describedby`
+- Character counter uses `aria-live="polite"` for updates
 
 ## Form Participation
 

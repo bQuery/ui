@@ -13,7 +13,7 @@ This catalog gives you a complete overview of the currently available building b
 | **Navigation & Disclosure** | `bq-tabs`, `bq-accordion`, `bq-breadcrumbs`, `bq-pagination` |
 | **Data Display** | `bq-card`, `bq-badge`, `bq-avatar`, `bq-table`, `bq-divider`, `bq-empty-state` |
 | **Feedback & Loading** | `bq-alert`, `bq-progress`, `bq-spinner`, `bq-skeleton`, `bq-tooltip`, `bq-toast` |
-| **Overlays** | `bq-dialog`, `bq-drawer` |
+| **Overlays** | `bq-dialog`, `bq-drawer`, `bq-dropdown-menu` |
 
 ## Cross-Cutting Features
 
@@ -83,6 +83,7 @@ Across the component library you will find the same professional capabilities th
 | --- | --- | --- |
 | `bq-dialog` | Blocking confirmation and form flows | Focus trap, escape handling, click-outside close, multiple sizes |
 | `bq-drawer` | Supplemental side panels and mobile flows | Multiple placements, responsive sizes, overlay/backdrop handling |
+| `bq-dropdown-menu` | Contextual actions and navigation menus | Full keyboard navigation, placement options, click-outside close, focus management |
 
 ## Feature Coverage Compared to Typical UI Libraries
 
