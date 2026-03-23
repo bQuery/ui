@@ -73,17 +73,26 @@ describe('BqDropdownMenu', () => {
     expect(menu1?.getAttribute('id')).not.toBe(menu2?.getAttribute('id'));
   });
 
-  it('should have aria-haspopup on trigger slot wrapper', () => {
+  it('should set aria-haspopup on the slotted trigger element', async () => {
     const el = doc.createElement('bq-dropdown-menu');
+    const btn = doc.createElement('button');
+    btn.setAttribute('slot', 'trigger');
+    btn.textContent = 'Trigger';
+    el.appendChild(btn);
     doc.body.appendChild(el);
-    const triggerSlot = el.shadowRoot?.querySelector('slot[name="trigger"]');
-    expect(triggerSlot?.getAttribute('aria-haspopup')).toBe('true');
+    // Wait for requestAnimationFrame to fire
+    await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+    expect(btn.getAttribute('aria-haspopup')).toBe('true');
   });
 
-  it('should have aria-expanded matching open state', () => {
+  it('should set aria-expanded on the slotted trigger element', async () => {
     const el = doc.createElement('bq-dropdown-menu');
+    const btn = doc.createElement('button');
+    btn.setAttribute('slot', 'trigger');
+    btn.textContent = 'Trigger';
+    el.appendChild(btn);
     doc.body.appendChild(el);
-    const triggerSlot = el.shadowRoot?.querySelector('slot[name="trigger"]');
-    expect(triggerSlot?.getAttribute('aria-expanded')).toBe('false');
+    await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+    expect(btn.getAttribute('aria-expanded')).toBe('false');
   });
 });

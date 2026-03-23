@@ -236,6 +236,17 @@ const definition: ComponentDefinition<
     self.addEventListener('click', menuClickHandler);
     self.addEventListener('keydown', keyHandler);
     document.addEventListener('click', outsideHandler);
+
+    // Set ARIA attributes on the slotted trigger element
+    requestAnimationFrame(() => {
+      const trigger = self.querySelector('[slot="trigger"]') as HTMLElement | null;
+      if (trigger) {
+        const uid = self.getState<string>('uid') || 'bq-dm';
+        trigger.setAttribute('aria-haspopup', 'true');
+        trigger.setAttribute('aria-expanded', self.hasAttribute('open') ? 'true' : 'false');
+        trigger.setAttribute('aria-controls', `${uid}-menu`);
+      }
+    });
   },
   disconnected() {
     const s = this as unknown as Record<string, unknown>;
@@ -248,17 +259,19 @@ const definition: ComponentDefinition<
     if (keyHandler) this.removeEventListener('keydown', keyHandler);
     if (outsideHandler) document.removeEventListener('click', outsideHandler);
   },
+  updated() {
+    // Sync aria-expanded on the slotted trigger element
+    const trigger = this.querySelector('[slot="trigger"]') as HTMLElement | null;
+    if (trigger) {
+      trigger.setAttribute('aria-expanded', this.hasAttribute('open') ? 'true' : 'false');
+    }
+  },
   render({ props, state }) {
     const uid = state.uid || 'bq-dm';
     const menuId = `${uid}-menu`;
     return html`
       <div class="trigger-wrap" part="trigger">
-        <slot
-          name="trigger"
-          aria-haspopup="true"
-          aria-expanded="${props.open ? 'true' : 'false'}"
-          aria-controls="${menuId}"
-        ></slot>
+        <slot name="trigger"></slot>
       </div>
       <div
         class="menu"

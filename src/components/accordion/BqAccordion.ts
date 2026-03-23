@@ -130,9 +130,15 @@ const definition: ComponentDefinition<BqAccordionProps, BqAccordionState> = {
     if (kh) this.shadowRoot?.removeEventListener('keydown', kh);
   },
   updated() {
+    // Only recalculate height when the open attribute changes
     const s = this as unknown as Record<string, unknown>;
-    const syncHeight = s['_syncHeight'] as (() => void) | undefined;
-    if (syncHeight) syncHeight();
+    const wasOpen = s['_wasOpen'] as boolean | undefined;
+    const isOpen = this.hasAttribute('open');
+    if (wasOpen !== isOpen) {
+      s['_wasOpen'] = isOpen;
+      const syncHeight = s['_syncHeight'] as (() => void) | undefined;
+      if (syncHeight) syncHeight();
+    }
   },
   render({ props, state }) {
     const uid = state.uid || 'bq-acc';
