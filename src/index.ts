@@ -31,6 +31,7 @@ import { __bqComponentEntry as chipComponentEntry } from './components/chip/inde
 import { __bqComponentEntry as dialogComponentEntry } from './components/dialog/index.js';
 import { __bqComponentEntry as dividerComponentEntry } from './components/divider/index.js';
 import { __bqComponentEntry as drawerComponentEntry } from './components/drawer/index.js';
+import { __bqComponentEntry as dropdownMenuComponentEntry } from './components/dropdown-menu/index.js';
 import { __bqComponentEntry as emptyStateComponentEntry } from './components/empty-state/index.js';
 import { __bqComponentEntry as iconButtonComponentEntry } from './components/icon-button/index.js';
 import { __bqComponentEntry as inputComponentEntry } from './components/input/index.js';
@@ -67,6 +68,7 @@ Object.defineProperty(registerAll, COMPONENT_ENTRY_MAP_KEY, {
     'dialog': dialogComponentEntry,
     'divider': dividerComponentEntry,
     'drawer': drawerComponentEntry,
+    'dropdown-menu': dropdownMenuComponentEntry,
     'empty-state': emptyStateComponentEntry,
     'icon-button': iconButtonComponentEntry,
     'input': inputComponentEntry,

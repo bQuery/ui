@@ -13,6 +13,7 @@
  * @prop {string}  error       - Error message (non-empty = error state)
  * @prop {string}  hint
  * @prop {string}  maxlength
+ * @prop {boolean} show-counter - Show character counter when maxlength is set
  * @slot prefix - Leading icon/element
  * @slot suffix - Trailing icon/element
  * @fires bq-input  - { value: string }
@@ -23,6 +24,7 @@
 import type { ComponentDefinition } from '@bquery/bquery/component';
 import { component, html } from '@bquery/bquery/component';
 import { escapeHtml } from '@bquery/bquery/security';
+import { t } from '../../i18n/index.js';
 import { uniqueId } from '../../utils/dom.js';
 import { createFormProxy, type FormProxy } from '../../utils/form.js';
 import { getBaseStyles } from '../../utils/styles.js';
@@ -40,8 +42,9 @@ type BqInputProps = {
   error: string;
   hint: string;
   maxlength: string;
+  'show-counter': boolean;
 };
-type BqInputState = { uid: string };
+type BqInputState = { uid: string; passwordVisible: boolean };
 
 const definition: ComponentDefinition<BqInputProps, BqInputState> = {
   props: {
@@ -57,9 +60,11 @@ const definition: ComponentDefinition<BqInputProps, BqInputState> = {
     error: { type: String, default: '' },
     hint: { type: String, default: '' },
     maxlength: { type: String, default: '' },
+    'show-counter': { type: Boolean, default: false },
   },
   state: {
     uid: '',
+    passwordVisible: false,
   },
   styles: `
     ${getBaseStyles()}
@@ -92,13 +97,24 @@ const definition: ComponentDefinition<BqInputProps, BqInputState> = {
     input:disabled { cursor: not-allowed; }
     .hint { font-size: var(--bq-font-size-sm,0.875rem); color: var(--bq-text-muted,#475569); font-family: var(--bq-font-family-sans); }
     .error-msg { font-size: var(--bq-font-size-sm,0.875rem); color: var(--bq-color-danger-600,#dc2626); font-family: var(--bq-font-family-sans); }
+    .footer { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; }
+    .counter { font-size: var(--bq-font-size-sm,0.875rem); color: var(--bq-text-muted,#475569); font-family: var(--bq-font-family-sans); margin-left: auto; }
+    .counter[data-over="true"] { color: var(--bq-color-danger-600,#dc2626); }
+    .password-toggle {
+      display: inline-flex; align-items: center; justify-content: center;
+      background: none; border: none; cursor: pointer; padding: 0 0.25rem;
+      color: var(--bq-text-muted,#475569); font-size: 0.875rem; line-height: 1;
+    }
+    .password-toggle:hover { color: var(--bq-text-base,#0f172a); }
+    .password-toggle:focus-visible { outline: 2px solid transparent; box-shadow: var(--bq-focus-ring); border-radius: var(--bq-radius-sm,0.25rem); }
+    .pw-icon { font-size: 1.125rem; line-height: 1; }
     @media (prefers-reduced-motion: reduce) {
       input, .input-wrap { transition: none; }
     }
   `,
   connected() {
     type BQEl = HTMLElement & {
-      setState(k: 'uid', v: string): void;
+      setState(k: 'uid' | 'passwordVisible', v: string | boolean): void;
       getState<T>(k: string): T;
     };
     const self = this as unknown as BQEl;
@@ -148,15 +164,24 @@ const definition: ComponentDefinition<BqInputProps, BqInputState> = {
           new CustomEvent('bq-blur', { bubbles: true, composed: true })
         );
     };
+    // Password visibility toggle
+    const pwToggle = (e: Event) => {
+      if ((e.target as Element)?.closest('.password-toggle')) {
+        const current = self.getState<boolean>('passwordVisible');
+        self.setState('passwordVisible', !current);
+      }
+    };
     const s = self as unknown as Record<string, unknown>;
     s['_ih'] = ih;
     s['_ch'] = ch;
     s['_fh'] = fh;
     s['_bh'] = bh;
+    s['_pwToggle'] = pwToggle;
     self.shadowRoot?.addEventListener('input', ih);
     self.shadowRoot?.addEventListener('change', ch);
     self.shadowRoot?.addEventListener('focusin', fh);
     self.shadowRoot?.addEventListener('focusout', bh);
+    self.shadowRoot?.addEventListener('click', pwToggle);
   },
   disconnected() {
     const s = this as unknown as Record<string, unknown>;
@@ -169,6 +194,8 @@ const definition: ComponentDefinition<BqInputProps, BqInputState> = {
     if (fh) sr?.removeEventListener('focusin', fh);
     const bh = s['_bh'] as EventListener | undefined;
     if (bh) sr?.removeEventListener('focusout', bh);
+    const pwToggle = s['_pwToggle'] as EventListener | undefined;
+    if (pwToggle) sr?.removeEventListener('click', pwToggle);
     (s['_formProxy'] as FormProxy | undefined)?.cleanup();
   },
   updated() {
@@ -183,6 +210,17 @@ const definition: ComponentDefinition<BqInputProps, BqInputState> = {
   render({ props, state }) {
     const hasError = Boolean(props.error);
     const uid = state.uid || 'bq-input';
+    const isPassword = props.type === 'password';
+    const effectiveType = isPassword && state.passwordVisible ? 'text' : props.type;
+    const maxLen = props.maxlength ? parseInt(props.maxlength, 10) : 0;
+    const showCounter = props['show-counter'] && maxLen > 0;
+    const charCount = props.value.length;
+    const isOver = showCounter && charCount > maxLen;
+    const describedByParts: string[] = [];
+    if (hasError) describedByParts.push(`${uid}-err`);
+    else if (props.hint) describedByParts.push(`${uid}-hint`);
+    if (showCounter) describedByParts.push(`${uid}-counter`);
+    const describedBy = describedByParts.join(' ');
     return html`
       <div class="field" part="field">
         ${props.label
@@ -195,7 +233,7 @@ const definition: ComponentDefinition<BqInputProps, BqInputState> = {
           <input
             part="input"
             id="${uid}"
-            type="${escapeHtml(props.type)}"
+            type="${escapeHtml(effectiveType)}"
             name="${escapeHtml(props.name)}"
             placeholder="${escapeHtml(props.placeholder)}"
             value="${escapeHtml(props.value)}"
@@ -206,22 +244,30 @@ const definition: ComponentDefinition<BqInputProps, BqInputState> = {
             ${props.readonly ? 'readonly' : ''}
             ${props.required ? 'required' : ''}
             aria-invalid="${hasError ? 'true' : 'false'}"
-            ${hasError
-              ? `aria-describedby="${uid}-err"`
-              : props.hint
-                ? `aria-describedby="${uid}-hint"`
-                : ''}
+            ${describedBy ? `aria-describedby="${describedBy}"` : ''}
           />
+          ${isPassword
+            ? `<button type="button" class="password-toggle" part="password-toggle" aria-label="${state.passwordVisible ? t('input.hidePassword') : t('input.showPassword')}" aria-pressed="${state.passwordVisible ? 'true' : 'false'}">
+                <span class="pw-icon" aria-hidden="true">${state.passwordVisible ? '&#9673;' : '&#9678;'}</span>
+              </button>`
+            : ''}
           <span class="slot-wrap" part="suffix"
             ><slot name="suffix"></slot
           ></span>
         </div>
-        ${hasError
-          ? `<span class="error-msg" id="${uid}-err" role="alert" part="error">${escapeHtml(props.error)}</span>`
-          : ''}
-        ${props.hint && !hasError
-          ? `<span class="hint" id="${uid}-hint" part="hint">${escapeHtml(props.hint)}</span>`
-          : ''}
+        <div class="footer" part="footer">
+          <span>
+            ${hasError
+              ? `<span class="error-msg" id="${uid}-err" role="alert" part="error">${escapeHtml(props.error)}</span>`
+              : ''}
+            ${props.hint && !hasError
+              ? `<span class="hint" id="${uid}-hint" part="hint">${escapeHtml(props.hint)}</span>`
+              : ''}
+          </span>
+          ${showCounter
+            ? `<span class="counter" id="${uid}-counter" part="counter" data-over="${isOver ? 'true' : 'false'}" aria-live="polite">${t('input.characterCount', { count: charCount, max: maxLen })}</span>`
+            : ''}
+        </div>
       </div>
     `;
   },

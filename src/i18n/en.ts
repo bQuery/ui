@@ -85,6 +85,10 @@ export const en = {
   iconButton: {
     defaultLabel: 'Icon button',
   },
+  dropdownMenu: {
+    open: 'Open menu',
+    close: 'Close menu',
+  },
 } as const;
 
 export type EnLocale = typeof en;

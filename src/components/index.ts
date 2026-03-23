@@ -12,6 +12,7 @@ import './checkbox/BqCheckbox.js';
 import './chip/BqChip.js';
 import './dialog/BqDialog.js';
 import './divider/BqDivider.js';
+import './dropdown-menu/BqDropdownMenu.js';
 import './drawer/BqDrawer.js';
 import './empty-state/BqEmptyState.js';
 import './icon-button/BqIconButton.js';
