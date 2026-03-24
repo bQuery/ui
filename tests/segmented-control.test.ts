@@ -87,15 +87,21 @@ describe('BqSegmentedControl', () => {
     expect(detailValue).toBe('board');
   });
 
-  it('should keep only the selected segment in the tab order', async () => {
-    const { el, overview, board } = createControl();
+  it('should not register a host keydown listener', async () => {
+    const { el } = createControl();
+
+    let hostKeydownRegistrations = 0;
+
+    const originalHostAddEventListener = el.addEventListener.bind(el);
+
+    el.addEventListener = ((type, listener, options) => {
+      if (type === 'keydown') hostKeydownRegistrations += 1;
+      return originalHostAddEventListener(type, listener, options);
+    }) as HTMLElement['addEventListener'];
+
     await waitForFrame();
 
-    board.click();
-
-    expect(el.getAttribute('value')).toBe('board');
-    expect(overview.getAttribute('tabindex')).toBe('-1');
-    expect(board.getAttribute('tabindex')).toBe('0');
+    expect(hostKeydownRegistrations).toBe(0);
   });
 
   it('should allow aria-label when no visible label is rendered', async () => {

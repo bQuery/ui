@@ -391,7 +391,6 @@ const definition: ComponentDefinition<
     self['_observer'] = observer;
 
     self.addEventListener('click', clickHandler);
-    self.addEventListener('keydown', keyHandler, true);
     self.shadowRoot
       ?.querySelector('slot:not([name])')
       ?.addEventListener('slotchange', slotChangeHandler);
@@ -411,7 +410,6 @@ const definition: ComponentDefinition<
 
     if (clickHandler) this.removeEventListener('click', clickHandler);
     if (keyHandler) {
-      this.removeEventListener('keydown', keyHandler, true);
       const buttons = this.querySelectorAll('button');
       buttons.forEach((button) => button.removeEventListener('keydown', keyHandler));
     }
