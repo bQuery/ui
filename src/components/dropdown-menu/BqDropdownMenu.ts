@@ -71,7 +71,9 @@ const definition: ComponentDefinition<
     ::slotted(a:hover) { background: var(--bq-bg-subtle,#f8fafc); }
     ::slotted(button:focus-visible),
     ::slotted(a:focus-visible) { outline: none; background: var(--bq-bg-muted,#f1f5f9); box-shadow: inset 0 0 0 2px var(--bq-border-focus,#2563eb); }
-    ::slotted(button[disabled]) { opacity: 0.5; cursor: not-allowed; pointer-events: none; }
+    ::slotted(button[disabled]),
+    ::slotted(a[disabled]),
+    ::slotted(a[aria-disabled="true"]) { opacity: 0.5; cursor: not-allowed; pointer-events: none; }
     ::slotted(hr) { border: none; border-top: 1px solid var(--bq-border-base,#e2e8f0); margin: 0.25rem 0; }
     @media (prefers-reduced-motion: reduce) {
       .menu { animation: none; }
@@ -90,6 +92,9 @@ const definition: ComponentDefinition<
 
     const getTrigger = (): HTMLElement | null =>
       self.querySelector('[slot="trigger"]') as HTMLElement | null;
+
+    const isDisabledItem = (el: HTMLElement): boolean =>
+      el.hasAttribute('disabled') || el.getAttribute('aria-disabled') === 'true';
 
     const getMenuRoots = (): HTMLElement[] => {
       const slot = self.shadowRoot?.querySelector(
@@ -121,6 +126,14 @@ const definition: ComponentDefinition<
         }
         if (el.tagName === 'BUTTON' || el.tagName === 'A') {
           if (!el.hasAttribute('role')) el.setAttribute('role', 'menuitem');
+          if (el.tagName === 'BUTTON' && !el.hasAttribute('type')) {
+            el.setAttribute('type', 'button');
+          }
+          if (isDisabledItem(el)) {
+            if (el.tagName === 'A') el.setAttribute('aria-disabled', 'true');
+            el.setAttribute('tabindex', '-1');
+            return;
+          }
           if (!el.hasAttribute('tabindex')) el.setAttribute('tabindex', '-1');
         }
       });
@@ -135,6 +148,7 @@ const definition: ComponentDefinition<
       );
       // Focus first item
       requestAnimationFrame(() => {
+        if (!self.hasAttribute('open')) return;
         const items = getMenuItems();
         if (items.length > 0) items[0]!.focus();
       });
@@ -157,7 +171,7 @@ const definition: ComponentDefinition<
       return getMenuRoots().filter(
         (el): el is HTMLElement =>
           (el.tagName === 'BUTTON' || el.tagName === 'A') &&
-          !el.hasAttribute('disabled')
+          !isDisabledItem(el)
       );
     };
 
@@ -183,8 +197,13 @@ const definition: ComponentDefinition<
       const trigger = getTrigger();
       if (trigger && (target === trigger || trigger.contains(target))) return;
 
-      const item = target.closest('button, a');
-      if (!item || item.hasAttribute('disabled')) return;
+      const item = target.closest('button, a') as HTMLElement | null;
+      if (!item) return;
+
+      if (isDisabledItem(item)) {
+        e.preventDefault();
+        return;
+      }
 
       const isInMenu = getMenuRoots().some(
         (el) => el === item || el.contains(item)

@@ -112,6 +112,40 @@ describe('BqDropdownMenu', () => {
     expect(item.getAttribute('tabindex')).toBe('-1');
   });
 
+  it('should default slotted button items to type=button', async () => {
+    const el = doc.createElement('bq-dropdown-menu');
+    const trigger = doc.createElement('button');
+    trigger.setAttribute('slot', 'trigger');
+    trigger.textContent = 'Trigger';
+    const item = doc.createElement('button');
+    item.textContent = 'Edit';
+    el.append(trigger, item);
+    doc.body.appendChild(el);
+
+    await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+
+    expect(item.getAttribute('type')).toBe('button');
+  });
+
+  it('should normalize disabled anchors as aria-disabled menu items', async () => {
+    const el = doc.createElement('bq-dropdown-menu');
+    const trigger = doc.createElement('button');
+    trigger.setAttribute('slot', 'trigger');
+    trigger.textContent = 'Trigger';
+    const item = doc.createElement('a');
+    item.setAttribute('disabled', '');
+    item.href = '#details';
+    item.textContent = 'Details';
+    el.append(trigger, item);
+    doc.body.appendChild(el);
+
+    await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+
+    expect(item.getAttribute('role')).toBe('menuitem');
+    expect(item.getAttribute('aria-disabled')).toBe('true');
+    expect(item.getAttribute('tabindex')).toBe('-1');
+  });
+
   it('should not treat trigger clicks as menu item selection', async () => {
     const el = doc.createElement('bq-dropdown-menu');
     const trigger = doc.createElement('button');
@@ -156,6 +190,24 @@ describe('BqDropdownMenu', () => {
 
     expect(el.hasAttribute('open')).toBe(false);
     expect(doc.activeElement).not.toBe(trigger);
+  });
+
+  it('should not focus a menu item if the menu closes before the next frame', async () => {
+    const el = doc.createElement('bq-dropdown-menu');
+    const trigger = doc.createElement('button');
+    trigger.setAttribute('slot', 'trigger');
+    trigger.textContent = 'Trigger';
+    const item = doc.createElement('button');
+    item.textContent = 'Edit';
+    el.append(trigger, item);
+    doc.body.appendChild(el);
+
+    trigger.click();
+    trigger.click();
+    await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+
+    expect(el.hasAttribute('open')).toBe(false);
+    expect(doc.activeElement).not.toBe(item);
   });
 
   it('should activate the focused menu button on Enter', async () => {
@@ -209,5 +261,31 @@ describe('BqDropdownMenu', () => {
 
     expect(selected).toBe('Details');
     expect(el.hasAttribute('open')).toBe(false);
+  });
+
+  it('should ignore disabled anchor activation', async () => {
+    const el = doc.createElement('bq-dropdown-menu');
+    const trigger = doc.createElement('button');
+    trigger.setAttribute('slot', 'trigger');
+    trigger.textContent = 'Trigger';
+    const item = doc.createElement('a');
+    item.setAttribute('disabled', '');
+    item.href = '#details';
+    item.textContent = 'Details';
+    el.append(trigger, item);
+    doc.body.appendChild(el);
+
+    let selected = 0;
+    el.addEventListener('bq-select', () => {
+      selected += 1;
+    });
+
+    trigger.click();
+    await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+    const clickEvent = new win.MouseEvent('click', { bubbles: true, cancelable: true });
+    item.dispatchEvent(clickEvent);
+
+    expect(selected).toBe(0);
+    expect(clickEvent.defaultPrevented).toBe(true);
   });
 });
