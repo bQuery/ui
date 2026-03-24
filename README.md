@@ -150,7 +150,7 @@ bun install --frozen-lockfile
 npm run dev
 ```
 
-If Bun is not installed globally in your environment, use `npx bun install --frozen-lockfile`.
+If Bun is not installed globally in your environment, use `npx bun install --frozen-lockfile` for setup and `npx bun test` for tests. See [`AGENT.md`](./AGENT.md) for the full non-global Bun workflow.
 
 ### Available scripts
 

@@ -38,12 +38,10 @@ Use these commands to validate work:
 
 ```bash
 npm run lint:types
-npm run test
+bun test                 # use `npx bun test` if Bun is not installed globally
 npm run build
 npm run build:docs
 ```
-
-If Bun is not installed globally, use `npx bun test` instead of `npm run test`.
 
 ## Project-specific notes
 
