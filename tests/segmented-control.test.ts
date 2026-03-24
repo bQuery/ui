@@ -110,7 +110,7 @@ describe('BqSegmentedControl', () => {
     expect(hostKeydownRegistrations).toBe(0);
   });
 
-  it('should still move selection when the segment key handler runs', async () => {
+  it('should still move selection when a segment receives ArrowRight', async () => {
     const { el, overview, board } = createControl();
     await waitForFrame();
 
@@ -119,33 +119,12 @@ describe('BqSegmentedControl', () => {
       changes += 1;
     });
 
-    const keyHandler = (el as unknown as Record<string, unknown>)['_keyHandler'] as
-      | ((event: KeyboardEvent) => void)
-      | undefined;
-
-    expect(keyHandler).toBeDefined();
-
-    const event = new win.KeyboardEvent('keydown', {
+    overview.dispatchEvent(
+      new win.KeyboardEvent('keydown', {
       key: 'ArrowRight',
       bubbles: true,
-    });
-
-    Object.defineProperty(event, 'target', {
-      value: overview,
-      configurable: true,
-    });
-
-    const globalScope = globalThis as typeof globalThis & {
-      getComputedStyle?: typeof win.getComputedStyle;
-    };
-    const originalGetComputedStyle = globalScope.getComputedStyle;
-    globalScope.getComputedStyle = win.getComputedStyle.bind(win);
-
-    try {
-      keyHandler?.(event);
-    } finally {
-      globalScope.getComputedStyle = originalGetComputedStyle;
-    }
+      })
+    );
 
     expect(el.getAttribute('value')).toBe('board');
     expect(board.getAttribute('data-selected')).toBe('true');

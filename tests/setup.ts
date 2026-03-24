@@ -43,6 +43,7 @@ g['NodeList']          = win.NodeList;
 g['customElements']    = win.customElements;
 g['DOMParser']         = win.DOMParser;
 g['SyntaxError']       = SyntaxError;
+g['getComputedStyle']  = win.getComputedStyle.bind(win);
 
 // requestAnimationFrame / cancelAnimationFrame polyfill
 g['requestAnimationFrame'] = (cb: FrameRequestCallback): number =>
