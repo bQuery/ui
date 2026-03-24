@@ -140,8 +140,15 @@ const definition: ComponentDefinition<BqTableProps> = {
         const sortIcon = col.sortable
           ? `<span class="sort-icon" data-active="${isSorted ? 'true' : 'false'}" aria-hidden="true">${isSorted && sortDir === 'desc' ? '&#9650;' : '&#9660;'}</span>`
           : '';
+        const sortLabel = col.sortable
+          ? isSorted
+            ? sortDir === 'asc'
+              ? t('table.sortDescending')
+              : t('table.sortAscending')
+            : t('table.sortAscending')
+          : '';
         const sortableAttrs = col.sortable
-          ? `class="sortable" data-sort-key="${escapeHtml(col.key)}" tabindex="0" aria-sort="${isSorted ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'}"`
+          ? `class="sortable" data-sort-key="${escapeHtml(col.key)}" tabindex="0" aria-sort="${isSorted ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'}" title="${escapeHtml(sortLabel)}"`
           : '';
         return `<th part="th" scope="col" role="columnheader" ${sortableAttrs}>${escapeHtml(col.label)}${sortIcon}</th>`;
       })

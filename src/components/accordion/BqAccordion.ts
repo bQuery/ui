@@ -51,11 +51,15 @@ const definition: ComponentDefinition<BqAccordionProps, BqAccordionState> = {
     .trigger[disabled] { opacity: 0.5; cursor: not-allowed; }
     .trigger:focus-visible { outline: 2px solid transparent; box-shadow: var(--bq-focus-ring); }
     .icon { flex-shrink: 0; font-size: 1rem; color: var(--bq-text-muted,#475569); transition: transform var(--bq-duration-fast) var(--bq-easing-standard); }
-    :host([open]) .icon { transform: rotate(180deg); }
-    .panel { overflow: hidden; height: 0; transition: height var(--bq-duration-slow,300ms) var(--bq-easing-standard); }
-    .panel-inner { padding: 0 var(--bq-space-4,1rem) var(--bq-space-4,1rem); color: var(--bq-text-muted,#475569); font-size: var(--bq-font-size-sm,0.875rem); line-height: var(--bq-line-height-relaxed,1.625); }
+    :host([open]:not([data-closing])) .icon { transform: rotate(180deg); }
+    .panel { display: grid; grid-template-rows: 0fr; overflow: hidden; }
+    .panel-inner { overflow: hidden; min-height: 0; padding: 0 var(--bq-space-4,1rem) var(--bq-space-4,1rem); color: var(--bq-text-muted,#475569); font-size: var(--bq-font-size-sm,0.875rem); line-height: var(--bq-line-height-relaxed,1.625); }
+    :host([open]:not([data-closing])) .panel { grid-template-rows: 1fr; animation: panel-open var(--bq-duration-slow,300ms) var(--bq-easing-standard); }
+    :host([data-closing]) .panel { grid-template-rows: 1fr; animation: panel-close var(--bq-duration-slow,300ms) var(--bq-easing-standard) forwards; }
+    @keyframes panel-open { from { grid-template-rows: 0fr; } }
+    @keyframes panel-close { from { grid-template-rows: 1fr; } to { grid-template-rows: 0fr; } }
     @media (prefers-reduced-motion: reduce) {
-      .panel { transition: none; }
+      .panel { animation: none !important; }
       .icon { transition: none; }
       .trigger { transition: none; }
     }
@@ -66,77 +70,54 @@ const definition: ComponentDefinition<BqAccordionProps, BqAccordionState> = {
       getState<T>(k: string): T;
     };
     const self = this as unknown as BQEl;
-    if (!self.getState<string>('uid'))
-      self.setState('uid', uniqueId('bq-acc'));
+    if (!self.getState<string>('uid')) self.setState('uid', uniqueId('bq-acc'));
 
-    const syncPanelHeight = () => {
-      const panel = self.shadowRoot?.querySelector('.panel') as HTMLElement | null;
-      if (!panel) return;
-      const inner = panel.querySelector('.panel-inner') as HTMLElement | null;
-      const hasActiveHeightTransition = () => {
-        const styles = panel.ownerDocument?.defaultView?.getComputedStyle(panel);
-        if (!styles) return false;
-        const properties = styles.transitionProperty
-          .split(',')
-          .map((value) => value.trim());
-        const durations = styles.transitionDuration
-          .split(',')
-          .map((value) => value.trim());
-        const transitionsHeight = properties.some(
-          (value) => value === 'all' || value === 'height'
-        );
-        const hasDuration = durations.some((value) => parseFloat(value) > 0);
-        return transitionsHeight && hasDuration;
-      };
-      if (self.hasAttribute('open')) {
-        if (inner) {
-          panel.style.height = `${inner.scrollHeight}px`;
-          if (!hasActiveHeightTransition()) {
-            panel.style.height = 'auto';
-          }
-        }
-      } else {
-        if (panel.style.height === 'auto' && inner) {
-          panel.style.height = `${inner.scrollHeight}px`;
-          void panel.offsetHeight;
-        }
-        panel.style.height = '0px';
-      }
-    };
-
-    const onPanelTransitionEnd = (e: Event) => {
-      const te = e as TransitionEvent;
-      if (te.propertyName !== 'height') return;
-      const panel = self.shadowRoot?.querySelector('.panel') as HTMLElement | null;
-      if (!panel || te.target !== panel) return;
-      if (self.hasAttribute('open')) {
-        panel.style.height = 'auto';
-      }
-    };
-
-    const slotChangeHandler = () => {
-      const panel = self.shadowRoot?.querySelector('.panel') as HTMLElement | null;
-      if (self.hasAttribute('open') && panel && panel.style.height !== 'auto') {
-        syncPanelHeight();
-      }
-    };
+    const ANIM_DURATION = 300;
 
     const handler = (e: Event) => {
       if ((e.target as Element).closest('.trigger')) {
-        if (self.hasAttribute('disabled')) return;
-        const newOpen = !self.hasAttribute('open');
-        if (newOpen) self.setAttribute('open', '');
-        else self.removeAttribute('open');
-
-        syncPanelHeight();
-
-        self.dispatchEvent(
-          new CustomEvent('bq-toggle', {
-            detail: { open: newOpen },
-            bubbles: true,
-            composed: true,
-          })
-        );
+        if (self.hasAttribute('disabled') || self.hasAttribute('data-closing'))
+          return;
+        const isOpen = self.hasAttribute('open');
+        if (isOpen) {
+          // Close with animation via data-closing (no re-render, CSS animation on existing DOM)
+          const reducedMotion = self.ownerDocument.defaultView?.matchMedia?.(
+            '(prefers-reduced-motion: reduce)'
+          )?.matches;
+          if (reducedMotion) {
+            self.removeAttribute('open');
+            self.dispatchEvent(
+              new CustomEvent('bq-toggle', {
+                detail: { open: false },
+                bubbles: true,
+                composed: true,
+              })
+            );
+          } else {
+            self.setAttribute('data-closing', '');
+            setTimeout(() => {
+              self.removeAttribute('data-closing');
+              self.removeAttribute('open');
+              self.dispatchEvent(
+                new CustomEvent('bq-toggle', {
+                  detail: { open: false },
+                  bubbles: true,
+                  composed: true,
+                })
+              );
+            }, ANIM_DURATION);
+          }
+        } else {
+          // Open — setting open triggers re-render, CSS animation plays on new DOM
+          self.setAttribute('open', '');
+          self.dispatchEvent(
+            new CustomEvent('bq-toggle', {
+              detail: { open: true },
+              bubbles: true,
+              composed: true,
+            })
+          );
+        }
       }
     };
 
@@ -154,48 +135,15 @@ const definition: ComponentDefinition<BqAccordionProps, BqAccordionState> = {
     const s = self as unknown as Record<string, unknown>;
     s['_handler'] = handler;
     s['_kh'] = kh;
-    s['_syncHeight'] = syncPanelHeight;
-    s['_onPanelTransitionEnd'] = onPanelTransitionEnd;
-    s['_slotChangeHandler'] = slotChangeHandler;
     self.shadowRoot?.addEventListener('click', handler);
     self.shadowRoot?.addEventListener('keydown', kh);
-    self.shadowRoot?.addEventListener('transitionend', onPanelTransitionEnd);
-    self.shadowRoot
-      ?.querySelector('slot')
-      ?.addEventListener('slotchange', slotChangeHandler);
-
-    // Sync panel height on initial render
-    requestAnimationFrame(syncPanelHeight);
   },
   disconnected() {
     const self = this as unknown as Record<string, unknown>;
     const h = self['_handler'] as EventListener | undefined;
     const kh = self['_kh'] as EventListener | undefined;
-    const onPanelTransitionEnd = self['_onPanelTransitionEnd'] as
-      | EventListener
-      | undefined;
-    const slotChangeHandler = self['_slotChangeHandler'] as
-      | EventListener
-      | undefined;
     if (h) this.shadowRoot?.removeEventListener('click', h);
     if (kh) this.shadowRoot?.removeEventListener('keydown', kh);
-    if (onPanelTransitionEnd)
-      this.shadowRoot?.removeEventListener('transitionend', onPanelTransitionEnd);
-    if (slotChangeHandler)
-      this.shadowRoot
-        ?.querySelector('slot')
-        ?.removeEventListener('slotchange', slotChangeHandler);
-  },
-  updated() {
-    // Only recalculate height when the open attribute changes
-    const s = this as unknown as Record<string, unknown>;
-    const wasOpen = s['_wasOpen'] as boolean | undefined;
-    const isOpen = this.hasAttribute('open');
-    if (wasOpen !== isOpen) {
-      s['_wasOpen'] = isOpen;
-      const syncHeight = s['_syncHeight'] as (() => void) | undefined;
-      if (syncHeight) syncHeight();
-    }
   },
   render({ props, state }) {
     const uid = state.uid || 'bq-acc';

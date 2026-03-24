@@ -36,6 +36,22 @@ describe('BqAvatar', () => {
     expect(avatar?.textContent?.trim()).toBe('A');
   });
 
+  it('should render both graphemes for a single-token CJK name', () => {
+    const el = doc.createElement('bq-avatar');
+    el.setAttribute('alt', '张三');
+    doc.body.appendChild(el);
+    const avatar = el.shadowRoot?.querySelector('.avatar');
+    expect(avatar?.textContent?.trim()).toBe('张三');
+  });
+
+  it('should derive initials from multi-word non-Latin names', () => {
+    const el = doc.createElement('bq-avatar');
+    el.setAttribute('alt', 'محمد علي');
+    doc.body.appendChild(el);
+    const avatar = el.shadowRoot?.querySelector('.avatar');
+    expect(avatar?.textContent?.trim()).toBe('مع');
+  });
+
   it('should render img when src is set', () => {
     const el = doc.createElement('bq-avatar');
     el.setAttribute('src', 'photo.jpg');

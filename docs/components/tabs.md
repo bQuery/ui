@@ -100,5 +100,6 @@ Tabs added or removed at runtime are automatically detected:
 
 - Uses `role="tablist"`, `role="tab"`, and `role="tabpanel"` for correct ARIA semantics.
 - Arrow keys navigate between tabs; `Home` and `End` jump to the first and last tab.
-- Tab panels are linked to their tab buttons via `aria-labelledby` and `aria-controls`.
+- Tab panels are linked to their tab buttons via `aria-labelledby` and generated `id` / `aria-controls` pairs.
+- Only the active panel remains in the tab order; inactive panels move to `tabindex="-1"` and are hidden from assistive tech.
 - Disabled tabs are skipped during keyboard navigation.

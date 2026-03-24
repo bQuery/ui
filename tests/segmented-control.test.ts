@@ -1,9 +1,11 @@
 // DOM environment is provided by tests/setup.ts (preloaded via bunfig.toml)
 import { afterEach, beforeAll, describe, expect, it } from 'bun:test';
+import { resetLocale, setLocale } from '../src/i18n/index.js';
 import { waitForFrame } from './helpers.ts';
 
-const win = (globalThis as unknown as Record<string, unknown>)['window'] as
-  Window & typeof globalThis;
+const win = (globalThis as unknown as Record<string, unknown>)[
+  'window'
+] as Window & typeof globalThis;
 const doc = win.document as unknown as Document;
 
 describe('BqSegmentedControl', () => {
@@ -13,6 +15,7 @@ describe('BqSegmentedControl', () => {
 
   afterEach(() => {
     doc.body.innerHTML = '';
+    resetLocale();
   });
 
   const createControl = (
@@ -98,7 +101,8 @@ describe('BqSegmentedControl', () => {
   it('should not register a host keydown listener', async () => {
     let hostKeydownRegistrations = 0;
     createControl(({ el: control }) => {
-      const originalHostAddEventListener = control.addEventListener.bind(control);
+      const originalHostAddEventListener =
+        control.addEventListener.bind(control);
       control.addEventListener = ((type, listener, options) => {
         if (type === 'keydown') hostKeydownRegistrations += 1;
         return originalHostAddEventListener(type, listener, options);
@@ -151,5 +155,27 @@ describe('BqSegmentedControl', () => {
 
     const group = el.shadowRoot?.querySelector('[role="radiogroup"]');
     expect(group?.getAttribute('aria-label')).toBe('Display density');
+  });
+
+  it('should fall back to the localized default label when no label props are provided', async () => {
+    setLocale({ segmentedControl: { defaultLabel: 'Optionen' } });
+
+    const el = doc.createElement('bq-segmented-control');
+
+    const compact = doc.createElement('button');
+    compact.setAttribute('value', 'compact');
+    compact.textContent = 'Compact';
+
+    const comfortable = doc.createElement('button');
+    comfortable.setAttribute('value', 'comfortable');
+    comfortable.textContent = 'Comfortable';
+
+    el.append(compact, comfortable);
+    doc.body.appendChild(el);
+
+    await waitForFrame();
+
+    const group = el.shadowRoot?.querySelector('[role="radiogroup"]');
+    expect(group?.getAttribute('aria-label')).toBe('Optionen');
   });
 });

@@ -46,6 +46,6 @@ export const AllVariants: Story = {
 
 export const NonDismissible: Story = {
   render: () => storyHtml`
-    <bq-toast variant="info" message="This notification cannot be dismissed." duration="0" dismissible="false"></bq-toast>
+    <bq-toast variant="info" message="This notification cannot be dismissed." duration="0" ?dismissible=${false}></bq-toast>
   `,
 };

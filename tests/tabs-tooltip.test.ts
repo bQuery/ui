@@ -92,6 +92,32 @@ describe('BqTabs', () => {
     const inactive = el.shadowRoot?.querySelector('[data-tab-id="y"]');
     expect(inactive?.getAttribute('tabindex')).toBe('-1');
   });
+
+  it('should link tab buttons to generated panels and keep only the active panel tabbable', async () => {
+    const el = doc.createElement('bq-tabs');
+    el.setAttribute('active-tab', 'two');
+    el.innerHTML = `
+      <div data-tab-item id="one" label="One"></div>
+      <div data-tab-item id="two" label="Two"></div>
+      <div data-tab="one">Panel one</div>
+      <div data-tab="two">Panel two</div>
+    `;
+    doc.body.appendChild(el);
+
+    await waitForFrame();
+
+    const tabTwo = el.shadowRoot?.querySelector('[data-tab-id="two"]');
+    const panelOne = el.querySelector('[data-tab="one"]');
+    const panelTwo = el.querySelector('[data-tab="two"]');
+
+    expect(tabTwo?.getAttribute('aria-controls')).toBe('panel-two');
+    expect(panelOne?.id).toBe('panel-one');
+    expect(panelOne?.getAttribute('tabindex')).toBe('-1');
+    expect(panelOne?.getAttribute('aria-hidden')).toBe('true');
+    expect(panelTwo?.id).toBe('panel-two');
+    expect(panelTwo?.getAttribute('tabindex')).toBe('0');
+    expect(panelTwo?.getAttribute('aria-hidden')).toBe('false');
+  });
 });
 
 describe('BqTooltip', () => {

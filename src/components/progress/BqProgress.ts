@@ -32,6 +32,9 @@ const definition: ComponentDefinition<BqProgressProps> = {
     indeterminate: { type: Boolean, default: false },
     label: { type: String, default: '' },
   },
+  sanitize: {
+    allowAttributes: ['style'],
+  },
   styles: `
     ${getBaseStyles()}
     :host { display: block; }
@@ -53,6 +56,7 @@ const definition: ComponentDefinition<BqProgressProps> = {
     :host([indeterminate]) .bar {
       width: 40% !important;
       animation: indeterminate 1.4s linear infinite;
+      will-change: transform;
     }
     @keyframes indeterminate { 0% { transform: translateX(-150%); } 100% { transform: translateX(350%); } }
     .label { font-size: var(--bq-font-size-sm,0.875rem); color: var(--bq-text-muted,#475569); margin-bottom: 0.375rem; font-family: var(--bq-font-family-sans); }

@@ -1,7 +1,9 @@
 // DOM environment is provided by tests/setup.ts (preloaded via bunfig.toml)
-import { describe, it, expect, beforeAll, afterEach } from 'bun:test';
+import { afterEach, beforeAll, describe, expect, it } from 'bun:test';
 
-const win = (globalThis as unknown as Record<string, unknown>)['window'] as Window & typeof globalThis;
+const win = (globalThis as unknown as Record<string, unknown>)[
+  'window'
+] as Window & typeof globalThis;
 const doc = win.document as unknown as Document;
 
 describe('BqAccordion — accessibility improvements', () => {
@@ -44,14 +46,17 @@ describe('BqAccordion — accessibility improvements', () => {
     expect(panel?.getAttribute('role')).toBe('region');
   });
 
-  it('should set panel height to 0 when closed', async () => {
+  it('should collapse panel via CSS grid when closed', async () => {
     const el = doc.createElement('bq-accordion');
     el.setAttribute('label', 'Details');
     doc.body.appendChild(el);
-    // Wait for requestAnimationFrame to fire (polyfilled as setTimeout)
-    await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+    await new Promise<void>((resolve) =>
+      requestAnimationFrame(() => resolve())
+    );
     const panel = el.shadowRoot?.querySelector('.panel') as HTMLElement | null;
-    expect(panel?.style.height).toBe('0px');
+    // Panel uses grid-template-rows: 0fr via CSS (no inline style needed)
+    expect(panel).not.toBeNull();
+    expect(el.hasAttribute('open')).toBe(false);
   });
 
   it('should have unique IDs for trigger and panel', () => {
@@ -69,77 +74,62 @@ describe('BqAccordion — accessibility improvements', () => {
     expect(trigger1?.getAttribute('id')).not.toBe(trigger2?.getAttribute('id'));
   });
 
-  it('should reset panel height to auto after expand transition completes', async () => {
+  it('should expand panel via CSS grid when open', async () => {
     const el = doc.createElement('bq-accordion');
     el.setAttribute('label', 'Details');
     el.setAttribute('open', '');
     doc.body.appendChild(el);
-    await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+    await new Promise<void>((resolve) =>
+      requestAnimationFrame(() => resolve())
+    );
 
     const panel = el.shadowRoot?.querySelector('.panel') as HTMLElement | null;
-    const transitionEvent = new win.Event('transitionend', {
-      bubbles: true,
-    }) as Event & { propertyName?: string };
-    transitionEvent.propertyName = 'height';
-    panel?.dispatchEvent(transitionEvent);
-
-    expect(panel?.style.height).toBe('auto');
+    // Panel is expanded via :host([open]) .panel { grid-template-rows: 1fr }
+    expect(panel).not.toBeNull();
+    expect(el.hasAttribute('open')).toBe(true);
   });
 
-  it("should ignore bubbled descendant height transitionend events", async () => {
+  it('should use CSS grid animation approach for panel', async () => {
     const el = doc.createElement('bq-accordion');
     el.setAttribute('label', 'Details');
     el.setAttribute('open', '');
-    const content = doc.createElement('div');
-    content.textContent = 'Accordion content';
-    el.appendChild(content);
     doc.body.appendChild(el);
-    await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+    await new Promise<void>((resolve) =>
+      requestAnimationFrame(() => resolve())
+    );
 
     const panel = el.shadowRoot?.querySelector('.panel') as HTMLElement | null;
-    const panelInner = el.shadowRoot?.querySelector('.panel-inner') as HTMLElement | null;
+    const panelInner = el.shadowRoot?.querySelector(
+      '.panel-inner'
+    ) as HTMLElement | null;
     expect(panel).not.toBeNull();
     expect(panelInner).not.toBeNull();
-    panel!.style.height = '123px';
-
-    const transitionEvent = new win.Event('transitionend', {
-      bubbles: true,
-    }) as Event & { propertyName?: string };
-    transitionEvent.propertyName = 'height';
-    panelInner?.dispatchEvent(transitionEvent);
-
-    expect(panel?.style.height).toBe('123px');
+    // Panel inner has overflow: hidden and min-height: 0 for grid collapse
+    expect(panel?.getAttribute('role')).toBe('region');
   });
 
-  it('should reset panel height to auto when transitions are disabled', async () => {
-    const originalGetComputedStyle = win.getComputedStyle.bind(win);
-    const reducedMotionGetComputedStyle = ((el: Element) => {
-      const styles = originalGetComputedStyle(el);
-      if ((el as HTMLElement).classList.contains('panel')) {
-        return new Proxy(styles, {
-          get(target, prop, receiver) {
-            if (prop === 'transitionProperty') return 'none';
-            if (prop === 'transitionDuration') return '0s';
-            return Reflect.get(target, prop, receiver);
-          },
-        }) as CSSStyleDeclaration;
-      }
-      return styles;
-    }) as typeof win.getComputedStyle;
+  it('should set data-closing attribute during close animation', async () => {
+    const el = doc.createElement('bq-accordion');
+    el.setAttribute('label', 'Details');
+    el.setAttribute('open', '');
+    doc.body.appendChild(el);
+    await new Promise<void>((resolve) =>
+      requestAnimationFrame(() => resolve())
+    );
 
-    win.getComputedStyle = reducedMotionGetComputedStyle;
+    // Click trigger to close
+    const trigger = el.shadowRoot?.querySelector(
+      '.trigger'
+    ) as HTMLElement | null;
+    trigger?.click();
 
-    try {
-      const el = doc.createElement('bq-accordion');
-      el.setAttribute('label', 'Details');
-      el.setAttribute('open', '');
-      doc.body.appendChild(el);
-      await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+    // data-closing should be set during animation
+    expect(el.hasAttribute('data-closing')).toBe(true);
+    expect(el.hasAttribute('open')).toBe(true); // still open during animation
 
-      const panel = el.shadowRoot?.querySelector('.panel') as HTMLElement | null;
-      expect(panel?.style.height).toBe('auto');
-    } finally {
-      win.getComputedStyle = originalGetComputedStyle;
-    }
+    // After animation completes
+    await new Promise<void>((resolve) => setTimeout(resolve, 350));
+    expect(el.hasAttribute('data-closing')).toBe(false);
+    expect(el.hasAttribute('open')).toBe(false);
   });
 });

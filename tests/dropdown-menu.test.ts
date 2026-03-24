@@ -1,7 +1,9 @@
 // DOM environment is provided by tests/setup.ts (preloaded via bunfig.toml)
-import { describe, it, expect, beforeAll, afterEach } from 'bun:test';
+import { afterEach, beforeAll, describe, expect, it } from 'bun:test';
 
-const win = (globalThis as unknown as Record<string, unknown>)['window'] as Window & typeof globalThis;
+const win = (globalThis as unknown as Record<string, unknown>)[
+  'window'
+] as Window & typeof globalThis;
 const doc = win.document as unknown as Document;
 
 describe('BqDropdownMenu', () => {
@@ -81,7 +83,9 @@ describe('BqDropdownMenu', () => {
     el.appendChild(btn);
     doc.body.appendChild(el);
     // Wait for requestAnimationFrame to fire
-    await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+    await new Promise<void>((resolve) =>
+      requestAnimationFrame(() => resolve())
+    );
     expect(btn.getAttribute('aria-haspopup')).toBe('menu');
   });
 
@@ -98,26 +102,38 @@ describe('BqDropdownMenu', () => {
     let removeCount = 0;
     const originalAdd = doc.addEventListener.bind(doc);
     const originalRemove = doc.removeEventListener.bind(doc);
-    doc.addEventListener = ((type: string, listener: EventListenerOrEventListenerObject, options?: AddEventListenerOptions | boolean) => {
+    doc.addEventListener = ((
+      type: string,
+      listener: EventListenerOrEventListenerObject,
+      options?: AddEventListenerOptions | boolean
+    ) => {
       if (type === 'click') addCount += 1;
       return originalAdd(type, listener, options);
     }) as Document['addEventListener'];
-    doc.removeEventListener = ((type: string, listener: EventListenerOrEventListenerObject, options?: EventListenerOptions | boolean) => {
+    doc.removeEventListener = ((
+      type: string,
+      listener: EventListenerOrEventListenerObject,
+      options?: EventListenerOptions | boolean
+    ) => {
       if (type === 'click') removeCount += 1;
       return originalRemove(type, listener, options);
     }) as Document['removeEventListener'];
 
     try {
       doc.body.appendChild(el);
-      await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+      await new Promise<void>((resolve) =>
+        requestAnimationFrame(() => resolve())
+      );
       expect(addCount).toBe(0);
 
       trigger.click();
-      await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+      await new Promise<void>((resolve) =>
+        requestAnimationFrame(() => resolve())
+      );
       expect(addCount).toBe(1);
 
       trigger.click();
-      await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+      await new Promise<void>((resolve) => setTimeout(resolve, 200));
       expect(removeCount).toBe(1);
     } finally {
       doc.addEventListener = originalAdd;
@@ -132,7 +148,9 @@ describe('BqDropdownMenu', () => {
     btn.textContent = 'Trigger';
     el.appendChild(btn);
     doc.body.appendChild(el);
-    await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+    await new Promise<void>((resolve) =>
+      requestAnimationFrame(() => resolve())
+    );
     expect(btn.getAttribute('aria-expanded')).toBe('false');
   });
 
@@ -144,7 +162,9 @@ describe('BqDropdownMenu', () => {
     btn.textContent = 'Trigger';
     el.appendChild(btn);
     doc.body.appendChild(el);
-    await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+    await new Promise<void>((resolve) =>
+      requestAnimationFrame(() => resolve())
+    );
 
     expect(btn.getAttribute('aria-disabled')).toBe('true');
     expect(btn.hasAttribute('disabled')).toBe(true);
@@ -160,7 +180,9 @@ describe('BqDropdownMenu', () => {
     el.append(trigger, item);
     doc.body.appendChild(el);
 
-    await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+    await new Promise<void>((resolve) =>
+      requestAnimationFrame(() => resolve())
+    );
 
     expect(item.getAttribute('role')).toBe('menuitem');
     expect(item.getAttribute('tabindex')).toBe('-1');
@@ -176,7 +198,9 @@ describe('BqDropdownMenu', () => {
     el.append(trigger, item);
     doc.body.appendChild(el);
 
-    await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+    await new Promise<void>((resolve) =>
+      requestAnimationFrame(() => resolve())
+    );
 
     expect(item.getAttribute('type')).toBe('button');
   });
@@ -193,7 +217,9 @@ describe('BqDropdownMenu', () => {
     el.append(trigger, item);
     doc.body.appendChild(el);
 
-    await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+    await new Promise<void>((resolve) =>
+      requestAnimationFrame(() => resolve())
+    );
 
     expect(item.getAttribute('role')).toBe('menuitem');
     expect(item.getAttribute('aria-disabled')).toBe('true');
@@ -216,7 +242,9 @@ describe('BqDropdownMenu', () => {
     });
 
     trigger.click();
-    await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+    await new Promise<void>((resolve) =>
+      requestAnimationFrame(() => resolve())
+    );
 
     expect(selected).toBe(0);
     expect(el.hasAttribute('open')).toBe(true);
@@ -235,12 +263,15 @@ describe('BqDropdownMenu', () => {
     el.append(trigger, item);
 
     trigger.click();
-    await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+    await new Promise<void>((resolve) =>
+      requestAnimationFrame(() => resolve())
+    );
     item.focus();
 
     item.dispatchEvent(
       new win.KeyboardEvent('keydown', { key: 'Tab', bubbles: true })
     );
+    await new Promise<void>((resolve) => setTimeout(resolve, 200));
 
     expect(el.hasAttribute('open')).toBe(false);
     expect(doc.activeElement).not.toBe(trigger);
@@ -258,9 +289,12 @@ describe('BqDropdownMenu', () => {
     el.append(trigger, item);
 
     trigger.click();
-    await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+    await new Promise<void>((resolve) =>
+      requestAnimationFrame(() => resolve())
+    );
     item.focus();
     outside.dispatchEvent(new win.MouseEvent('click', { bubbles: true }));
+    await new Promise<void>((resolve) => setTimeout(resolve, 200));
 
     expect(el.hasAttribute('open')).toBe(false);
     expect(doc.activeElement).toBe(trigger);
@@ -278,7 +312,7 @@ describe('BqDropdownMenu', () => {
 
     trigger.click();
     trigger.click();
-    await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+    await new Promise<void>((resolve) => setTimeout(resolve, 200));
 
     expect(el.hasAttribute('open')).toBe(false);
     expect(doc.activeElement).not.toBe(item);
@@ -300,11 +334,14 @@ describe('BqDropdownMenu', () => {
     });
 
     trigger.click();
-    await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+    await new Promise<void>((resolve) =>
+      requestAnimationFrame(() => resolve())
+    );
     item.focus();
     item.dispatchEvent(
       new win.KeyboardEvent('keydown', { key: 'Enter', bubbles: true })
     );
+    await new Promise<void>((resolve) => setTimeout(resolve, 200));
 
     expect(selected).toBe('Edit');
     expect(el.hasAttribute('open')).toBe(false);
@@ -327,11 +364,14 @@ describe('BqDropdownMenu', () => {
     });
 
     trigger.click();
-    await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+    await new Promise<void>((resolve) =>
+      requestAnimationFrame(() => resolve())
+    );
     item.focus();
     item.dispatchEvent(
       new win.KeyboardEvent('keydown', { key: ' ', bubbles: true })
     );
+    await new Promise<void>((resolve) => setTimeout(resolve, 200));
 
     expect(selected).toBe('Details');
     expect(el.hasAttribute('open')).toBe(false);
@@ -352,7 +392,9 @@ describe('BqDropdownMenu', () => {
     doc.body.appendChild(el);
 
     trigger.click();
-    await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+    await new Promise<void>((resolve) =>
+      requestAnimationFrame(() => resolve())
+    );
     archive.focus();
     archive.dispatchEvent(
       new win.KeyboardEvent('keydown', { key: 'd', bubbles: true })
@@ -379,8 +421,13 @@ describe('BqDropdownMenu', () => {
     });
 
     trigger.click();
-    await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
-    const clickEvent = new win.MouseEvent('click', { bubbles: true, cancelable: true });
+    await new Promise<void>((resolve) =>
+      requestAnimationFrame(() => resolve())
+    );
+    const clickEvent = new win.MouseEvent('click', {
+      bubbles: true,
+      cancelable: true,
+    });
     item.dispatchEvent(clickEvent);
 
     expect(selected).toBe(0);

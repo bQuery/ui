@@ -92,6 +92,9 @@ export const en = {
     open: 'Open menu',
     close: 'Close menu',
   },
+  segmentedControl: {
+    defaultLabel: 'Options',
+  },
 } as const;
 
 export type EnLocale = typeof en;

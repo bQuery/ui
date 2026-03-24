@@ -14,6 +14,10 @@ import { getBaseStyles } from '../../utils/styles.js';
 
 type BqTabsProps = { 'active-tab': string; variant: string };
 
+function getPanelId(tabId: string): string {
+  return `panel-${tabId}`;
+}
+
 const definition: ComponentDefinition<BqTabsProps> = {
   props: {
     'active-tab': { type: String, default: '' },
@@ -149,10 +153,21 @@ const definition: ComponentDefinition<BqTabsProps> = {
     const active = this.getAttribute('active-tab') ?? '';
     this.querySelectorAll<HTMLElement>('[data-tab]').forEach((panel) => {
       const tabId = panel.getAttribute('data-tab') ?? '';
-      panel.hidden = tabId !== active;
+      const isActive = tabId === active;
+      const panelId = panel.id || getPanelId(tabId);
+
+      panel.id = panelId;
+      panel.hidden = !isActive;
       panel.setAttribute('role', 'tabpanel');
-      panel.setAttribute('tabindex', '0');
+      panel.setAttribute('tabindex', isActive ? '0' : '-1');
       panel.setAttribute('aria-labelledby', `tab-${tabId}`);
+      panel.setAttribute('aria-hidden', isActive ? 'false' : 'true');
+
+      const button = Array.from(
+        this.shadowRoot?.querySelectorAll<HTMLElement>('.tab[data-tab-id]') ??
+          []
+      ).find((candidate) => candidate.getAttribute('data-tab-id') === tabId);
+      button?.setAttribute('aria-controls', panelId);
     });
   },
   render({ props, state }) {
@@ -167,7 +182,7 @@ const definition: ComponentDefinition<BqTabsProps> = {
       <button part="tab" class="tab" data-variant="${escapeHtml(props.variant)}"
         role="tab" id="tab-${escapeHtml(tab.id)}" data-tab-id="${escapeHtml(tab.id)}"
         aria-selected="${tab.id === active ? 'true' : 'false'}"
-        aria-controls="${escapeHtml(tab.id)}"
+        aria-controls="${escapeHtml(getPanelId(tab.id))}"
         tabindex="${tab.id === active ? '0' : '-1'}"
         ${tab.disabled ? 'disabled aria-disabled="true"' : ''}
       >${escapeHtml(tab.label)}</button>

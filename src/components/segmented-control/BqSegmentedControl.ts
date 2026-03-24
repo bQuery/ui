@@ -15,6 +15,7 @@
 import type { ComponentDefinition } from '@bquery/bquery/component';
 import { component, html } from '@bquery/bquery/component';
 import { escapeHtml } from '@bquery/bquery/security';
+import { t } from '../../i18n/index.js';
 import { uniqueId } from '../../utils/dom.js';
 import { createFormProxy, type FormProxy } from '../../utils/form.js';
 import { getBaseStyles } from '../../utils/styles.js';
@@ -441,12 +442,13 @@ const definition: ComponentDefinition<
     const uid = state.uid || 'bq-segmented';
     const labelId = `${uid}-label`;
     const hintId = `${uid}-hint`;
+    const fallbackGroupLabel = t('segmentedControl.defaultLabel');
 
     const labelAttribute = props.label
       ? `aria-labelledby="${labelId}"`
       : props['aria-label']
         ? `aria-label="${escapeHtml(props['aria-label'])}"`
-        : `aria-label="${escapeHtml(props.name || 'Options')}"`;
+        : `aria-label="${escapeHtml(props.name || fallbackGroupLabel)}"`;
 
     const descriptionAttribute = props.hint
       ? `aria-describedby="${hintId}"`
