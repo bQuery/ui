@@ -337,6 +337,30 @@ describe('BqDropdownMenu', () => {
     expect(el.hasAttribute('open')).toBe(false);
   });
 
+  it('should focus the next matching item when typing a printable character', async () => {
+    const el = doc.createElement('bq-dropdown-menu');
+    const trigger = doc.createElement('button');
+    trigger.setAttribute('slot', 'trigger');
+    trigger.textContent = 'Trigger';
+    const archive = doc.createElement('button');
+    archive.textContent = 'Archive';
+    const duplicate = doc.createElement('button');
+    duplicate.textContent = 'Duplicate';
+    const deleteItem = doc.createElement('button');
+    deleteItem.textContent = 'Delete';
+    el.append(trigger, archive, duplicate, deleteItem);
+    doc.body.appendChild(el);
+
+    trigger.click();
+    await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+    archive.focus();
+    archive.dispatchEvent(
+      new win.KeyboardEvent('keydown', { key: 'd', bubbles: true })
+    );
+
+    expect(doc.activeElement).toBe(duplicate);
+  });
+
   it('should ignore disabled anchor activation', async () => {
     const el = doc.createElement('bq-dropdown-menu');
     const trigger = doc.createElement('button');

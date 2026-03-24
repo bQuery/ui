@@ -39,6 +39,7 @@ import { __bqComponentEntry as paginationComponentEntry } from './components/pag
 import { __bqComponentEntry as progressComponentEntry } from './components/progress/index.js';
 import { __bqComponentEntry as radioComponentEntry } from './components/radio/index.js';
 import { __bqComponentEntry as selectComponentEntry } from './components/select/index.js';
+import { __bqComponentEntry as segmentedControlComponentEntry } from './components/segmented-control/index.js';
 import { __bqComponentEntry as skeletonComponentEntry } from './components/skeleton/index.js';
 import { __bqComponentEntry as sliderComponentEntry } from './components/slider/index.js';
 import { __bqComponentEntry as spinnerComponentEntry } from './components/spinner/index.js';
@@ -76,6 +77,7 @@ Object.defineProperty(registerAll, COMPONENT_ENTRY_MAP_KEY, {
     'progress': progressComponentEntry,
     'radio': radioComponentEntry,
     'select': selectComponentEntry,
+    'segmented-control': segmentedControlComponentEntry,
     'skeleton': skeletonComponentEntry,
     'slider': sliderComponentEntry,
     'spinner': spinnerComponentEntry,

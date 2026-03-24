@@ -9,7 +9,7 @@ This catalog gives you a complete overview of the currently available building b
 | Category | Components |
 | --- | --- |
 | **Actions** | `bq-button`, `bq-icon-button` |
-| **Forms** | `bq-input`, `bq-textarea`, `bq-select`, `bq-checkbox`, `bq-radio`, `bq-switch`, `bq-slider`, `bq-chip` |
+| **Forms** | `bq-input`, `bq-textarea`, `bq-select`, `bq-segmented-control`, `bq-checkbox`, `bq-radio`, `bq-switch`, `bq-slider`, `bq-chip` |
 | **Navigation & Disclosure** | `bq-tabs`, `bq-accordion`, `bq-breadcrumbs`, `bq-pagination` |
 | **Data Display** | `bq-card`, `bq-badge`, `bq-avatar`, `bq-table`, `bq-divider`, `bq-empty-state` |
 | **Feedback & Loading** | `bq-alert`, `bq-progress`, `bq-spinner`, `bq-skeleton`, `bq-tooltip`, `bq-toast` |
@@ -40,6 +40,7 @@ Across the component library you will find the same professional capabilities th
 | `bq-input` | Single-line text input | Labels, hints, validation, prefix/suffix slots, size variants |
 | `bq-textarea` | Multi-line text input | Rows, max length, validation, hints |
 | `bq-select` | Native dropdown selection | Placeholder, form-friendly behavior, error state |
+| `bq-segmented-control` | Compact single-choice view and filter toggles | Radio-group semantics, form participation, keyboard navigation, mobile-friendly full-width mode |
 | `bq-checkbox` | Boolean or multi-select forms | Checked and indeterminate states, hint text |
 | `bq-radio` | Exclusive option groups | Shared name support, hint text |
 | `bq-switch` | Toggle settings and preferences | Size variants, switch semantics, animated thumb |

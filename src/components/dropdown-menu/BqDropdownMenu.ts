@@ -96,6 +96,11 @@ const definition: ComponentDefinition<
     const isDisabledItem = (el: HTMLElement): boolean =>
       el.hasAttribute('disabled') || el.getAttribute('aria-disabled') === 'true';
 
+    const getItemLabel = (el: HTMLElement): string =>
+      (el.getAttribute('data-value') || el.textContent || '')
+        .trim()
+        .toLowerCase();
+
     const getMenuRoots = (): HTMLElement[] => {
       const slot = self.shadowRoot?.querySelector(
         'slot:not([name])'
@@ -158,9 +163,12 @@ const definition: ComponentDefinition<
         if (items.length > 0) items[0]!.focus();
       });
     };
-    const close = ({ restoreFocus = false }: { restoreFocus?: boolean } = {}) => {
+    const close = (
+      { restoreFocus = false }: { restoreFocus?: boolean } = {}
+    ) => {
       if (!self.hasAttribute('open')) return;
       self.removeAttribute('open');
+      clearTypeaheadBuffer();
       syncTriggerA11y();
       self.dispatchEvent(
         new CustomEvent('bq-close', { bubbles: true, composed: true })
@@ -170,6 +178,32 @@ const definition: ComponentDefinition<
     const toggle = () => {
       if (self.hasAttribute('open')) close();
       else open();
+    };
+
+    let typeaheadBuffer = '';
+    let typeaheadTimeout = 0;
+
+    const clearTypeaheadBuffer = () => {
+      typeaheadBuffer = '';
+      if (typeaheadTimeout) {
+        clearTimeout(typeaheadTimeout);
+        typeaheadTimeout = 0;
+      }
+    };
+
+    const focusTypeaheadMatch = (search: string, currentIndex: number) => {
+      const items = getMenuItems();
+      if (items.length === 0) return;
+
+      const orderedItems =
+        currentIndex >= 0
+          ? [...items.slice(currentIndex + 1), ...items.slice(0, currentIndex + 1)]
+          : items;
+
+      const match = orderedItems.find((item) =>
+        getItemLabel(item).startsWith(search)
+      );
+      match?.focus();
     };
 
     const getMenuItems = (): HTMLElement[] => {
@@ -296,6 +330,22 @@ const definition: ComponentDefinition<
           close();
           break;
         }
+        default: {
+          if (
+            ke.key.length === 1 &&
+            !ke.altKey &&
+            !ke.ctrlKey &&
+            !ke.metaKey
+          ) {
+            typeaheadBuffer = `${typeaheadBuffer}${ke.key.toLowerCase()}`;
+            if (typeaheadTimeout) clearTimeout(typeaheadTimeout);
+            typeaheadTimeout = window.setTimeout(() => {
+              typeaheadBuffer = '';
+              typeaheadTimeout = 0;
+            }, 500);
+            focusTypeaheadMatch(typeaheadBuffer, currentIndex);
+          }
+        }
       }
     };
 
@@ -331,6 +381,7 @@ const definition: ComponentDefinition<
     s['_outsideHandler'] = outsideHandler;
     s['_syncOutsideListener'] = syncOutsideListener;
     s['_slotChangeHandler'] = slotChangeHandler;
+    s['_clearTypeaheadBuffer'] = clearTypeaheadBuffer;
 
     self.addEventListener('click', triggerHandler);
     self.addEventListener('click', menuClickHandler);
@@ -357,10 +408,14 @@ const definition: ComponentDefinition<
     const slotChangeHandler = s['_slotChangeHandler'] as
       | EventListener
       | undefined;
+    const clearTypeaheadBuffer = s['_clearTypeaheadBuffer'] as
+      | (() => void)
+      | undefined;
     if (triggerHandler) this.removeEventListener('click', triggerHandler);
     if (menuClickHandler) this.removeEventListener('click', menuClickHandler);
     if (keyHandler) this.removeEventListener('keydown', keyHandler);
     if (outsideHandler) document.removeEventListener('click', outsideHandler);
+    clearTypeaheadBuffer?.();
     if (slotChangeHandler) {
       this.shadowRoot
         ?.querySelector('slot[name="trigger"]')
