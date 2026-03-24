@@ -295,13 +295,11 @@ const definition: ComponentDefinition<
       );
       if (enabledButtons.length === 0) return;
 
-      let nextButton: HTMLButtonElement | null;
+      let nextButton: HTMLButtonElement | null = enabledButtons[0] ?? null;
 
-      if (direction === 'first') {
-        nextButton = enabledButtons[0] ?? null;
-      } else if (direction === 'last') {
+      if (direction === 'last') {
         nextButton = enabledButtons[enabledButtons.length - 1] ?? null;
-      } else {
+      } else if (direction === 'next' || direction === 'prev') {
         const currentIndex = enabledButtons.indexOf(currentButton);
         if (currentIndex === -1) {
           nextButton = enabledButtons[0] ?? null;
