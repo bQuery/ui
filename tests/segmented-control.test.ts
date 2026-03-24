@@ -16,7 +16,7 @@ describe('BqSegmentedControl', () => {
   });
 
   const createControl = (
-    beforeAppend?: (elements: {
+    beforeAttach?: (elements: {
       el: HTMLElement;
       overview: HTMLButtonElement;
       board: HTMLButtonElement;
@@ -41,7 +41,7 @@ describe('BqSegmentedControl', () => {
     activity.textContent = 'Activity';
 
     el.append(overview, board, activity);
-    beforeAppend?.({ el, overview, board, activity });
+    beforeAttach?.({ el, overview, board, activity });
     doc.body.appendChild(el);
 
     return { el, overview, board, activity };
