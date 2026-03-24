@@ -1,11 +1,12 @@
 import { defineConfig } from 'vitepress';
 
+const githubPagesBase = `/${process.env.GITHUB_REPOSITORY?.split('/')[1] ?? 'ui'}/`;
+
 export default defineConfig({
   title: '@bquery/ui',
   description: 'Production-grade web component library for the bQuery project',
-  base: '/',
+  base: githubPagesBase,
   themeConfig: {
-    logo: '/logo.svg',
     nav: [
       { text: 'Guide', link: '/guide/getting-started' },
       { text: 'Components', link: '/components/' },
