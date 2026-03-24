@@ -110,6 +110,48 @@ describe('BqSegmentedControl', () => {
     expect(hostKeydownRegistrations).toBe(0);
   });
 
+  it('should still move selection when the segment key handler runs', async () => {
+    const { el, overview, board } = createControl();
+    await waitForFrame();
+
+    let changes = 0;
+    el.addEventListener('bq-change', () => {
+      changes += 1;
+    });
+
+    const keyHandler = (el as unknown as Record<string, unknown>)['_keyHandler'] as
+      | ((event: KeyboardEvent) => void)
+      | undefined;
+
+    expect(keyHandler).toBeDefined();
+
+    const event = new win.KeyboardEvent('keydown', {
+      key: 'ArrowRight',
+      bubbles: true,
+    });
+
+    Object.defineProperty(event, 'target', {
+      value: overview,
+      configurable: true,
+    });
+
+    const globalScope = globalThis as typeof globalThis & {
+      getComputedStyle?: typeof win.getComputedStyle;
+    };
+    const originalGetComputedStyle = globalScope.getComputedStyle;
+    globalScope.getComputedStyle = win.getComputedStyle.bind(win);
+
+    try {
+      keyHandler?.(event);
+    } finally {
+      globalScope.getComputedStyle = originalGetComputedStyle;
+    }
+
+    expect(el.getAttribute('value')).toBe('board');
+    expect(board.getAttribute('data-selected')).toBe('true');
+    expect(changes).toBe(1);
+  });
+
   it('should allow aria-label when no visible label is rendered', async () => {
     const el = doc.createElement('bq-segmented-control');
     el.setAttribute('aria-label', 'Display density');
