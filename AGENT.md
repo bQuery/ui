@@ -25,17 +25,19 @@ This repository is `@bquery/ui`, a framework-agnostic Web Components library bui
 Install dependencies with Bun:
 
 ```bash
-npx bun install --frozen-lockfile
+bun install --frozen-lockfile
 ```
 
 Use these commands to validate work:
 
 ```bash
 npm run lint:types
-npx bun test
+npm run test
 npm run build
 npm run build:docs
 ```
+
+If Bun is not installed globally in your environment, use `npx bun ...` as a fallback.
 
 ## Project-specific notes
 
