@@ -97,7 +97,7 @@ describe('BqSegmentedControl', () => {
 
   it('should not register a host keydown listener', async () => {
     let hostKeydownRegistrations = 0;
-    const { el } = createControl(({ el: control }) => {
+    createControl(({ el: control }) => {
       const originalHostAddEventListener = control.addEventListener.bind(control);
       control.addEventListener = ((type, listener, options) => {
         if (type === 'keydown') hostKeydownRegistrations += 1;
