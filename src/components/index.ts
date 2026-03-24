@@ -25,6 +25,7 @@ import './segmented-control/BqSegmentedControl.js';
 import './skeleton/BqSkeleton.js';
 import './slider/BqSlider.js';
 import './spinner/BqSpinner.js';
+import './stat-card/BqStatCard.js';
 import './switch/BqSwitch.js';
 import './table/BqTable.js';
 import './tabs/BqTabs.js';

@@ -43,6 +43,7 @@ import { __bqComponentEntry as segmentedControlComponentEntry } from './componen
 import { __bqComponentEntry as skeletonComponentEntry } from './components/skeleton/index.js';
 import { __bqComponentEntry as sliderComponentEntry } from './components/slider/index.js';
 import { __bqComponentEntry as spinnerComponentEntry } from './components/spinner/index.js';
+import { __bqComponentEntry as statCardComponentEntry } from './components/stat-card/index.js';
 import { __bqComponentEntry as switchComponentEntry } from './components/switch/index.js';
 import { __bqComponentEntry as tableComponentEntry } from './components/table/index.js';
 import { __bqComponentEntry as tabsComponentEntry } from './components/tabs/index.js';
@@ -81,6 +82,7 @@ Object.defineProperty(registerAll, COMPONENT_ENTRY_MAP_KEY, {
     'skeleton': skeletonComponentEntry,
     'slider': sliderComponentEntry,
     'spinner': spinnerComponentEntry,
+    'stat-card': statCardComponentEntry,
     'switch': switchComponentEntry,
     'table': tableComponentEntry,
     'tabs': tabsComponentEntry,

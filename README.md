@@ -22,7 +22,7 @@ The current library covers the core component categories developers expect from 
 | **Actions** | Button, Icon Button |
 | **Forms** | Input, Textarea, Select, Checkbox, Radio, Switch, Slider, Chip |
 | **Navigation** | Tabs, Accordion, Breadcrumbs, Pagination |
-| **Data Display** | Card, Badge, Avatar, Table, Divider, Empty State |
+| **Data Display** | Card, Badge, Avatar, Table, Divider, Empty State, Stat Card |
 | **Feedback** | Alert, Progress, Spinner, Skeleton, Tooltip, Toast |
 | **Overlays** | Dialog, Drawer |
 
