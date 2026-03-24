@@ -191,7 +191,7 @@ describe('BqInput — character counter', () => {
 
     const counter = el.shadowRoot?.querySelector('.counter');
     expect(counter).not.toBeNull();
-    expect(counter!.getAttribute('data-over')).toBe('true');
+    expect(counter?.getAttribute('data-over')).toBe('true');
   });
 
   it('should not render a footer when there is no hint, error, or counter', () => {
