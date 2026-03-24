@@ -28,6 +28,11 @@ type BqSliderProps = {
   'show-value': boolean;
 };
 
+function syncInputAccessibility(input: HTMLInputElement, value: number): void {
+  input.setAttribute('aria-valuenow', String(value));
+  input.setAttribute('aria-valuetext', t('slider.valueText', { value }));
+}
+
 const definition: ComponentDefinition<BqSliderProps> = {
   props: {
     value: { type: Number, default: 50 },
@@ -55,10 +60,6 @@ const definition: ComponentDefinition<BqSliderProps> = {
   `,
   connected() {
     const self = this;
-    const syncInputAccessibility = (input: HTMLInputElement, value: number) => {
-      input.setAttribute('aria-valuenow', String(value));
-      input.setAttribute('aria-valuetext', t('slider.valueText', { value }));
-    };
 
     // Form proxy for native <form> participation
     const name = self.getAttribute('name') ?? '';

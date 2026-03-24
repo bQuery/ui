@@ -169,8 +169,7 @@ const definition: ComponentDefinition<BqTabsProps> = {
       const button = Array.from(
         this.shadowRoot?.querySelectorAll<HTMLElement>('.tab[data-tab-id]') ?? []
       ).find((candidate) => candidate.getAttribute('data-tab-id') === tabId);
-      const labelledBy =
-        button && button.id ? button.id : button ? getTabButtonId(tabId) : null;
+      const labelledBy = button?.id || (button ? getTabButtonId(tabId) : null);
 
       if (panelId) {
         panel.id = panelId;
