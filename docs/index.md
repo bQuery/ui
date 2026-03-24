@@ -14,7 +14,7 @@ hero:
       link: /components/
     - theme: alt
       text: View on GitHub
-      link: https://github.com/bquery/component-library
+      link: https://github.com/bQuery/ui
 
 features:
   - icon: 🧩

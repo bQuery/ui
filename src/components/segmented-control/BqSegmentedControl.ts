@@ -332,7 +332,9 @@ const definition: ComponentDefinition<
       const button = target?.closest('button') as HTMLButtonElement | null;
       if (!button || !getButtons().includes(button)) return;
 
-      const isRtl = getComputedStyle(self).direction === 'rtl';
+      const docView = self.ownerDocument?.defaultView;
+      const computedStyle = docView?.getComputedStyle?.(self);
+      const isRtl = computedStyle?.direction === 'rtl';
 
       switch (keyboardEvent.key) {
         case 'ArrowRight':
