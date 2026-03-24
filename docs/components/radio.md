@@ -70,3 +70,9 @@ The `bq-radio` component is a radio button form control with label and hint text
 ## Form Participation
 
 The component creates a hidden input proxy for native `<form>` submission. The proxy carries the `name` and `value` when checked.
+
+## Accessibility
+
+- Each radio renders a native `<input type="radio">` inside the shadow DOM for full keyboard support.
+- The label is associated with the input via a wrapping `<label>` element.
+- Use the `required` prop to mark mandatory radio fields; the required indicator is rendered visually and via `aria-required`.

@@ -68,34 +68,42 @@ The `bq-drawer` component is a slide-in side panel used for navigation menus, de
 
 ## Properties
 
-| Property | Type | Default | Description |
-|----------|------|---------|-------------|
-| `open` | `boolean` | `false` | Controls visibility of the drawer |
-| `title` | `string` | — | Drawer heading text |
-| `placement` | `right \| left \| top \| bottom` | `right` | Edge from which the drawer slides in |
-| `size` | `sm \| md \| lg \| full` | `md` | Width (or height for top/bottom) of the drawer |
+| Property    | Type                             | Default | Description                                    |
+| ----------- | -------------------------------- | ------- | ---------------------------------------------- |
+| `open`      | `boolean`                        | `false` | Controls visibility of the drawer              |
+| `title`     | `string`                         | —       | Drawer heading text                            |
+| `placement` | `right \| left \| top \| bottom` | `right` | Edge from which the drawer slides in           |
+| `size`      | `sm \| md \| lg \| full`         | `md`    | Width (or height for top/bottom) of the drawer |
 
 ## Events
 
-| Event | Detail | Description |
-|-------|--------|-------------|
-| `bq-close` | — | Fired when the drawer is dismissed |
+| Event      | Detail | Description                        |
+| ---------- | ------ | ---------------------------------- |
+| `bq-close` | —      | Fired when the drawer is dismissed |
 
 ## Slots
 
-| Slot | Description |
-|------|-------------|
-| *(default)* | Drawer body content |
-| `footer` | Footer area, typically used for action buttons |
+| Slot        | Description                                    |
+| ----------- | ---------------------------------------------- |
+| *(default)* | Drawer body content                            |
+| `footer`    | Footer area, typically used for action buttons |
 
 ## CSS Parts
 
-| Part | Description |
-|------|-------------|
-| `backdrop` | Background overlay behind the drawer |
-| `drawer` | The drawer container |
-| `header` | Header section containing the title and close button |
-| `title` | Title text element |
-| `close` | Close / dismiss button |
-| `body` | Body content area |
-| `footer` | Footer section |
+| Part       | Description                                          |
+| ---------- | ---------------------------------------------------- |
+| `backdrop` | Background overlay behind the drawer                 |
+| `drawer`   | The drawer container                                 |
+| `header`   | Header section containing the title and close button |
+| `title`    | Title text element                                   |
+| `close`    | Close / dismiss button                               |
+| `body`     | Body content area                                    |
+| `footer`   | Footer section                                       |
+
+## Accessibility
+
+- Uses `role="dialog"` and `aria-modal="true"` for proper screen reader semantics.
+- Title is linked via `aria-labelledby` so the drawer is announced by name.
+- Focus is trapped within the drawer while open and restored to the trigger on close.
+- Press `Escape` to dismiss the drawer.
+- Close button has a localized `aria-label`.

@@ -63,34 +63,41 @@ The `bq-dialog` component is a modal dialog overlay used for confirmations, form
 
 ## Properties
 
-| Property | Type | Default | Description |
-|----------|------|---------|-------------|
-| `open` | `boolean` | `false` | Controls visibility of the dialog |
-| `title` | `string` | — | Dialog heading text |
-| `size` | `sm \| md \| lg \| xl \| full` | `md` | Width preset for the dialog |
-| `dismissible` | `boolean` | `true` | Allows closing via overlay click, Escape key, and close button |
+| Property      | Type                           | Default | Description                                                    |
+| ------------- | ------------------------------ | ------- | -------------------------------------------------------------- |
+| `open`        | `boolean`                      | `false` | Controls visibility of the dialog                              |
+| `title`       | `string`                       | —       | Dialog heading text                                            |
+| `size`        | `sm \| md \| lg \| xl \| full` | `md`    | Width preset for the dialog                                    |
+| `dismissible` | `boolean`                      | `true`  | Allows closing via overlay click, Escape key, and close button |
 
 ## Events
 
-| Event | Detail | Description |
-|-------|--------|-------------|
-| `bq-close` | — | Fired when the dialog is dismissed |
+| Event      | Detail | Description                        |
+| ---------- | ------ | ---------------------------------- |
+| `bq-close` | —      | Fired when the dialog is dismissed |
 
 ## Slots
 
-| Slot | Description |
-|------|-------------|
-| *(default)* | Dialog body content |
-| `footer` | Footer area, typically used for action buttons |
+| Slot        | Description                                    |
+| ----------- | ---------------------------------------------- |
+| *(default)* | Dialog body content                            |
+| `footer`    | Footer area, typically used for action buttons |
 
 ## CSS Parts
 
-| Part | Description |
-|------|-------------|
-| `overlay` | Background overlay behind the dialog |
-| `dialog` | The dialog container |
-| `header` | Header section containing the title and close button |
-| `title` | Title text element |
-| `close` | Close / dismiss button |
-| `body` | Body content area |
-| `footer` | Footer section |
+| Part      | Description                                          |
+| --------- | ---------------------------------------------------- |
+| `overlay` | Background overlay behind the dialog                 |
+| `dialog`  | The dialog container                                 |
+| `header`  | Header section containing the title and close button |
+| `title`   | Title text element                                   |
+| `close`   | Close / dismiss button                               |
+| `body`    | Body content area                                    |
+| `footer`  | Footer section                                       |
+
+## Accessibility
+
+- Uses `role="dialog"` and `aria-modal="true"` for proper screen reader semantics.
+- Title is linked via `aria-labelledby` so the dialog is announced by name.
+- Focus is trapped within the dialog while open and restored to the trigger on close.
+- Press `Escape` to dismiss the dialog.

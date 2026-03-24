@@ -1,5 +1,5 @@
-import type { Meta, StoryObj } from '@storybook/web-components';
 import { storyHtml } from '@bquery/bquery/storybook';
+import type { Meta, StoryObj } from '@storybook/web-components';
 
 const meta: Meta = {
   title: 'Forms/Segmented Control',
@@ -36,3 +36,15 @@ type Story = StoryObj;
 export const Default: Story = {};
 export const Large: Story = { args: { size: 'lg' } };
 export const FullWidth: Story = { args: { fullWidth: true } };
+
+export const WithDisabledOption: Story = {
+  render: () => storyHtml`
+    <bq-segmented-control label="Status" name="status" value="active" size="md">
+      <button value="active">Active</button>
+      <button value="pending" disabled>Pending</button>
+      <button value="archived">Archived</button>
+    </bq-segmented-control>
+  `,
+};
+
+export const Small: Story = { args: { size: 'sm' } };

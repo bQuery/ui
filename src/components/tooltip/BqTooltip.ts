@@ -142,6 +142,8 @@ const definition: ComponentDefinition<BqTooltipProps, BqTooltipState> = {
       (this as unknown as { getState?<T>(key: string): T }).getState?.<string>(
         'uid'
       ) ?? this.id;
+    // Clear any pending show-delay timer to prevent setState on a disconnected element
+    (hide as () => void)?.();
     this.removeEventListener('mouseenter', show);
     this.removeEventListener('mouseleave', hide);
     this.removeEventListener('focusin', show);

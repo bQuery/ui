@@ -70,28 +70,35 @@ Tabs added or removed at runtime are automatically detected:
 
 ## Properties
 
-| Property | Type | Default | Description |
-|----------|------|---------|-------------|
-| `active-tab` | `string` | `''` | ID of the currently active tab |
-| `variant` | `default \| pills \| underline` | `default` | Visual style of the tab list |
+| Property     | Type                            | Default   | Description                    |
+| ------------ | ------------------------------- | --------- | ------------------------------ |
+| `active-tab` | `string`                        | `''`      | ID of the currently active tab |
+| `variant`    | `default \| pills \| underline` | `default` | Visual style of the tab list   |
 
 ## Events
 
-| Event | Detail | Description |
-|-------|--------|-------------|
+| Event           | Detail              | Description                       |
+| --------------- | ------------------- | --------------------------------- |
 | `bq-tab-change` | `{ tabId: string }` | Fired when the active tab changes |
 
 ## Slots
 
-| Slot | Description |
-|------|-------------|
+| Slot        | Description                                                 |
+| ----------- | ----------------------------------------------------------- |
 | *(default)* | Tab items (`[data-tab-item]`) and tab panels (`[data-tab]`) |
 
 ## CSS Parts
 
-| Part | Description |
-|------|-------------|
-| `tabs` | Main tabs container |
-| `tablist` | Tab list / navigation area |
-| `tab` | Individual tab button |
-| `panels` | Container for tab panel content |
+| Part      | Description                     |
+| --------- | ------------------------------- |
+| `tabs`    | Main tabs container             |
+| `tablist` | Tab list / navigation area      |
+| `tab`     | Individual tab button           |
+| `panels`  | Container for tab panel content |
+
+## Accessibility
+
+- Uses `role="tablist"`, `role="tab"`, and `role="tabpanel"` for correct ARIA semantics.
+- Arrow keys navigate between tabs; `Home` and `End` jump to the first and last tab.
+- Tab panels are linked to their tab buttons via `aria-labelledby` and `aria-controls`.
+- Disabled tabs are skipped during keyboard navigation.

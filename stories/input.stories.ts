@@ -1,5 +1,5 @@
-import type { Meta, StoryObj } from '@storybook/web-components';
 import { storyHtml } from '@bquery/bquery/storybook';
+import type { Meta, StoryObj } from '@storybook/web-components';
 
 /**
  * Text input field with label, hint, error, and slot support.
@@ -15,25 +15,46 @@ const meta: Meta = {
     ></bq-input>
   `,
   argTypes: {
-    label:      { control: 'text' },
-    type:       { control: 'select', options: ['text','email','password','number','tel','url','search'] },
-    placeholder:{ control: 'text' },
-    size:       { control: 'select', options: ['sm','md','lg'] },
-    disabled:   { control: 'boolean' },
-    required:   { control: 'boolean' },
-    error:      { control: 'text' },
-    hint:       { control: 'text' },
+    label: { control: 'text' },
+    type: {
+      control: 'select',
+      options: ['text', 'email', 'password', 'number', 'tel', 'url', 'search'],
+    },
+    placeholder: { control: 'text' },
+    size: { control: 'select', options: ['sm', 'md', 'lg'] },
+    disabled: { control: 'boolean' },
+    required: { control: 'boolean' },
+    error: { control: 'text' },
+    hint: { control: 'text' },
   },
-  args: { label: 'Email address', type: 'email', placeholder: 'you@example.com', size: 'md', disabled: false, required: false, error: '', hint: "We'll never share your email." },
+  args: {
+    label: 'Email address',
+    type: 'email',
+    placeholder: 'you@example.com',
+    size: 'md',
+    disabled: false,
+    required: false,
+    error: '',
+    hint: "We'll never share your email.",
+  },
 };
 export default meta;
 type Story = StoryObj;
 
 export const Default: Story = {};
-export const WithError: Story = { args: { error: 'Invalid email address', hint: '' } };
+export const WithError: Story = {
+  args: { error: 'Invalid email address', hint: '' },
+};
 export const Disabled: Story = { args: { disabled: true } };
 export const Required: Story = { args: { required: true } };
-export const Password: Story = { args: { label: 'Password', type: 'password', placeholder: 'Enter password', hint: '' } };
+export const Password: Story = {
+  args: {
+    label: 'Password',
+    type: 'password',
+    placeholder: 'Enter password',
+    hint: '',
+  },
+};
 export const AllSizes: Story = {
   render: () => storyHtml`
     <div style="display:flex;flex-direction:column;gap:1rem;max-width:28rem">
@@ -41,5 +62,17 @@ export const AllSizes: Story = {
       <bq-input label="Medium" size="md" placeholder="Medium input"></bq-input>
       <bq-input label="Large" size="lg" placeholder="Large input"></bq-input>
     </div>
+  `,
+};
+
+export const CharacterCounter: Story = {
+  render: () => storyHtml`
+    <bq-input label="Username" placeholder="Choose a username" maxlength="20" show-counter hint="Max 20 characters"></bq-input>
+  `,
+};
+
+export const Readonly: Story = {
+  render: () => storyHtml`
+    <bq-input label="API Key" value="sk-1234-abcd-5678" readonly></bq-input>
   `,
 };

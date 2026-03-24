@@ -86,18 +86,6 @@ The `bq-table` component renders data tables with sortable columns, striped rows
 | `row`        | Body row             |
 | `td`         | Body cell            |
 
-## CSS Parts
-
-| Part         | Description           |
-| ------------ | --------------------- |
-| `table`      | The `<table>` element |
-| `thead`      | Table header section  |
-| `header-row` | The table header row  |
-| `th`         | A header cell         |
-| `tbody`      | Table body section    |
-| `row`        | A table row           |
-| `td`         | A table body cell     |
-
 ## Accessibility
 
 - The component preserves native `<table>` semantics for rows, headers, and cells.

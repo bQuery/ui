@@ -57,3 +57,9 @@ The `bq-switch` component is a toggle switch form control.
 ## Form Participation
 
 The component creates a hidden input proxy for native `<form>` submission. The proxy submits `"on"` when checked and is empty when unchecked.
+
+## Accessibility
+
+- Uses a native `<input type="checkbox" role="switch">` for full keyboard and screen reader support.
+- The toggle state is conveyed via `aria-checked`.
+- The label is associated with the input via a wrapping `<label>` element.

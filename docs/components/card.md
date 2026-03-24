@@ -82,3 +82,9 @@ The `title` prop and `header` slot can be combined. When both are provided, the 
 | `header` | Header section       |
 | `body`   | Body section         |
 | `footer` | Footer section       |
+
+## Accessibility
+
+- Cards use semantic HTML with heading hierarchy (`<h3>` for the title).
+- Content is accessible via normal document flow.
+- Use the `title` prop or the `header` slot to provide a meaningful heading for the card.

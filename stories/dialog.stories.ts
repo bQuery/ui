@@ -1,5 +1,5 @@
-import type { Meta, StoryObj } from '@storybook/web-components';
 import { storyHtml } from '@bquery/bquery/storybook';
+import type { Meta, StoryObj } from '@storybook/web-components';
 
 const meta: Meta = {
   title: 'Overlays/Dialog',
@@ -23,17 +23,52 @@ const meta: Meta = {
     </script>
   `,
   argTypes: {
-    title:      { control: 'text' },
-    size:       { control: 'select', options: ['sm','md','lg','xl'] },
-    dismissible:{ control: 'boolean' },
-    content:    { control: 'text' },
+    title: { control: 'text' },
+    size: { control: 'select', options: ['sm', 'md', 'lg', 'xl'] },
+    dismissible: { control: 'boolean' },
+    content: { control: 'text' },
   },
-  args: { title: 'Confirm action', size: 'md', dismissible: true, content: 'Are you sure you want to proceed? This action cannot be undone.' },
+  args: {
+    title: 'Confirm action',
+    size: 'md',
+    dismissible: true,
+    content: 'Are you sure you want to proceed? This action cannot be undone.',
+  },
 };
 export default meta;
 type Story = StoryObj;
 
 export const Default: Story = {};
+
+export const SmallDialog: Story = {
+  render: () => storyHtml`
+    <bq-dialog open title="Quick confirm" size="sm" dismissible>
+      <p>Are you sure?</p>
+      <div slot="footer"><bq-button variant="primary">Yes</bq-button></div>
+    </bq-dialog>
+  `,
+};
+
+export const LargeDialog: Story = {
+  render: () => storyHtml`
+    <bq-dialog open title="Detailed view" size="lg" dismissible>
+      <p>This is a large dialog with more space for content, forms, or complex layouts.</p>
+      <div slot="footer">
+        <bq-button variant="ghost">Cancel</bq-button>
+        <bq-button variant="primary">Save</bq-button>
+      </div>
+    </bq-dialog>
+  `,
+};
+
+export const ExtraLargeDialog: Story = {
+  render: () => storyHtml`
+    <bq-dialog open title="Full content" size="xl" dismissible>
+      <p>Extra-large dialogs are suitable for dashboards, previews, and multi-step flows.</p>
+    </bq-dialog>
+  `,
+};
+
 export const OpenByDefault: Story = {
   render: () => storyHtml`
     <bq-dialog open title="Welcome" size="sm">
