@@ -167,7 +167,8 @@ const definition: ComponentDefinition<BqInputProps, BqInputState> = {
     };
     // Password visibility toggle
     const pwToggle = (e: Event) => {
-      if (self.hasAttribute('disabled') || self.hasAttribute('readonly')) return;
+      if (self.hasAttribute('disabled') || self.hasAttribute('readonly'))
+        return;
       if ((e.target as Element)?.closest('.password-toggle')) {
         const current = self.getState<boolean>('passwordVisible');
         self.setState('passwordVisible', !current);
@@ -220,7 +221,8 @@ const definition: ComponentDefinition<BqInputProps, BqInputState> = {
     const hasError = Boolean(props.error);
     const uid = state.uid || 'bq-input';
     const isPassword = props.type === 'password';
-    const effectiveType = isPassword && state.passwordVisible ? 'text' : props.type;
+    const effectiveType =
+      isPassword && state.passwordVisible ? 'text' : props.type;
     const maxLen = props.maxlength ? parseInt(props.maxlength, 10) : 0;
     const showCounter = props['show-counter'] && maxLen > 0;
     const charCount = props.value.length;
@@ -254,6 +256,7 @@ const definition: ComponentDefinition<BqInputProps, BqInputState> = {
             ${props.readonly ? 'readonly' : ''}
             ${props.required ? 'required' : ''}
             aria-invalid="${hasError ? 'true' : 'false'}"
+            ${props.required ? 'aria-required="true"' : ''}
             ${describedBy ? `aria-describedby="${describedBy}"` : ''}
           />
           ${isPassword
@@ -268,16 +271,22 @@ const definition: ComponentDefinition<BqInputProps, BqInputState> = {
         ${hasFooter
           ? `<div class="footer" part="footer">
               <span>
-                ${hasError
-                  ? `<span class="error-msg" id="${uid}-err" role="alert" part="error">${escapeHtml(props.error)}</span>`
-                  : ''}
-                ${props.hint && !hasError
-                  ? `<span class="hint" id="${uid}-hint" part="hint">${escapeHtml(props.hint)}</span>`
-                  : ''}
+                ${
+                  hasError
+                    ? `<span class="error-msg" id="${uid}-err" role="alert" part="error">${escapeHtml(props.error)}</span>`
+                    : ''
+                }
+                ${
+                  props.hint && !hasError
+                    ? `<span class="hint" id="${uid}-hint" part="hint">${escapeHtml(props.hint)}</span>`
+                    : ''
+                }
               </span>
-              ${showCounter
-                ? `<span class="counter" id="${uid}-counter" part="counter" data-over="${isOver ? 'true' : 'false'}" aria-live="polite">${escapeHtml(t('input.characterCount', { count: charCount, max: maxLen }))}</span>`
-                : ''}
+              ${
+                showCounter
+                  ? `<span class="counter" id="${uid}-counter" part="counter" data-over="${isOver ? 'true' : 'false'}" aria-live="polite">${escapeHtml(t('input.characterCount', { count: charCount, max: maxLen }))}</span>`
+                  : ''
+              }
             </div>`
           : ''}
       </div>

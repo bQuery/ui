@@ -202,8 +202,12 @@ const definition: ComponentDefinition<
       );
       if (selectedButton) return currentValue;
 
-      const fallbackButton = buttons.find((button) => !isButtonDisabled(button));
-      const fallbackValue = fallbackButton ? getButtonValue(fallbackButton) : '';
+      const fallbackButton = buttons.find(
+        (button) => !isButtonDisabled(button)
+      );
+      const fallbackValue = fallbackButton
+        ? getButtonValue(fallbackButton)
+        : '';
 
       if (fallbackValue && fallbackValue !== currentValue) {
         self.setAttribute('value', fallbackValue);
@@ -217,9 +221,12 @@ const definition: ComponentDefinition<
     const syncButtons = () => {
       const buttons = getButtons();
       const selectedValue = ensureSelectedValue();
-      const enabledButtons = buttons.filter((button) => !isButtonDisabled(button));
+      const enabledButtons = buttons.filter(
+        (button) => !isButtonDisabled(button)
+      );
       const focusValue =
-        selectedValue || (enabledButtons[0] ? getButtonValue(enabledButtons[0]) : '');
+        selectedValue ||
+        (enabledButtons[0] ? getButtonValue(enabledButtons[0]) : '');
 
       buttons.forEach((button) => {
         const value = getButtonValue(button);
@@ -411,7 +418,9 @@ const definition: ComponentDefinition<
     if (clickHandler) this.removeEventListener('click', clickHandler);
     if (keyHandler) {
       const buttons = this.querySelectorAll('button');
-      buttons.forEach((button) => button.removeEventListener('keydown', keyHandler));
+      buttons.forEach((button) =>
+        button.removeEventListener('keydown', keyHandler)
+      );
     }
     if (slotChangeHandler) {
       this.shadowRoot
@@ -423,9 +432,9 @@ const definition: ComponentDefinition<
     proxy?.cleanup();
   },
   updated() {
-    const syncButtons = (this as unknown as Record<string, unknown>)['_syncButtons'] as
-      | (() => void)
-      | undefined;
+    const syncButtons = (this as unknown as Record<string, unknown>)[
+      '_syncButtons'
+    ] as (() => void) | undefined;
     syncButtons?.();
   },
   render({ props, state }) {
@@ -437,7 +446,7 @@ const definition: ComponentDefinition<
       ? `aria-labelledby="${labelId}"`
       : props['aria-label']
         ? `aria-label="${escapeHtml(props['aria-label'])}"`
-        : '';
+        : `aria-label="${escapeHtml(props.name || 'Options')}"`;
 
     const descriptionAttribute = props.hint
       ? `aria-describedby="${hintId}"`

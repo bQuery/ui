@@ -11,8 +11,8 @@
  * @slot        - Additional supporting content rendered below the hint
  * @slot icon   - Optional icon or badge for the metric
  */
-import { component, html } from '@bquery/bquery/component';
 import type { ComponentDefinition } from '@bquery/bquery/component';
+import { component, html } from '@bquery/bquery/component';
 import { escapeHtml } from '@bquery/bquery/security';
 import { t } from '../../i18n/index.js';
 import { uniqueId } from '../../utils/dom.js';
@@ -40,12 +40,12 @@ function getSize(size: string): 'sm' | 'md' {
 
 const definition: ComponentDefinition<BqStatCardProps, BqStatCardState> = {
   props: {
-    label:   { type: String, default: '' },
-    value:   { type: String, default: '' },
-    change:  { type: String, default: '' },
-    hint:    { type: String, default: '' },
-    trend:   { type: String, default: 'neutral' },
-    size:    { type: String, default: 'md' },
+    label: { type: String, default: '' },
+    value: { type: String, default: '' },
+    change: { type: String, default: '' },
+    hint: { type: String, default: '' },
+    trend: { type: String, default: 'neutral' },
+    size: { type: String, default: 'md' },
     loading: { type: Boolean, default: false },
   },
   state: {
@@ -128,10 +128,12 @@ const definition: ComponentDefinition<BqStatCardProps, BqStatCardState> = {
       color: var(--bq-text-muted,#475569);
     }
     .change[data-trend="up"] {
+      background: rgba(34, 197, 94, 0.14);
       background: color-mix(in srgb, var(--bq-color-success-500,#22c55e) 14%, transparent);
       color: var(--bq-color-success-700,#15803d);
     }
     .change[data-trend="down"] {
+      background: rgba(239, 68, 68, 0.14);
       background: color-mix(in srgb, var(--bq-color-danger-500,#ef4444) 14%, transparent);
       color: var(--bq-color-danger-700,#b91c1c);
     }
@@ -176,7 +178,8 @@ const definition: ComponentDefinition<BqStatCardProps, BqStatCardState> = {
       getState<T>(k: string): T;
     };
     const self = this as unknown as BqStatCardElement;
-    if (!self.getState<string>('uid')) self.setState('uid', uniqueId('bq-stat-card'));
+    if (!self.getState<string>('uid'))
+      self.setState('uid', uniqueId('bq-stat-card'));
   },
   render({ props, state }) {
     const label = props.label.trim();
@@ -189,11 +192,7 @@ const definition: ComponentDefinition<BqStatCardProps, BqStatCardState> = {
     const labelId = `${uid}-label`;
     const hintId = `${uid}-hint`;
     const statusId = `${uid}-status`;
-    const describedByIds = props.loading
-      ? statusId
-      : hint
-        ? hintId
-        : '';
+    const describedByIds = props.loading ? statusId : hint ? hintId : '';
     const describedBy = describedByIds
       ? ` aria-describedby="${escapeHtml(describedByIds)}"`
       : '';
@@ -219,9 +218,16 @@ const definition: ComponentDefinition<BqStatCardProps, BqStatCardState> = {
       `;
 
     return html`
-      <article part="card" class="card" data-size="${size}"${labelledBy}${describedBy}${busy}>
+      <article
+        part="card"
+        class="card"
+        data-size="${size}"
+        ${labelledBy}${describedBy}${busy}
+      >
         <div class="header" part="header">
-          ${label ? `<p class="label" id="${escapeHtml(labelId)}" part="label">${escapeHtml(label)}</p>` : '<span></span>'}
+          ${label
+            ? `<p class="label" id="${escapeHtml(labelId)}" part="label">${escapeHtml(label)}</p>`
+            : '<span></span>'}
           <div class="icon-slot"><slot name="icon"></slot></div>
         </div>
         ${body}

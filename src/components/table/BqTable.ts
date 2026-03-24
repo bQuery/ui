@@ -3,6 +3,7 @@
  * @element bq-table
  * @prop {string}  columns  - JSON array of { key, label, sortable? }
  * @prop {string}  rows     - JSON array of row objects
+ * @prop {string}  caption  - Accessible table caption
  * @prop {string}  sort-key
  * @prop {string}  sort-dir - asc | desc
  * @prop {boolean} striped
@@ -21,6 +22,7 @@ type ColDef = { key: string; label: string; sortable?: boolean };
 type BqTableProps = {
   columns: string;
   rows: string;
+  caption: string;
   'sort-key': string;
   'sort-dir': string;
   striped: boolean;
@@ -33,6 +35,7 @@ const definition: ComponentDefinition<BqTableProps> = {
   props: {
     columns: { type: String, default: '[]' },
     rows: { type: String, default: '[]' },
+    caption: { type: String, default: '' },
     'sort-key': { type: String, default: '' },
     'sort-dir': { type: String, default: 'asc' },
     striped: { type: Boolean, default: false },
@@ -47,6 +50,7 @@ const definition: ComponentDefinition<BqTableProps> = {
     table { width: 100%; border-collapse: collapse; font-family: var(--bq-font-family-sans); font-size: var(--bq-font-size-sm,0.875rem); }
     :host([bordered]) table { border: 1px solid var(--bq-border-base,#e2e8f0); }
     th, td { padding: 0.75rem 1rem; text-align: left; border-bottom: 1px solid var(--bq-border-base,#e2e8f0); }
+    caption { caption-side: top; text-align: left; font-size: var(--bq-font-size-sm,0.875rem); color: var(--bq-text-muted,#475569); padding: 0.5rem 1rem; font-family: var(--bq-font-family-sans); }
     :host([bordered]) th, :host([bordered]) td { border: 1px solid var(--bq-border-base,#e2e8f0); }
     th { background: var(--bq-bg-subtle,#f8fafc); font-weight: var(--bq-font-weight-semibold,600); color: var(--bq-text-base,#0f172a); white-space: nowrap; }
     td { color: var(--bq-text-muted,#475569); }
@@ -139,7 +143,7 @@ const definition: ComponentDefinition<BqTableProps> = {
         const sortableAttrs = col.sortable
           ? `class="sortable" data-sort-key="${escapeHtml(col.key)}" tabindex="0" aria-sort="${isSorted ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'}"`
           : '';
-        return `<th part="th" role="columnheader" ${sortableAttrs}>${escapeHtml(col.label)}${sortIcon}</th>`;
+        return `<th part="th" scope="col" role="columnheader" ${sortableAttrs}>${escapeHtml(col.label)}${sortIcon}</th>`;
       })
       .join('');
     const tbodies = props.loading
@@ -154,6 +158,9 @@ const definition: ComponentDefinition<BqTableProps> = {
             .join('');
     return html`
       <table part="table">
+        ${props.caption
+          ? `<caption part="caption">${escapeHtml(props.caption)}</caption>`
+          : ''}
         <thead part="thead">
           <tr part="header-row">
             ${theads}

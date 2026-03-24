@@ -31,12 +31,12 @@ The `bq-skeleton` component renders a shimmer loading placeholder in various sha
 
 ## Properties
 
-| Property  | Type     | Default  | Description                                 |
-| --------- | -------- | -------- | ------------------------------------------- |
-| `variant` | `string` | `'text'` | `text` \| `circle` \| `rect` \| `card`      |
-| `width`   | `string` | `'100%'` | CSS width value                             |
-| `height`  | `string` | —        | CSS height value                            |
-| `lines`   | `number` | `1`      | Number of text lines (for `variant="text"`) |
+| Property  | Type     | Default  | Description                                                                        |
+| --------- | -------- | -------- | ---------------------------------------------------------------------------------- |
+| `variant` | `string` | `'text'` | `text` \| `circle` \| `rect` \| `card`                                             |
+| `width`   | `string` | `'100%'` | A single CSS width expression such as `240px`, `100%`, `clamp(...)`, or `var(...)` |
+| `height`  | `string` | —        | A single CSS height expression such as `3rem`, `40vh`, `calc(...)`, or `var(...)`  |
+| `lines`   | `number` | `1`      | Number of text lines (for `variant="text"`)                                        |
 
 ## CSS Parts
 
@@ -48,3 +48,5 @@ The `bq-skeleton` component renders a shimmer loading placeholder in various sha
 ## Accessibility
 
 The skeleton uses `prefers-reduced-motion` to disable the shimmer animation when the user requests reduced motion.
+
+For safety, `width` and `height` are treated as a single dimension expression. Values that try to inject additional CSS declarations are ignored.

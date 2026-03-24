@@ -257,6 +257,7 @@ const definition: ComponentDefinition<BqSelectProps, BqSelectState> = {
             ${props.disabled ? 'disabled' : ''}
             ${props.required ? 'required' : ''}
             aria-invalid="${hasError ? 'true' : 'false'}"
+            ${props.required ? 'aria-required="true"' : ''}
             ${describedBy ? `aria-describedby="${describedBy}"` : ''}
           >
             ${optionsMarkup}

@@ -24,6 +24,8 @@ The `bq-divider` component renders a horizontal or vertical visual separator wit
 </div>
 ```
 
+Vertical dividers can also render a label, which is laid out vertically to stay legible in narrow spaces.
+
 ## Variants
 
 ```html

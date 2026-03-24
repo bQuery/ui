@@ -148,9 +148,11 @@ const definition: ComponentDefinition<BqTabsProps> = {
     // Sync panel visibility after each render
     const active = this.getAttribute('active-tab') ?? '';
     this.querySelectorAll<HTMLElement>('[data-tab]').forEach((panel) => {
-      panel.hidden = panel.getAttribute('data-tab') !== active;
+      const tabId = panel.getAttribute('data-tab') ?? '';
+      panel.hidden = tabId !== active;
       panel.setAttribute('role', 'tabpanel');
       panel.setAttribute('tabindex', '0');
+      panel.setAttribute('aria-labelledby', `tab-${tabId}`);
     });
   },
   render({ props, state }) {
@@ -163,8 +165,9 @@ const definition: ComponentDefinition<BqTabsProps> = {
       .map(
         (tab) => `
       <button part="tab" class="tab" data-variant="${escapeHtml(props.variant)}"
-        role="tab" data-tab-id="${escapeHtml(tab.id)}"
+        role="tab" id="tab-${escapeHtml(tab.id)}" data-tab-id="${escapeHtml(tab.id)}"
         aria-selected="${tab.id === active ? 'true' : 'false'}"
+        aria-controls="${escapeHtml(tab.id)}"
         tabindex="${tab.id === active ? '0' : '-1'}"
         ${tab.disabled ? 'disabled aria-disabled="true"' : ''}
       >${escapeHtml(tab.label)}</button>

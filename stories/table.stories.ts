@@ -16,8 +16,9 @@ const meta: Meta = {
   title: 'Data/Table',
   tags: ['autodocs'],
   render: (args) =>
-    storyHtml`<bq-table columns=${columns} rows=${rows} sort-key=${args.sortKey} sort-dir=${args.sortDir} ?striped=${args.striped} ?bordered=${args.bordered} ?hover=${args.hover} ?loading=${args.loading}></bq-table>`,
+    storyHtml`<bq-table columns=${columns} rows=${rows} caption=${args.caption} sort-key=${args.sortKey} sort-dir=${args.sortDir} ?striped=${args.striped} ?bordered=${args.bordered} ?hover=${args.hover} ?loading=${args.loading}></bq-table>`,
   argTypes: {
+    caption: { control: 'text' },
     sortKey: { control: 'select', options: ['', 'name', 'role'] },
     sortDir: { control: 'select', options: ['asc', 'desc'] },
     striped: { control: 'boolean' },
@@ -26,6 +27,7 @@ const meta: Meta = {
     loading: { control: 'boolean' },
   },
   args: {
+    caption: '',
     sortKey: '',
     sortDir: 'asc',
     striped: false,
@@ -44,4 +46,7 @@ export const Hoverable: Story = { args: { hover: true } };
 export const Loading: Story = { args: { loading: true } };
 export const SortedByName: Story = {
   args: { sortKey: 'name', sortDir: 'asc' },
+};
+export const WithCaption: Story = {
+  args: { caption: 'Team members and their roles' },
 };

@@ -59,6 +59,7 @@ The `bq-table` component renders data tables with sortable columns, striped rows
 | ---------- | --------------- | ------- | -------------------------------------------------------------- |
 | `columns`  | `string` (JSON) | —       | JSON array of column definitions (`{ key, label, sortable? }`) |
 | `rows`     | `string` (JSON) | —       | JSON array of row data objects                                 |
+| `caption`  | `string`        | —       | Accessible table caption                                       |
 | `sort-key` | `string`        | —       | Key of the currently sorted column                             |
 | `sort-dir` | `asc \| desc`   | —       | Current sort direction                                         |
 | `striped`  | `boolean`       | `false` | Alternates row background colors                               |
@@ -72,11 +73,18 @@ The `bq-table` component renders data tables with sortable columns, striped rows
 | --------- | ------------------------------ | ----------------------------------------------------------------------------------- |
 | `bq-sort` | `{ key: string, dir: string }` | Fired when a sortable column header is activated by click or keyboard (Enter/Space) |
 
-## Slots
+## CSS Parts
 
-| Slot     | Description                                          |
-| -------- | ---------------------------------------------------- |
-| *(none)* | This component does not currently expose named slots |
+| Part         | Description          |
+| ------------ | -------------------- |
+| `table`      | The table element    |
+| `caption`    | Table caption        |
+| `thead`      | Table header section |
+| `header-row` | Header row           |
+| `th`         | Header cell          |
+| `tbody`      | Table body section   |
+| `row`        | Body row             |
+| `td`         | Body cell            |
 
 ## CSS Parts
 

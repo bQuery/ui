@@ -33,6 +33,12 @@ The `bq-radio` component is a radio button form control with label and hint text
 <bq-radio name="plan" value="legacy" label="Legacy" disabled></bq-radio>
 ```
 
+## Required
+
+```html
+<bq-radio name="plan" value="pro" label="Pro plan" required></bq-radio>
+```
+
 ## Properties
 
 | Property   | Type      | Default | Description                   |
@@ -42,6 +48,7 @@ The `bq-radio` component is a radio button form control with label and hint text
 | `value`    | `string`  | —       | Radio value                   |
 | `checked`  | `boolean` | `false` | Whether the radio is selected |
 | `disabled` | `boolean` | `false` | Disables the radio            |
+| `required` | `boolean` | `false` | Marks the radio as required   |
 | `hint`     | `string`  | —       | Helper text below the label   |
 
 ## Events
