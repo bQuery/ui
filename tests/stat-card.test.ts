@@ -46,6 +46,31 @@ describe('BqStatCard', () => {
     expect(hint?.textContent).toBe('Compared with the previous 30 days.');
   });
 
+  it('should generate unique accessible ids per instance', () => {
+    const first = doc.createElement('bq-stat-card');
+    first.setAttribute('label', 'Monthly revenue');
+    first.setAttribute('hint', 'Compared with the previous 30 days.');
+    const second = doc.createElement('bq-stat-card');
+    second.setAttribute('label', 'Incident resolution');
+    second.setAttribute('hint', 'SLA within the current quarter.');
+
+    doc.body.append(first, second);
+
+    const firstCard = first.shadowRoot?.querySelector('[part="card"]');
+    const secondCard = second.shadowRoot?.querySelector('[part="card"]');
+    const firstLabel = first.shadowRoot?.querySelector('[part="label"]');
+    const secondLabel = second.shadowRoot?.querySelector('[part="label"]');
+    const firstHint = first.shadowRoot?.querySelector('[part="hint"]');
+    const secondHint = second.shadowRoot?.querySelector('[part="hint"]');
+
+    expect(firstLabel?.id).not.toBe(secondLabel?.id);
+    expect(firstHint?.id).not.toBe(secondHint?.id);
+    expect(firstCard?.getAttribute('aria-labelledby')).toBe(firstLabel?.id);
+    expect(secondCard?.getAttribute('aria-labelledby')).toBe(secondLabel?.id);
+    expect(firstCard?.getAttribute('aria-describedby')).toBe(firstHint?.id);
+    expect(secondCard?.getAttribute('aria-describedby')).toBe(secondHint?.id);
+  });
+
   it('should normalize invalid size and trend values', () => {
     const el = doc.createElement('bq-stat-card');
     el.setAttribute('size', 'xl');
@@ -74,15 +99,19 @@ describe('BqStatCard', () => {
   it('should expose a loading state for assistive technology', () => {
     const el = doc.createElement('bq-stat-card');
     el.setAttribute('label', 'Active users');
+    el.setAttribute('hint', 'This hint should not be referenced while loading.');
     el.setAttribute('loading', '');
     doc.body.appendChild(el);
 
     const card = el.shadowRoot?.querySelector('[part="card"]');
     const loading = el.shadowRoot?.querySelector('[part="loading"]');
     const status = el.shadowRoot?.querySelector('[role="status"]');
+    const hint = el.shadowRoot?.querySelector('[part="hint"]');
 
     expect(card?.getAttribute('aria-busy')).toBe('true');
     expect(loading).not.toBeNull();
     expect(status?.textContent).toBe('Loading');
+    expect(card?.getAttribute('aria-describedby')).toBe(status?.id);
+    expect(hint).toBeNull();
   });
 });

@@ -15,6 +15,7 @@ import { component, html } from '@bquery/bquery/component';
 import type { ComponentDefinition } from '@bquery/bquery/component';
 import { escapeHtml } from '@bquery/bquery/security';
 import { t } from '../../i18n/index.js';
+import { uniqueId } from '../../utils/dom.js';
 import { getBaseStyles, srOnlyStyles } from '../../utils/styles.js';
 
 type BqStatCardProps = {
@@ -26,6 +27,7 @@ type BqStatCardProps = {
   size: string;
   loading: boolean;
 };
+type BqStatCardState = { uid: string };
 
 function getTrend(trend: string): 'up' | 'down' | 'neutral' {
   if (trend === 'up' || trend === 'down') return trend;
@@ -36,7 +38,7 @@ function getSize(size: string): 'sm' | 'md' {
   return size === 'sm' ? 'sm' : 'md';
 }
 
-const definition: ComponentDefinition<BqStatCardProps> = {
+const definition: ComponentDefinition<BqStatCardProps, BqStatCardState> = {
   props: {
     label:   { type: String, default: '' },
     value:   { type: String, default: '' },
@@ -45,6 +47,9 @@ const definition: ComponentDefinition<BqStatCardProps> = {
     trend:   { type: String, default: 'neutral' },
     size:    { type: String, default: 'md' },
     loading: { type: Boolean, default: false },
+  },
+  state: {
+    uid: '',
   },
   styles: `
     ${getBaseStyles()}
@@ -165,15 +170,34 @@ const definition: ComponentDefinition<BqStatCardProps> = {
       .skeleton::after { animation: none; }
     }
   `,
-  render({ props }) {
+  connected() {
+    type BqStatCardElement = HTMLElement & {
+      setState(k: 'uid', v: string): void;
+      getState<T>(k: string): T;
+    };
+    const self = this as unknown as BqStatCardElement;
+    if (!self.getState<string>('uid')) self.setState('uid', uniqueId('bq-stat-card'));
+  },
+  render({ props, state }) {
     const label = props.label.trim();
     const value = props.value.trim();
     const change = props.change.trim();
     const hint = props.hint.trim();
     const trend = getTrend(props.trend);
     const size = getSize(props.size);
-    const describedBy = hint ? ' aria-describedby="stat-card-hint"' : '';
-    const labelledBy = label ? ' aria-labelledby="stat-card-label"' : '';
+    const uid = state.uid || 'bq-stat-card';
+    const labelId = `${uid}-label`;
+    const hintId = `${uid}-hint`;
+    const statusId = `${uid}-status`;
+    const describedByIds = props.loading
+      ? statusId
+      : hint
+        ? hintId
+        : '';
+    const describedBy = describedByIds
+      ? ` aria-describedby="${escapeHtml(describedByIds)}"`
+      : '';
+    const labelledBy = label ? ` aria-labelledby="${escapeHtml(labelId)}"` : '';
     const busy = props.loading ? ' aria-busy="true"' : '';
 
     const body = props.loading
@@ -182,7 +206,7 @@ const definition: ComponentDefinition<BqStatCardProps> = {
           <span class="skeleton skeleton-label" aria-hidden="true"></span>
           <span class="skeleton skeleton-value" aria-hidden="true"></span>
           <span class="skeleton skeleton-hint" aria-hidden="true"></span>
-          <span class="sr-only" role="status">${escapeHtml(t('common.loading'))}</span>
+          <span class="sr-only" id="${escapeHtml(statusId)}" role="status">${escapeHtml(t('common.loading'))}</span>
         </div>
       `
       : `
@@ -190,14 +214,14 @@ const definition: ComponentDefinition<BqStatCardProps> = {
           ${value ? `<p class="value" part="value">${escapeHtml(value)}</p>` : ''}
           ${change ? `<span class="change" part="change" data-trend="${trend}">${escapeHtml(change)}</span>` : ''}
         </div>
-        ${hint ? `<p class="hint" id="stat-card-hint" part="hint">${escapeHtml(hint)}</p>` : ''}
+        ${hint ? `<p class="hint" id="${escapeHtml(hintId)}" part="hint">${escapeHtml(hint)}</p>` : ''}
         <slot></slot>
       `;
 
     return html`
       <article part="card" class="card" data-size="${size}"${labelledBy}${describedBy}${busy}>
         <div class="header" part="header">
-          ${label ? `<p class="label" id="stat-card-label" part="label">${escapeHtml(label)}</p>` : '<span></span>'}
+          ${label ? `<p class="label" id="${escapeHtml(labelId)}" part="label">${escapeHtml(label)}</p>` : '<span></span>'}
           <div class="icon-slot"><slot name="icon"></slot></div>
         </div>
         ${body}
@@ -206,4 +230,4 @@ const definition: ComponentDefinition<BqStatCardProps> = {
   },
 };
 
-component<BqStatCardProps>('bq-stat-card', definition);
+component<BqStatCardProps, BqStatCardState>('bq-stat-card', definition);
