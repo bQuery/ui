@@ -75,4 +75,4 @@ The component creates a hidden input proxy for native `<form>` submission. The p
 
 - Each radio renders a native `<input type="radio">` inside the shadow DOM for full keyboard support.
 - The label is associated with the input via a wrapping `<label>` element.
-- Use the `required` prop to mark mandatory radio fields; the required indicator is rendered visually and via `aria-required`.
+- Use the `required` prop to mark mandatory radio fields; the required indicator is rendered visually and conveyed through the native `required` attribute on the internal radio input.

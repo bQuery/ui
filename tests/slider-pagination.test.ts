@@ -72,6 +72,24 @@ describe('BqSlider', () => {
     expect(input?.getAttribute('aria-valuetext')).toBe('Value: 50');
   });
 
+  it('should update live value and ARIA state during input without re-rendering', () => {
+    const el = doc.createElement('bq-slider');
+    el.setAttribute('show-value', '');
+    el.setAttribute('value', '40');
+    doc.body.appendChild(el);
+
+    const input = el.shadowRoot?.querySelector('input') as HTMLInputElement;
+    const valueEl = el.shadowRoot?.querySelector('.value');
+
+    input.value = '65';
+    input.dispatchEvent(new Event('input', { bubbles: true, composed: true }));
+
+    expect(el.getAttribute('value')).toBe('40');
+    expect(valueEl?.textContent).toBe('65');
+    expect(input.getAttribute('aria-valuenow')).toBe('65');
+    expect(input.getAttribute('aria-valuetext')).toBe('Value: 65');
+  });
+
   it('should create form proxy hidden input', () => {
     const el = doc.createElement('bq-slider');
     el.setAttribute('name', 'volume');
