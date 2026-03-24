@@ -75,7 +75,7 @@ const definition: ComponentDefinition<BqAccordionProps, BqAccordionState> = {
       const inner = panel.querySelector('.panel-inner') as HTMLElement | null;
       const hasActiveHeightTransition = () => {
         const styles = panel.ownerDocument?.defaultView?.getComputedStyle(panel);
-        if (!styles) return true;
+        if (!styles) return false;
         const properties = styles.transitionProperty
           .split(',')
           .map((value) => value.trim());
