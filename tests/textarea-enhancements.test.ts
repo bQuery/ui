@@ -58,4 +58,27 @@ describe('BqTextarea — character counter', () => {
     const counterId = counter?.getAttribute('id');
     expect(textarea?.getAttribute('aria-describedby')).toContain(counterId ?? '');
   });
+
+  it('should update the counter live as the user types', async () => {
+    const el = doc.createElement('bq-textarea');
+    el.setAttribute('maxlength', '100');
+    el.setAttribute('show-counter', '');
+    doc.body.appendChild(el);
+
+    const textarea = el.shadowRoot?.querySelector('textarea') as HTMLTextAreaElement | null;
+    textarea!.value = 'hello';
+    textarea?.dispatchEvent(new win.Event('input', { bubbles: true }));
+    await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+
+    const counter = el.shadowRoot?.querySelector('.counter');
+    expect(counter?.textContent).toContain('5');
+    expect(el.getAttribute('value')).toBe('hello');
+  });
+
+  it('should not render a footer when there is no hint, error, or counter', () => {
+    const el = doc.createElement('bq-textarea');
+    doc.body.appendChild(el);
+    const footer = el.shadowRoot?.querySelector('.footer');
+    expect(footer).toBeNull();
+  });
 });

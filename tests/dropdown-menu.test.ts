@@ -157,4 +157,57 @@ describe('BqDropdownMenu', () => {
     expect(el.hasAttribute('open')).toBe(false);
     expect(doc.activeElement).not.toBe(trigger);
   });
+
+  it('should activate the focused menu button on Enter', async () => {
+    const el = doc.createElement('bq-dropdown-menu');
+    const trigger = doc.createElement('button');
+    trigger.setAttribute('slot', 'trigger');
+    trigger.textContent = 'Trigger';
+    const item = doc.createElement('button');
+    item.textContent = 'Edit';
+    el.append(trigger, item);
+    doc.body.appendChild(el);
+
+    let selected: string | null = null;
+    el.addEventListener('bq-select', (event) => {
+      selected = (event as CustomEvent<{ value: string }>).detail.value;
+    });
+
+    trigger.click();
+    await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+    item.focus();
+    item.dispatchEvent(
+      new win.KeyboardEvent('keydown', { key: 'Enter', bubbles: true })
+    );
+
+    expect(selected).toBe('Edit');
+    expect(el.hasAttribute('open')).toBe(false);
+  });
+
+  it('should activate the focused menu link on Space', async () => {
+    const el = doc.createElement('bq-dropdown-menu');
+    const trigger = doc.createElement('button');
+    trigger.setAttribute('slot', 'trigger');
+    trigger.textContent = 'Trigger';
+    const item = doc.createElement('a');
+    item.href = '#details';
+    item.textContent = 'Details';
+    el.append(trigger, item);
+    doc.body.appendChild(el);
+
+    let selected: string | null = null;
+    el.addEventListener('bq-select', (event) => {
+      selected = (event as CustomEvent<{ value: string }>).detail.value;
+    });
+
+    trigger.click();
+    await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+    item.focus();
+    item.dispatchEvent(
+      new win.KeyboardEvent('keydown', { key: ' ', bubbles: true })
+    );
+
+    expect(selected).toBe('Details');
+    expect(el.hasAttribute('open')).toBe(false);
+  });
 });

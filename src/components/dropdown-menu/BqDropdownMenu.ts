@@ -230,7 +230,10 @@ const definition: ComponentDefinition<
       // Inside menu
       if (!self.hasAttribute('open')) return;
       const items = getMenuItems();
-      const currentIndex = items.indexOf(ke.target as HTMLElement);
+      const currentItem = (ke.target as HTMLElement | null)?.closest(
+        'button, a'
+      ) as HTMLElement | null;
+      const currentIndex = currentItem ? items.indexOf(currentItem) : -1;
 
       switch (ke.key) {
         case 'ArrowDown': {
@@ -253,6 +256,13 @@ const definition: ComponentDefinition<
         case 'End': {
           ke.preventDefault();
           items[items.length - 1]?.focus();
+          break;
+        }
+        case 'Enter':
+        case ' ': {
+          if (currentIndex === -1) break;
+          ke.preventDefault();
+          currentItem?.click();
           break;
         }
         case 'Escape':

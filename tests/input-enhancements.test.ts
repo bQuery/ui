@@ -127,4 +127,27 @@ describe('BqInput — character counter', () => {
     const counterId = counter?.getAttribute('id');
     expect(input?.getAttribute('aria-describedby')).toContain(counterId ?? '');
   });
+
+  it('should update the counter live as the user types', async () => {
+    const el = doc.createElement('bq-input');
+    el.setAttribute('maxlength', '50');
+    el.setAttribute('show-counter', '');
+    doc.body.appendChild(el);
+
+    const input = el.shadowRoot?.querySelector('input') as HTMLInputElement | null;
+    input!.value = 'hello';
+    input?.dispatchEvent(new win.Event('input', { bubbles: true }));
+    await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+
+    const counter = el.shadowRoot?.querySelector('.counter');
+    expect(counter?.textContent).toContain('5');
+    expect(el.getAttribute('value')).toBe('hello');
+  });
+
+  it('should not render a footer when there is no hint, error, or counter', () => {
+    const el = doc.createElement('bq-input');
+    doc.body.appendChild(el);
+    const footer = el.shadowRoot?.querySelector('.footer');
+    expect(footer).toBeNull();
+  });
 });

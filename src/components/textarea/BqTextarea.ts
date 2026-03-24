@@ -107,6 +107,7 @@ const definition: ComponentDefinition<BqTextareaProps, BqTextareaState> = {
     const ih = (e: Event) => {
       const t = e.target as HTMLTextAreaElement | null;
       if (t?.tagName === 'TEXTAREA') {
+        self.setAttribute('value', t.value);
         proxy.setValue(t.value);
         self.dispatchEvent(
           new CustomEvent('bq-input', {
@@ -185,6 +186,7 @@ const definition: ComponentDefinition<BqTextareaProps, BqTextareaState> = {
     const showCounter = props['show-counter'] && maxLen > 0;
     const charCount = props.value.length;
     const isOver = showCounter && charCount > maxLen;
+    const hasFooter = hasError || Boolean(props.hint) || showCounter;
     const describedByParts: string[] = [];
     if (hasError) describedByParts.push(`${uid}-err`);
     else if (props.hint) describedByParts.push(`${uid}-hint`);
@@ -210,19 +212,21 @@ const definition: ComponentDefinition<BqTextareaProps, BqTextareaState> = {
         >
 ${escapeHtml(props.value)}</textarea
         >
-        <div class="footer" part="footer">
-          <span>
-            ${hasError
-              ? `<span class="error-msg" id="${uid}-err" role="alert" part="error">${escapeHtml(props.error)}</span>`
-              : ''}
-            ${props.hint && !hasError
-              ? `<span class="hint" id="${uid}-hint" part="hint">${escapeHtml(props.hint)}</span>`
-              : ''}
-          </span>
-          ${showCounter
-            ? `<span class="counter" id="${uid}-counter" part="counter" data-over="${isOver ? 'true' : 'false'}" aria-live="polite">${t('input.characterCount', { count: charCount, max: maxLen })}</span>`
-            : ''}
-        </div>
+        ${hasFooter
+          ? `<div class="footer" part="footer">
+              <span>
+                ${hasError
+                  ? `<span class="error-msg" id="${uid}-err" role="alert" part="error">${escapeHtml(props.error)}</span>`
+                  : ''}
+                ${props.hint && !hasError
+                  ? `<span class="hint" id="${uid}-hint" part="hint">${escapeHtml(props.hint)}</span>`
+                  : ''}
+              </span>
+              ${showCounter
+                ? `<span class="counter" id="${uid}-counter" part="counter" data-over="${isOver ? 'true' : 'false'}" aria-live="polite">${t('input.characterCount', { count: charCount, max: maxLen })}</span>`
+                : ''}
+            </div>`
+          : ''}
       </div>
     `;
   },
