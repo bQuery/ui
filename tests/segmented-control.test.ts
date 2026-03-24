@@ -121,8 +121,9 @@ describe('BqSegmentedControl', () => {
 
     overview.dispatchEvent(
       new win.KeyboardEvent('keydown', {
-      key: 'ArrowRight',
-      bubbles: true,
+        key: 'ArrowRight',
+        bubbles: true,
+        cancelable: true,
       })
     );
 
