@@ -55,6 +55,10 @@ const definition: ComponentDefinition<BqSliderProps> = {
   `,
   connected() {
     const self = this;
+    const syncInputAccessibility = (input: HTMLInputElement, value: number) => {
+      input.setAttribute('aria-valuenow', String(value));
+      input.setAttribute('aria-valuetext', t('slider.valueText', { value }));
+    };
 
     // Form proxy for native <form> participation
     const name = self.getAttribute('name') ?? '';
@@ -69,6 +73,7 @@ const definition: ComponentDefinition<BqSliderProps> = {
       const v = Number(input.value);
       // Update form proxy and value display directly without re-rendering (prevents jank during drag)
       proxy.setValue(String(v));
+      syncInputAccessibility(input, v);
       const valueSpan = self.shadowRoot?.querySelector('.value');
       if (valueSpan) valueSpan.textContent = String(v);
       self.dispatchEvent(
@@ -86,6 +91,7 @@ const definition: ComponentDefinition<BqSliderProps> = {
       // Commit value to attribute on change (drag end) — triggers one clean re-render
       self.setAttribute('value', String(v));
       proxy.setValue(String(v));
+      syncInputAccessibility(input, v);
       self.dispatchEvent(
         new CustomEvent('bq-change', {
           detail: { value: v },

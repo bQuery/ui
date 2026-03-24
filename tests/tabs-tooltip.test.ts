@@ -118,6 +118,44 @@ describe('BqTabs', () => {
     expect(panelTwo?.getAttribute('tabindex')).toBe('0');
     expect(panelTwo?.getAttribute('aria-hidden')).toBe('false');
   });
+
+  it('should avoid invalid generated aria ids when a tab item has no id', async () => {
+    const el = doc.createElement('bq-tabs');
+    el.innerHTML = `
+      <div data-tab-item label="One"></div>
+      <div data-tab="one">Panel one</div>
+    `;
+    doc.body.appendChild(el);
+
+    await waitForFrame();
+
+    const tab = el.shadowRoot?.querySelector('[role="tab"]');
+    const panel = el.querySelector('[data-tab="one"]');
+
+    expect(tab?.getAttribute('id')).toBeNull();
+    expect(tab?.getAttribute('aria-controls')).toBeNull();
+    expect(panel?.getAttribute('aria-labelledby')).toBeNull();
+  });
+
+  it('should generate encoded aria ids for tab values that include spaces', async () => {
+    const el = doc.createElement('bq-tabs');
+    el.setAttribute('active-tab', 'needs space');
+    el.innerHTML = `
+      <div data-tab-item id="needs space" label="Needs Space"></div>
+      <div data-tab="needs space">Panel</div>
+    `;
+    doc.body.appendChild(el);
+
+    await waitForFrame();
+
+    const tab = el.shadowRoot?.querySelector('[role="tab"]');
+    const panel = el.querySelector('[data-tab="needs space"]');
+
+    expect(tab?.getAttribute('id')).toBe('tab-needs%20space');
+    expect(tab?.getAttribute('aria-controls')).toBe('panel-needs%20space');
+    expect(panel?.id).toBe('panel-needs%20space');
+    expect(panel?.getAttribute('aria-labelledby')).toBe('tab-needs%20space');
+  });
 });
 
 describe('BqTooltip', () => {
