@@ -111,6 +111,7 @@ describe('BqStatCard', () => {
     expect(card?.getAttribute('aria-busy')).toBe('true');
     expect(loading).not.toBeNull();
     expect(status?.textContent).toBe('Loading');
+    expect(status?.getAttribute('aria-live')).toBe('polite');
     expect(card?.getAttribute('aria-describedby')).toBe(status?.id);
     expect(hint).toBeNull();
   });

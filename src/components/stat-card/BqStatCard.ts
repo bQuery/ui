@@ -206,7 +206,7 @@ const definition: ComponentDefinition<BqStatCardProps, BqStatCardState> = {
           <span class="skeleton skeleton-label" aria-hidden="true"></span>
           <span class="skeleton skeleton-value" aria-hidden="true"></span>
           <span class="skeleton skeleton-hint" aria-hidden="true"></span>
-          <span class="sr-only" id="${escapeHtml(statusId)}" role="status">${escapeHtml(t('common.loading'))}</span>
+          <span class="sr-only" id="${escapeHtml(statusId)}" role="status" aria-live="polite">${escapeHtml(t('common.loading'))}</span>
         </div>
       `
       : `
