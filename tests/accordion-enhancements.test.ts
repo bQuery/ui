@@ -35,15 +35,12 @@ describe('BqAccordion — accessibility improvements', () => {
     expect(trigger?.getAttribute('aria-controls')).toBe(panelId);
   });
 
-  it('should use height instead of max-height for animation', () => {
+  it('should set panel role to region', () => {
     const el = doc.createElement('bq-accordion');
     el.setAttribute('label', 'Details');
     doc.body.appendChild(el);
-    // The panel should not have max-height: 2000px - it should use height property
     const panel = el.shadowRoot?.querySelector('.panel') as HTMLElement | null;
     expect(panel).not.toBeNull();
-    // When closed, height should be 0 (or set via JS)
-    // Verify the panel has role=region
     expect(panel?.getAttribute('role')).toBe('region');
   });
 
