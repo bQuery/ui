@@ -119,8 +119,7 @@ const definition: ComponentDefinition<
       trigger.setAttribute('aria-controls', `${uid}-menu`);
       trigger.setAttribute('aria-disabled', isDisabled ? 'true' : 'false');
       if (trigger.tagName === 'BUTTON') {
-        if (isDisabled) trigger.setAttribute('disabled', '');
-        else trigger.removeAttribute('disabled');
+        (trigger as HTMLButtonElement).disabled = isDisabled;
       }
     };
 
