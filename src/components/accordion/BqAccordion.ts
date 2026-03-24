@@ -73,7 +73,7 @@ const definition: ComponentDefinition<BqAccordionProps, BqAccordionState> = {
       const panel = self.shadowRoot?.querySelector('.panel') as HTMLElement | null;
       if (!panel) return;
       const inner = panel.querySelector('.panel-inner') as HTMLElement | null;
-      const hasHeightTransition = () => {
+      const hasActiveHeightTransition = () => {
         const styles = panel.ownerDocument?.defaultView?.getComputedStyle(panel);
         if (!styles) return true;
         const properties = styles.transitionProperty
@@ -91,7 +91,7 @@ const definition: ComponentDefinition<BqAccordionProps, BqAccordionState> = {
       if (self.hasAttribute('open')) {
         if (inner) {
           panel.style.height = `${inner.scrollHeight}px`;
-          if (!hasHeightTransition()) {
+          if (!hasActiveHeightTransition()) {
             panel.style.height = 'auto';
           }
         }
