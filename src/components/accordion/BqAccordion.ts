@@ -108,7 +108,8 @@ const definition: ComponentDefinition<BqAccordionProps, BqAccordionState> = {
       const te = e as TransitionEvent;
       if (te.propertyName !== 'height') return;
       const panel = self.shadowRoot?.querySelector('.panel') as HTMLElement | null;
-      if (panel && self.hasAttribute('open')) {
+      if (!panel || te.target !== panel) return;
+      if (self.hasAttribute('open')) {
         panel.style.height = 'auto';
       }
     };

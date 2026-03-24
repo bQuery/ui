@@ -86,6 +86,31 @@ describe('BqAccordion — accessibility improvements', () => {
     expect(panel?.style.height).toBe('auto');
   });
 
+  it("should ignore bubbled descendant height transitionend events", async () => {
+    const el = doc.createElement('bq-accordion');
+    el.setAttribute('label', 'Details');
+    el.setAttribute('open', '');
+    const content = doc.createElement('div');
+    content.textContent = 'Accordion content';
+    el.appendChild(content);
+    doc.body.appendChild(el);
+    await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+
+    const panel = el.shadowRoot?.querySelector('.panel') as HTMLElement | null;
+    const panelInner = el.shadowRoot?.querySelector('.panel-inner') as HTMLElement | null;
+    expect(panel).not.toBeNull();
+    expect(panelInner).not.toBeNull();
+    panel!.style.height = '123px';
+
+    const transitionEvent = new win.Event('transitionend', {
+      bubbles: true,
+    }) as Event & { propertyName?: string };
+    transitionEvent.propertyName = 'height';
+    panelInner?.dispatchEvent(transitionEvent);
+
+    expect(panel?.style.height).toBe('123px');
+  });
+
   it('should reset panel height to auto when transitions are disabled', async () => {
     const originalGetComputedStyle = win.getComputedStyle.bind(win);
     const reducedMotionGetComputedStyle = ((el: Element) => {
