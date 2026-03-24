@@ -53,13 +53,13 @@ describe('BqStatCard', () => {
     doc.body.appendChild(el);
 
     const card = el.shadowRoot?.querySelector('[part="card"]');
-    const change = doc.createElement('bq-stat-card');
-    change.setAttribute('change', '-4.2%');
-    change.setAttribute('trend', 'warning');
-    doc.body.appendChild(change);
+    const changeEl = doc.createElement('bq-stat-card');
+    changeEl.setAttribute('change', '-4.2%');
+    changeEl.setAttribute('trend', 'warning');
+    doc.body.appendChild(changeEl);
 
     expect(card?.getAttribute('data-size')).toBe('md');
-    expect(change.shadowRoot?.querySelector('[part="change"]')?.getAttribute('data-trend')).toBe('neutral');
+    expect(changeEl.shadowRoot?.querySelector('[part="change"]')?.getAttribute('data-trend')).toBe('neutral');
   });
 
   it('should support compact sizing', () => {
