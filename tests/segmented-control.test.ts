@@ -15,7 +15,14 @@ describe('BqSegmentedControl', () => {
     doc.body.innerHTML = '';
   });
 
-  const createControl = () => {
+  const createControl = (
+    beforeAppend?: (elements: {
+      el: HTMLElement;
+      overview: HTMLButtonElement;
+      board: HTMLButtonElement;
+      activity: HTMLButtonElement;
+    }) => void
+  ) => {
     const el = doc.createElement('bq-segmented-control');
     el.setAttribute('name', 'view');
     el.setAttribute('label', 'View mode');
@@ -34,6 +41,7 @@ describe('BqSegmentedControl', () => {
     activity.textContent = 'Activity';
 
     el.append(overview, board, activity);
+    beforeAppend?.({ el, overview, board, activity });
     doc.body.appendChild(el);
 
     return { el, overview, board, activity };
@@ -88,16 +96,14 @@ describe('BqSegmentedControl', () => {
   });
 
   it('should not register a host keydown listener', async () => {
-    const { el } = createControl();
-
     let hostKeydownRegistrations = 0;
-
-    const originalHostAddEventListener = el.addEventListener.bind(el);
-
-    el.addEventListener = ((type, listener, options) => {
-      if (type === 'keydown') hostKeydownRegistrations += 1;
-      return originalHostAddEventListener(type, listener, options);
-    }) as HTMLElement['addEventListener'];
+    const { el } = createControl(({ el: control }) => {
+      const originalHostAddEventListener = control.addEventListener.bind(control);
+      control.addEventListener = ((type, listener, options) => {
+        if (type === 'keydown') hostKeydownRegistrations += 1;
+        return originalHostAddEventListener(type, listener, options);
+      }) as HTMLElement['addEventListener'];
+    });
 
     await waitForFrame();
 
