@@ -82,7 +82,47 @@ describe('BqDropdownMenu', () => {
     doc.body.appendChild(el);
     // Wait for requestAnimationFrame to fire
     await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
-    expect(btn.getAttribute('aria-haspopup')).toBe('true');
+    expect(btn.getAttribute('aria-haspopup')).toBe('menu');
+  });
+
+  it('should only attach the document click listener while the menu is open', async () => {
+    const el = doc.createElement('bq-dropdown-menu');
+    const trigger = doc.createElement('button');
+    trigger.setAttribute('slot', 'trigger');
+    trigger.textContent = 'Trigger';
+    const item = doc.createElement('button');
+    item.textContent = 'Edit';
+    el.append(trigger, item);
+
+    let addCount = 0;
+    let removeCount = 0;
+    const originalAdd = doc.addEventListener.bind(doc);
+    const originalRemove = doc.removeEventListener.bind(doc);
+    doc.addEventListener = ((type: string, listener: EventListenerOrEventListenerObject, options?: AddEventListenerOptions | boolean) => {
+      if (type === 'click') addCount += 1;
+      return originalAdd(type, listener, options);
+    }) as Document['addEventListener'];
+    doc.removeEventListener = ((type: string, listener: EventListenerOrEventListenerObject, options?: EventListenerOptions | boolean) => {
+      if (type === 'click') removeCount += 1;
+      return originalRemove(type, listener, options);
+    }) as Document['removeEventListener'];
+
+    try {
+      doc.body.appendChild(el);
+      await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+      expect(addCount).toBe(0);
+
+      trigger.click();
+      await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+      expect(addCount).toBe(1);
+
+      trigger.click();
+      await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+      expect(removeCount).toBe(1);
+    } finally {
+      doc.addEventListener = originalAdd;
+      doc.removeEventListener = originalRemove;
+    }
   });
 
   it('should set aria-expanded on the slotted trigger element', async () => {

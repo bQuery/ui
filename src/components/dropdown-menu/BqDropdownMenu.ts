@@ -110,7 +110,7 @@ const definition: ComponentDefinition<
       const trigger = getTrigger();
       if (!trigger) return;
       const uid = self.getState<string>('uid') || 'bq-dm';
-      trigger.setAttribute('aria-haspopup', 'true');
+      trigger.setAttribute('aria-haspopup', 'menu');
       trigger.setAttribute(
         'aria-expanded',
         self.hasAttribute('open') ? 'true' : 'false'
@@ -299,6 +299,20 @@ const definition: ComponentDefinition<
       if (!self.hasAttribute('open')) return;
       if (!self.contains(e.target as Node)) close({ restoreFocus: true });
     };
+    let outsideListening = false;
+    const syncOutsideListener = () => {
+      if (self.hasAttribute('open')) {
+        if (!outsideListening) {
+          document.addEventListener('click', outsideHandler);
+          outsideListening = true;
+        }
+        return;
+      }
+      if (outsideListening) {
+        document.removeEventListener('click', outsideHandler);
+        outsideListening = false;
+      }
+    };
 
     const slotChangeHandler = () => {
       syncTriggerA11y();
@@ -310,12 +324,12 @@ const definition: ComponentDefinition<
     s['_menuClickHandler'] = menuClickHandler;
     s['_keyHandler'] = keyHandler;
     s['_outsideHandler'] = outsideHandler;
+    s['_syncOutsideListener'] = syncOutsideListener;
     s['_slotChangeHandler'] = slotChangeHandler;
 
     self.addEventListener('click', triggerHandler);
     self.addEventListener('click', menuClickHandler);
     self.addEventListener('keydown', keyHandler);
-    document.addEventListener('click', outsideHandler);
     self.shadowRoot
       ?.querySelector('slot[name="trigger"]')
       ?.addEventListener('slotchange', slotChangeHandler);
@@ -326,6 +340,7 @@ const definition: ComponentDefinition<
     requestAnimationFrame(() => {
       syncTriggerA11y();
       syncMenuItemRoles();
+      syncOutsideListener();
     });
   },
   disconnected() {
@@ -351,6 +366,9 @@ const definition: ComponentDefinition<
     }
   },
   updated() {
+    const s = this as unknown as Record<string, unknown>;
+    const syncOutsideListener = s['_syncOutsideListener'] as (() => void) | undefined;
+    syncOutsideListener?.();
     const trigger = this.querySelector('[slot="trigger"]') as HTMLElement | null;
     if (trigger)
       trigger.setAttribute(
