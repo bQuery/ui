@@ -221,7 +221,9 @@ const definition: ComponentDefinition<BqTextareaProps, BqTextareaState> = {
                   : ''}
               </span>
               ${showCounter
-                ? `<span class="counter" id="${uid}-counter" part="counter" data-over="${isOver ? 'true' : 'false'}" aria-live="polite">${t('input.characterCount', { count: charCount, max: maxLen })}</span>`
+                ? `<span class="counter" id="${uid}-counter" part="counter" data-over="${isOver ? 'true' : 'false'}" aria-live="polite">${escapeHtml(
+                    t('input.characterCount', { count: charCount, max: maxLen }),
+                  )}</span>`
                 : ''}
             </div>`
           : ''}

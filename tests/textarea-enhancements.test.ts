@@ -55,8 +55,11 @@ describe('BqTextarea — character counter', () => {
     doc.body.appendChild(el);
     const textarea = el.shadowRoot?.querySelector('textarea');
     const counter = el.shadowRoot?.querySelector('.counter');
-    const counterId = counter?.getAttribute('id');
-    expect(textarea?.getAttribute('aria-describedby')).toContain(counterId ?? '');
+    expect(textarea).not.toBeNull();
+    expect(counter).not.toBeNull();
+    const counterId = counter!.getAttribute('id');
+    expect(counterId).toBeTruthy();
+    expect(textarea!.getAttribute('aria-describedby')).toContain(counterId as string);
   });
 
   it('should update the counter live as the user types', async () => {

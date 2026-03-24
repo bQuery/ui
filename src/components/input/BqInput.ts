@@ -257,7 +257,7 @@ const definition: ComponentDefinition<BqInputProps, BqInputState> = {
             ${describedBy ? `aria-describedby="${describedBy}"` : ''}
           />
           ${isPassword
-            ? `<button type="button" class="password-toggle" part="password-toggle" aria-label="${state.passwordVisible ? t('input.hidePassword') : t('input.showPassword')}" aria-pressed="${state.passwordVisible ? 'true' : 'false'}" ${props.disabled || props.readonly ? 'disabled aria-disabled="true"' : ''}>
+            ? `<button type="button" class="password-toggle" part="password-toggle" aria-label="${escapeHtml(state.passwordVisible ? t('input.hidePassword') : t('input.showPassword'))}" aria-pressed="${state.passwordVisible ? 'true' : 'false'}" ${props.disabled || props.readonly ? 'disabled aria-disabled="true"' : ''}>
                 <span class="pw-icon" aria-hidden="true">${state.passwordVisible ? '&#9673;' : '&#9678;'}</span>
               </button>`
             : ''}
@@ -276,7 +276,7 @@ const definition: ComponentDefinition<BqInputProps, BqInputState> = {
                   : ''}
               </span>
               ${showCounter
-                ? `<span class="counter" id="${uid}-counter" part="counter" data-over="${isOver ? 'true' : 'false'}" aria-live="polite">${t('input.characterCount', { count: charCount, max: maxLen })}</span>`
+                ? `<span class="counter" id="${uid}-counter" part="counter" data-over="${isOver ? 'true' : 'false'}" aria-live="polite">${escapeHtml(t('input.characterCount', { count: charCount, max: maxLen }))}</span>`
                 : ''}
             </div>`
           : ''}

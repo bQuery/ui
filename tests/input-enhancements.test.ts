@@ -153,8 +153,13 @@ describe('BqInput — character counter', () => {
     doc.body.appendChild(el);
     const input = el.shadowRoot?.querySelector('input');
     const counter = el.shadowRoot?.querySelector('.counter');
-    const counterId = counter?.getAttribute('id');
-    expect(input?.getAttribute('aria-describedby')).toContain(counterId ?? '');
+    expect(input).not.toBeNull();
+    expect(counter).not.toBeNull();
+    const counterId = counter!.getAttribute('id');
+    expect(counterId).toBeTruthy();
+    const describedBy = input!.getAttribute('aria-describedby');
+    expect(describedBy).toBeTruthy();
+    expect(describedBy).toContain(counterId as string);
   });
 
   it('should update the counter live as the user types', async () => {

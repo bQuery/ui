@@ -119,14 +119,14 @@ The `value` in `bq-select` comes from the item's `data-value` attribute, or fall
 | `Home` | Moves focus to the first item |
 | `End` | Moves focus to the last item |
 | `Escape` | Closes the menu and returns focus to the trigger |
-| `Tab` | Closes the menu |
+| `Tab` | Closes the menu and moves focus according to the browser's tab order (does not return focus to the trigger) |
 
 ## Accessibility
 
 - Menu container has `role="menu"` with optional `aria-label`
-- Trigger slot has `aria-haspopup="true"` and `aria-expanded`
+- Trigger slot has `aria-haspopup="menu"` and `aria-expanded`
 - Trigger has `aria-controls` pointing to the menu's unique `id`
-- Focus is managed: opening moves focus to first item, closing returns focus to trigger
+- Focus is managed: opening moves focus to first item; closing via Escape, outside click, or item selection returns focus to the trigger, while `Tab` closes the menu without restoring focus
 - Click-outside closes the menu
 - Disabled items are skipped during keyboard navigation
 
