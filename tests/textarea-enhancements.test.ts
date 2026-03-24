@@ -78,6 +78,22 @@ describe('BqTextarea — character counter', () => {
     expect(el.getAttribute('value')).toBe('hello');
   });
 
+  it('should indicate over-limit state when value exceeds maxlength', async () => {
+    const el = doc.createElement('bq-textarea');
+    el.setAttribute('maxlength', '10');
+    el.setAttribute('show-counter', '');
+    doc.body.appendChild(el);
+
+    const textarea = el.shadowRoot?.querySelector('textarea') as HTMLTextAreaElement | null;
+    textarea!.value = 'this is more than ten characters';
+    textarea?.dispatchEvent(new win.Event('input', { bubbles: true }));
+    await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+
+    const counter = el.shadowRoot?.querySelector('.counter');
+    expect(counter).not.toBeNull();
+    expect(counter?.getAttribute('data-over')).toBe('true');
+  });
+
   it('should not render a footer when there is no hint, error, or counter', () => {
     const el = doc.createElement('bq-textarea');
     doc.body.appendChild(el);

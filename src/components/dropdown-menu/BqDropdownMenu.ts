@@ -110,12 +110,18 @@ const definition: ComponentDefinition<
       const trigger = getTrigger();
       if (!trigger) return;
       const uid = self.getState<string>('uid') || 'bq-dm';
+      const isDisabled = self.hasAttribute('disabled');
       trigger.setAttribute('aria-haspopup', 'menu');
       trigger.setAttribute(
         'aria-expanded',
         self.hasAttribute('open') ? 'true' : 'false'
       );
       trigger.setAttribute('aria-controls', `${uid}-menu`);
+      trigger.setAttribute('aria-disabled', isDisabled ? 'true' : 'false');
+      if (trigger.tagName === 'BUTTON') {
+        if (isDisabled) trigger.setAttribute('disabled', '');
+        else trigger.removeAttribute('disabled');
+      }
     };
 
     const syncMenuItemRoles = () => {

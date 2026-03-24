@@ -178,6 +178,22 @@ describe('BqInput — character counter', () => {
     expect(el.getAttribute('value')).toBe('hello');
   });
 
+  it('should indicate over-limit state when value exceeds maxlength', async () => {
+    const el = doc.createElement('bq-input');
+    el.setAttribute('maxlength', '5');
+    el.setAttribute('show-counter', '');
+    doc.body.appendChild(el);
+
+    const input = el.shadowRoot?.querySelector('input') as HTMLInputElement | null;
+    input!.value = 'toolong';
+    input?.dispatchEvent(new win.Event('input', { bubbles: true }));
+    await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+
+    const counter = el.shadowRoot?.querySelector('.counter');
+    expect(counter).not.toBeNull();
+    expect(counter!.getAttribute('data-over')).toBe('true');
+  });
+
   it('should not render a footer when there is no hint, error, or counter', () => {
     const el = doc.createElement('bq-input');
     doc.body.appendChild(el);

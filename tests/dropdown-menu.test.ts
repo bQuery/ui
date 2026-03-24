@@ -136,6 +136,20 @@ describe('BqDropdownMenu', () => {
     expect(btn.getAttribute('aria-expanded')).toBe('false');
   });
 
+  it('should reflect disabled state onto the slotted trigger element', async () => {
+    const el = doc.createElement('bq-dropdown-menu');
+    el.setAttribute('disabled', '');
+    const btn = doc.createElement('button');
+    btn.setAttribute('slot', 'trigger');
+    btn.textContent = 'Trigger';
+    el.appendChild(btn);
+    doc.body.appendChild(el);
+    await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+
+    expect(btn.getAttribute('aria-disabled')).toBe('true');
+    expect(btn.hasAttribute('disabled')).toBe(true);
+  });
+
   it('should apply role=menuitem to slotted button items', async () => {
     const el = doc.createElement('bq-dropdown-menu');
     const trigger = doc.createElement('button');
