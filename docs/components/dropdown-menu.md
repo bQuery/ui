@@ -120,6 +120,7 @@ The `value` in `bq-select` comes from the item's `data-value` attribute, or fall
 | `End` | Moves focus to the last item |
 | `Escape` | Closes the menu and returns focus to the trigger |
 | `Tab` | Closes the menu and moves focus according to the browser's tab order (does not return focus to the trigger) |
+| Printable characters | Typeahead focuses the next matching enabled item by label |
 
 ## Accessibility
 
@@ -129,6 +130,7 @@ The `value` in `bq-select` comes from the item's `data-value` attribute, or fall
 - Focus is managed: opening moves focus to first item; closing via Escape, outside click, or item selection returns focus to the trigger, while `Tab` closes the menu without restoring focus
 - Click-outside closes the menu
 - Disabled items are skipped during keyboard navigation
+- Typeahead matching uses the item label or `data-value` text, which helps large menus stay efficient without custom scripting
 
 ## Localization
 

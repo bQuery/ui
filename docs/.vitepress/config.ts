@@ -9,7 +9,7 @@ export default defineConfig({
     nav: [
       { text: 'Guide', link: '/guide/getting-started' },
       { text: 'Components', link: '/components/' },
-      { text: 'GitHub', link: 'https://github.com/bquery/component-library' },
+      { text: 'GitHub', link: 'https://github.com/bQuery/ui' },
     ],
     sidebar: [
       {
@@ -22,6 +22,7 @@ export default defineConfig({
           { text: 'Dark Mode', link: '/guide/dark-mode' },
           { text: 'Accessibility', link: '/guide/accessibility' },
           { text: 'Internationalization', link: '/guide/i18n' },
+          { text: 'Architecture & Roadmap', link: '/guide/architecture-roadmap' },
         ],
       },
       {
@@ -48,6 +49,7 @@ export default defineConfig({
           { text: 'Progress', link: '/components/progress' },
           { text: 'Radio', link: '/components/radio' },
           { text: 'Select', link: '/components/select' },
+          { text: 'Segmented Control', link: '/components/segmented-control' },
           { text: 'Skeleton', link: '/components/skeleton' },
           { text: 'Slider', link: '/components/slider' },
           { text: 'Spinner', link: '/components/spinner' },
@@ -61,7 +63,7 @@ export default defineConfig({
       },
     ],
     socialLinks: [
-      { icon: 'github', link: 'https://github.com/bquery/component-library' },
+      { icon: 'github', link: 'https://github.com/bQuery/ui' },
     ],
     footer: {
       message: 'Released under the MIT License.',

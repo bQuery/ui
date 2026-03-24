@@ -21,6 +21,7 @@ import './pagination/BqPagination.js';
 import './progress/BqProgress.js';
 import './radio/BqRadio.js';
 import './select/BqSelect.js';
+import './segmented-control/BqSegmentedControl.js';
 import './skeleton/BqSkeleton.js';
 import './slider/BqSlider.js';
 import './spinner/BqSpinner.js';
