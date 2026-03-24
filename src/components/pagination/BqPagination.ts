@@ -101,7 +101,7 @@ const definition: ComponentDefinition<BqPaginationProps> = {
     if (h) this.shadowRoot?.removeEventListener('click', h);
   },
   render({ props }) {
-    const page = props.page;
+    const page = Math.max(1, Math.min(props.page, props.total || 1));
     const total = props.total;
     const siblings = props['sibling-count'];
     const pages = buildPages(page, total, siblings);

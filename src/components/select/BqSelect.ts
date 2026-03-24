@@ -233,7 +233,6 @@ const definition: ComponentDefinition<BqSelectProps, BqSelectState> = {
       proxy.setDisabled(this.hasAttribute('disabled'));
     }
     (s['_syncOptions'] as (() => void) | undefined)?.();
-    (s['_syncValue'] as (() => void) | undefined)?.();
   },
   render({ props, state }) {
     const hasError = Boolean(props.error);

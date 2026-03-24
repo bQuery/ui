@@ -135,6 +135,7 @@ const definition: ComponentDefinition<BqTooltipProps, BqTooltipState> = {
     self.addEventListener('focusout', hide);
     document.addEventListener('keydown', kh);
     queueMicrotask(() => {
+      if (!self.isConnected) return;
       const slot = self.shadowRoot?.querySelector(
         'slot'
       ) as HTMLSlotElement | null;

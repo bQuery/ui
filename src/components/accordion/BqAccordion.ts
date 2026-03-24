@@ -11,7 +11,7 @@
 import type { ComponentDefinition } from '@bquery/bquery/component';
 import { component, html } from '@bquery/bquery/component';
 import { escapeHtml } from '@bquery/bquery/security';
-import { uniqueId } from '../../utils/dom.js';
+import { getAnimationTimeoutMs, uniqueId } from '../../utils/dom.js';
 import { getBaseStyles } from '../../utils/styles.js';
 
 type BqAccordionProps = {
@@ -23,40 +23,6 @@ type BqAccordionProps = {
 type BqAccordionState = { uid: string };
 
 const DEFAULT_SLOW_DURATION = '300ms';
-
-const parseTimeValueToMs = (value: string): number => {
-  const trimmed = value.trim();
-  if (!trimmed) return 0;
-  if (trimmed.endsWith('ms')) return Number.parseFloat(trimmed);
-  if (trimmed.endsWith('s')) return Number.parseFloat(trimmed) * 1000;
-  return Number.parseFloat(trimmed) || 0;
-};
-
-const getAnimationTimeoutMs = (el: Element): number => {
-  const view = el.ownerDocument.defaultView;
-  if (!view?.getComputedStyle) return parseTimeValueToMs(DEFAULT_SLOW_DURATION);
-
-  const styles = view.getComputedStyle(el);
-  const durations = styles.animationDuration
-    .split(',')
-    .map((value) => parseTimeValueToMs(value));
-  const delays = styles.animationDelay
-    .split(',')
-    .map((value) => parseTimeValueToMs(value));
-  const count = Math.max(durations.length, delays.length);
-
-  let longest = 0;
-  for (let i = 0; i < count; i += 1) {
-    const duration = durations[i] ?? durations[durations.length - 1] ?? 0;
-    const delay = delays[i] ?? delays[delays.length - 1] ?? 0;
-    longest = Math.max(longest, duration + delay);
-  }
-
-  if (longest > 0) return longest;
-
-  const variableDuration = styles.getPropertyValue('--bq-duration-slow');
-  return parseTimeValueToMs(variableDuration || DEFAULT_SLOW_DURATION);
-};
 
 const definition: ComponentDefinition<BqAccordionProps, BqAccordionState> = {
   props: {
@@ -164,7 +130,9 @@ const definition: ComponentDefinition<BqAccordionProps, BqAccordionState> = {
         clearCloseFallback();
 
         const panel = self.shadowRoot?.querySelector('.panel');
-        const timeoutMs = panel ? getAnimationTimeoutMs(panel) : 0;
+        const timeoutMs = panel
+          ? getAnimationTimeoutMs(panel, DEFAULT_SLOW_DURATION)
+          : 0;
 
         if (timeoutMs <= 0) {
           finishClose();

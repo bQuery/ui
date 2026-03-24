@@ -84,6 +84,40 @@ export function uniqueId(prefix = 'bq'): string {
   return `${prefix}-${++_counter}`;
 }
 
+function parseTimeValueToMs(value: string): number {
+  const trimmed = value.trim();
+  if (!trimmed) return 0;
+  if (trimmed.endsWith('ms')) return Number.parseFloat(trimmed);
+  if (trimmed.endsWith('s')) return Number.parseFloat(trimmed) * 1000;
+  return Number.parseFloat(trimmed) || 0;
+}
+
+export function getAnimationTimeoutMs(
+  el: Element,
+  fallbackDuration = '0ms'
+): number {
+  const view = el.ownerDocument.defaultView;
+  if (!view?.getComputedStyle) return parseTimeValueToMs(fallbackDuration);
+
+  const styles = view.getComputedStyle(el);
+  const durations = styles.animationDuration
+    .split(',')
+    .map((value) => parseTimeValueToMs(value));
+  const delays = styles.animationDelay
+    .split(',')
+    .map((value) => parseTimeValueToMs(value));
+  const count = Math.max(durations.length, delays.length);
+
+  let longest = 0;
+  for (let i = 0; i < count; i += 1) {
+    const duration = durations[i] ?? durations[durations.length - 1] ?? 0;
+    const delay = delays[i] ?? delays[delays.length - 1] ?? 0;
+    longest = Math.max(longest, duration + delay);
+  }
+
+  return longest > 0 ? longest : parseTimeValueToMs(fallbackDuration);
+}
+
 /**
  * Manages focus trapping, initial focus, and focus restoration for overlay
  * components (Dialog, Drawer). Call from `updated()`.

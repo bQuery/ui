@@ -210,9 +210,7 @@ const definition: ComponentDefinition<BqTextareaProps, BqTextareaState> = {
           aria-invalid="${hasError ? 'true' : 'false'}"
           ${props.required ? 'aria-required="true"' : ''}
           ${describedBy ? `aria-describedby="${describedBy}"` : ''}
-        >
-${escapeHtml(props.value)}</textarea
-        >
+        >${escapeHtml(props.value)}</textarea>
         ${hasFooter
           ? `<div class="footer" part="footer">
               <span>

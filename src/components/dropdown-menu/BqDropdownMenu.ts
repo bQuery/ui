@@ -14,7 +14,7 @@
 import type { ComponentDefinition } from '@bquery/bquery/component';
 import { component, html } from '@bquery/bquery/component';
 import { escapeHtml } from '@bquery/bquery/security';
-import { uniqueId } from '../../utils/dom.js';
+import { getAnimationTimeoutMs, uniqueId } from '../../utils/dom.js';
 import { getBaseStyles } from '../../utils/styles.js';
 
 type BqDropdownMenuProps = {
@@ -24,6 +24,7 @@ type BqDropdownMenuProps = {
   disabled: boolean;
 };
 type BqDropdownMenuState = { uid: string };
+const FAST_DURATION = '150ms';
 
 const definition: ComponentDefinition<
   BqDropdownMenuProps,
@@ -89,6 +90,7 @@ const definition: ComponentDefinition<
       getState<T>(k: string): T;
     };
     const self = this as unknown as BQEl;
+    const record = self as unknown as Record<string, unknown>;
     if (!self.getState<string>('uid')) self.setState('uid', uniqueId('bq-dm'));
 
     const getTrigger = (): HTMLElement | null =>
@@ -172,10 +174,20 @@ const definition: ComponentDefinition<
       if (!self.hasAttribute('open') || self.hasAttribute('data-closing'))
         return;
       clearTypeaheadBuffer();
+      const clearCloseTimer = () => {
+        const closeTimer = record['_closeTimer'] as
+          | ReturnType<typeof setTimeout>
+          | undefined;
+        if (closeTimer) {
+          clearTimeout(closeTimer);
+          delete record['_closeTimer'];
+        }
+      };
       const reducedMotion = self.ownerDocument.defaultView?.matchMedia?.(
         '(prefers-reduced-motion: reduce)'
       )?.matches;
       const finalize = () => {
+        clearCloseTimer();
         self.removeAttribute('data-closing');
         self.removeAttribute('open');
         syncTriggerA11y();
@@ -188,7 +200,13 @@ const definition: ComponentDefinition<
         finalize();
       } else {
         self.setAttribute('data-closing', '');
-        setTimeout(finalize, 150);
+        const menu = self.shadowRoot?.querySelector('.menu');
+        const timeoutMs = menu ? getAnimationTimeoutMs(menu, FAST_DURATION) : 0;
+        if (timeoutMs <= 0) {
+          finalize();
+        } else {
+          record['_closeTimer'] = setTimeout(finalize, Math.ceil(timeoutMs) + 20);
+        }
       }
     };
     const toggle = () => {
@@ -430,11 +448,13 @@ const definition: ComponentDefinition<
     const clearTypeaheadBuffer = s['_clearTypeaheadBuffer'] as
       | (() => void)
       | undefined;
+    const closeTimer = s['_closeTimer'] as ReturnType<typeof setTimeout> | undefined;
     if (triggerHandler) this.removeEventListener('click', triggerHandler);
     if (menuClickHandler) this.removeEventListener('click', menuClickHandler);
     if (keyHandler) this.removeEventListener('keydown', keyHandler);
     if (outsideHandler) document.removeEventListener('click', outsideHandler);
     clearTypeaheadBuffer?.();
+    if (closeTimer) clearTimeout(closeTimer);
     if (slotChangeHandler) {
       this.shadowRoot
         ?.querySelector('slot[name="trigger"]')

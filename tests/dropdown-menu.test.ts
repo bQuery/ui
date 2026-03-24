@@ -433,4 +433,30 @@ describe('BqDropdownMenu', () => {
     expect(selected).toBe(0);
     expect(clickEvent.defaultPrevented).toBe(true);
   });
+
+  it('should clear a pending close timer when disconnected', async () => {
+    const el = doc.createElement('bq-dropdown-menu');
+    const trigger = doc.createElement('button');
+    trigger.setAttribute('slot', 'trigger');
+    trigger.textContent = 'Trigger';
+    const item = doc.createElement('button');
+    item.textContent = 'Edit';
+    el.append(trigger, item);
+    doc.body.appendChild(el);
+
+    let closed = 0;
+    el.addEventListener('bq-close', () => {
+      closed += 1;
+    });
+
+    trigger.click();
+    await new Promise<void>((resolve) =>
+      requestAnimationFrame(() => resolve())
+    );
+    trigger.click();
+    el.remove();
+    await new Promise<void>((resolve) => setTimeout(resolve, 220));
+
+    expect(closed).toBe(0);
+  });
 });
