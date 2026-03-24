@@ -1,11 +1,27 @@
 import { defineConfig } from 'vitepress';
 
+export function resolveDocsBase(env: NodeJS.ProcessEnv = process.env): string {
+  const explicitBase = env.DOCS_BASE ?? env.VITEPRESS_BASE;
+
+  if (explicitBase) {
+    return explicitBase;
+  }
+
+  const repositoryName =
+    env.GITHUB_ACTIONS === 'true'
+      ? env.GITHUB_REPOSITORY?.split('/')[1]
+      : undefined;
+
+  return repositoryName ? `/${repositoryName}/` : '/';
+}
+
+const repositoryBasePath = resolveDocsBase();
+
 export default defineConfig({
   title: '@bquery/ui',
   description: 'Production-grade web component library for the bQuery project',
-  base: '/',
+  base: repositoryBasePath,
   themeConfig: {
-    logo: '/logo.svg',
     nav: [
       { text: 'Guide', link: '/guide/getting-started' },
       { text: 'Components', link: '/components/' },
