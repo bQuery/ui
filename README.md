@@ -1,5 +1,15 @@
 # @bquery/ui
 
+[![Repo](https://img.shields.io/badge/github-bquery%2Fui-24292f?logo=github)](https://github.com/bQuery/ui)
+[![Stars](https://img.shields.io/github/stars/bquery/ui?style=flat&logo=github)](https://github.com/bQuery/ui/stargazers)
+[![Issues](https://img.shields.io/github/issues/bquery/ui?style=flat&logo=github)](https://github.com/bQuery/ui/issues)
+[![License](https://img.shields.io/github/license/bquery/ui?style=flat)](https://github.com/bQuery/ui/blob/main/LICENSE.md)
+[![npm](https://img.shields.io/npm/v/@bquery/ui)](https://www.npmjs.com/package/@bquery/ui)
+[![Bundle Size](https://img.shields.io/bundlephobia/minzip/@bquery/ui)](https://bundlephobia.com/package/@bquery/ui)
+[![unpkg](https://img.shields.io/badge/unpkg-browse-blue?logo=unpkg)](https://unpkg.com/@bquery/ui)
+[![CodeFactor](https://www.codefactor.io/repository/github/bquery/ui/badge)](https://www.codefactor.io/repository/github/bquery/ui)
+[![JsDelivr](https://data.jsdelivr.com/v1/package/npm/@bquery/ui/badge)](https://www.jsdelivr.com/package/npm/@bquery/ui)
+
 `@bquery/ui` is a production-grade component library built with native Web Components, Shadow DOM, and TypeScript for the bQuery ecosystem.
 
 It is designed to give teams the kind of component coverage, polish, accessibility, and framework interoperability that developers expect from established libraries such as Material UI, Vuetify, Angular Material, and modern Vue/Svelte UI kits—while staying framework-agnostic and standards-based.
