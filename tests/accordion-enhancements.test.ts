@@ -85,4 +85,36 @@ describe('BqAccordion — accessibility improvements', () => {
 
     expect(panel?.style.height).toBe('auto');
   });
+
+  it('should reset panel height to auto when transitions are disabled', async () => {
+    const originalGetComputedStyle = win.getComputedStyle.bind(win);
+    const reducedMotionGetComputedStyle = ((el: Element) => {
+      const styles = originalGetComputedStyle(el);
+      if ((el as HTMLElement).classList.contains('panel')) {
+        return new Proxy(styles, {
+          get(target, prop, receiver) {
+            if (prop === 'transitionProperty') return 'none';
+            if (prop === 'transitionDuration') return '0s';
+            return Reflect.get(target, prop, receiver);
+          },
+        }) as CSSStyleDeclaration;
+      }
+      return styles;
+    }) as typeof win.getComputedStyle;
+
+    win.getComputedStyle = reducedMotionGetComputedStyle;
+
+    try {
+      const el = doc.createElement('bq-accordion');
+      el.setAttribute('label', 'Details');
+      el.setAttribute('open', '');
+      doc.body.appendChild(el);
+      await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+
+      const panel = el.shadowRoot?.querySelector('.panel') as HTMLElement | null;
+      expect(panel?.style.height).toBe('auto');
+    } finally {
+      win.getComputedStyle = originalGetComputedStyle;
+    }
+  });
 });

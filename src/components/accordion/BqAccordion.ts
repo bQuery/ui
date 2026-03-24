@@ -73,9 +73,27 @@ const definition: ComponentDefinition<BqAccordionProps, BqAccordionState> = {
       const panel = self.shadowRoot?.querySelector('.panel') as HTMLElement | null;
       if (!panel) return;
       const inner = panel.querySelector('.panel-inner') as HTMLElement | null;
+      const hasHeightTransition = () => {
+        const styles = panel.ownerDocument?.defaultView?.getComputedStyle(panel);
+        if (!styles) return true;
+        const properties = styles.transitionProperty
+          .split(',')
+          .map((value) => value.trim());
+        const durations = styles.transitionDuration
+          .split(',')
+          .map((value) => value.trim());
+        const transitionsHeight = properties.some(
+          (value) => value === 'all' || value === 'height'
+        );
+        const hasDuration = durations.some((value) => parseFloat(value) > 0);
+        return transitionsHeight && hasDuration;
+      };
       if (self.hasAttribute('open')) {
         if (inner) {
           panel.style.height = `${inner.scrollHeight}px`;
+          if (!hasHeightTransition()) {
+            panel.style.height = 'auto';
+          }
         }
       } else {
         if (panel.style.height === 'auto' && inner) {
