@@ -45,6 +45,10 @@ type BqInputProps = {
   'show-counter': boolean;
 };
 type BqInputState = { uid: string; passwordVisible: boolean };
+type BqInputEl = HTMLElement & {
+  setState(k: 'uid' | 'passwordVisible', v: string | boolean): void;
+  getState<T>(k: string): T;
+};
 
 const definition: ComponentDefinition<BqInputProps, BqInputState> = {
   props: {
@@ -113,11 +117,7 @@ const definition: ComponentDefinition<BqInputProps, BqInputState> = {
     }
   `,
   connected() {
-    type BQEl = HTMLElement & {
-      setState(k: 'uid' | 'passwordVisible', v: string | boolean): void;
-      getState<T>(k: string): T;
-    };
-    const self = this as unknown as BQEl;
+    const self = this as unknown as BqInputEl;
     if (!self.getState<string>('uid'))
       self.setState('uid', uniqueId('bq-input'));
 
@@ -201,10 +201,7 @@ const definition: ComponentDefinition<BqInputProps, BqInputState> = {
     (s['_formProxy'] as FormProxy | undefined)?.cleanup();
   },
   updated() {
-    const self = this as unknown as {
-      getState<T>(k: string): T;
-      setState(k: 'passwordVisible', v: boolean): void;
-    };
+    const self = this as unknown as BqInputEl;
     if (
       this.getAttribute('type') !== 'password' &&
       self.getState<boolean>('passwordVisible')
