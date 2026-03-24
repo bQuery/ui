@@ -297,7 +297,7 @@ const definition: ComponentDefinition<
     // Click outside
     const outsideHandler = (e: Event) => {
       if (!self.hasAttribute('open')) return;
-      if (!self.contains(e.target as Node)) close();
+      if (!self.contains(e.target as Node)) close({ restoreFocus: true });
     };
 
     const slotChangeHandler = () => {

@@ -192,6 +192,26 @@ describe('BqDropdownMenu', () => {
     expect(doc.activeElement).not.toBe(trigger);
   });
 
+  it('should restore focus to the trigger when closing on outside click', async () => {
+    const el = doc.createElement('bq-dropdown-menu');
+    const trigger = doc.createElement('button');
+    trigger.setAttribute('slot', 'trigger');
+    trigger.textContent = 'Trigger';
+    const item = doc.createElement('button');
+    item.textContent = 'Edit';
+    const outside = doc.createElement('div');
+    doc.body.append(el, outside);
+    el.append(trigger, item);
+
+    trigger.click();
+    await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+    item.focus();
+    outside.dispatchEvent(new win.MouseEvent('click', { bubbles: true }));
+
+    expect(el.hasAttribute('open')).toBe(false);
+    expect(doc.activeElement).toBe(trigger);
+  });
+
   it('should not focus a menu item if the menu closes before the next frame', async () => {
     const el = doc.createElement('bq-dropdown-menu');
     const trigger = doc.createElement('button');

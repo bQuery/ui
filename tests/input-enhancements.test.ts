@@ -71,6 +71,35 @@ describe('BqInput — password toggle', () => {
     const toggle = el.shadowRoot?.querySelector('.password-toggle');
     expect(toggle?.hasAttribute('disabled')).toBe(true);
   });
+
+  it('should reset password visibility when type changes away from password', async () => {
+    const el = doc.createElement('bq-input');
+    el.setAttribute('type', 'password');
+    doc.body.appendChild(el);
+
+    const toggle = el.shadowRoot?.querySelector(
+      '.password-toggle'
+    ) as HTMLButtonElement | null;
+    toggle?.click();
+    await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+
+    const openToggle = el.shadowRoot?.querySelector(
+      '.password-toggle'
+    ) as HTMLButtonElement | null;
+    expect(openToggle?.getAttribute('aria-pressed')).toBe('true');
+
+    el.setAttribute('type', 'text');
+    await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+    el.setAttribute('type', 'password');
+    await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+
+    const nextToggle = el.shadowRoot?.querySelector(
+      '.password-toggle'
+    ) as HTMLButtonElement | null;
+    const input = el.shadowRoot?.querySelector('input') as HTMLInputElement | null;
+    expect(nextToggle?.getAttribute('aria-pressed')).toBe('false');
+    expect(input?.getAttribute('type')).toBe('password');
+  });
 });
 
 describe('BqInput — character counter', () => {

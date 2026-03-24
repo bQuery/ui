@@ -201,6 +201,16 @@ const definition: ComponentDefinition<BqInputProps, BqInputState> = {
     (s['_formProxy'] as FormProxy | undefined)?.cleanup();
   },
   updated() {
+    const self = this as unknown as {
+      getState<T>(k: string): T;
+      setState(k: 'passwordVisible', v: boolean): void;
+    };
+    if (
+      this.getAttribute('type') !== 'password' &&
+      self.getState<boolean>('passwordVisible')
+    ) {
+      self.setState('passwordVisible', false);
+    }
     const s = this as unknown as Record<string, unknown>;
     const proxy = s['_formProxy'] as FormProxy | undefined;
     if (proxy) {
