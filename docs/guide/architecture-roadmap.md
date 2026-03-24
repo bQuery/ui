@@ -40,6 +40,7 @@ Reviewing mature systems such as Radix UI, shadcn/ui, Chakra UI, Mantine, Materi
 - Better **keyboard parity** across all navigation and overlay components
 - More **documentation pages for architecture, roadmap, theming, and usage patterns**
 - Continued refinement of **mobile-friendly sizing, focus behavior, and RTL-aware navigation**
+- More **dashboard and summary primitives** that help product teams build real application surfaces instead of only low-level controls
 
 ### Advanced future opportunities
 
@@ -94,9 +95,24 @@ This batch improves the library in a way that mirrors mature UI ecosystems witho
 - strengthens an existing **overlay/navigation component**,
 - and improves documentation so the library feels more like an intentional platform than a loose collection of widgets.
 
+## Latest High-Value Batch
+
+This follow-up batch focuses on a missing dashboard primitive that appears consistently across mature design systems and admin-oriented UI libraries:
+
+1. **New `bq-stat-card` component**
+   - purpose-built for KPI summaries, health metrics, and compact dashboard cards,
+   - supports loading state, trend styling, icon composition, and mobile-friendly compact sizing,
+   - stays aligned with the existing token system and localization strategy.
+
+2. **Documentation updates**
+   - new `bq-stat-card` reference page,
+   - updated component catalog and sidebar coverage,
+   - refreshed roadmap language to call out dashboard/data-summary primitives as a current priority.
+
 ## Recommended Next Steps
 
 - Add a composable **combobox / rich select** next.
 - Expand **table recipes** and column-control patterns.
 - Add more **layout and workspace primitives** for responsive app shells and settings pages.
 - Continue auditing older components for shared size/variant/state consistency.
+- Build on `bq-stat-card` with companion dashboard patterns such as activity feeds, metric groups, and master-detail analytics layouts.

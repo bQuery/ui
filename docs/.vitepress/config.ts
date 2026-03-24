@@ -53,6 +53,7 @@ export default defineConfig({
           { text: 'Skeleton', link: '/components/skeleton' },
           { text: 'Slider', link: '/components/slider' },
           { text: 'Spinner', link: '/components/spinner' },
+          { text: 'Stat Card', link: '/components/stat-card' },
           { text: 'Switch', link: '/components/switch' },
           { text: 'Table', link: '/components/table' },
           { text: 'Tabs', link: '/components/tabs' },

@@ -11,7 +11,7 @@ This catalog gives you a complete overview of the currently available building b
 | **Actions** | `bq-button`, `bq-icon-button` |
 | **Forms** | `bq-input`, `bq-textarea`, `bq-select`, `bq-segmented-control`, `bq-checkbox`, `bq-radio`, `bq-switch`, `bq-slider`, `bq-chip` |
 | **Navigation & Disclosure** | `bq-tabs`, `bq-accordion`, `bq-breadcrumbs`, `bq-pagination` |
-| **Data Display** | `bq-card`, `bq-badge`, `bq-avatar`, `bq-table`, `bq-divider`, `bq-empty-state` |
+| **Data Display** | `bq-card`, `bq-badge`, `bq-avatar`, `bq-table`, `bq-divider`, `bq-empty-state`, `bq-stat-card` |
 | **Feedback & Loading** | `bq-alert`, `bq-progress`, `bq-spinner`, `bq-skeleton`, `bq-tooltip`, `bq-toast` |
 | **Overlays** | `bq-dialog`, `bq-drawer`, `bq-dropdown-menu` |
 
@@ -66,6 +66,7 @@ Across the component library you will find the same professional capabilities th
 | `bq-table` | Tabular datasets | Sortable columns, bordered/striped/hoverable variants, empty/loading states |
 | `bq-divider` | Visual separation of content | Horizontal/vertical orientation, label support, multiple line styles |
 | `bq-empty-state` | No-data or no-results messaging | Title, description, icon slot, action slot |
+| `bq-stat-card` | Dashboard metrics and KPI summaries | Compact metric layout, trend pill, loading skeleton, icon slot |
 
 ## Feedback & Loading
 
