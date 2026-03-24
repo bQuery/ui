@@ -72,13 +72,33 @@ const definition: ComponentDefinition<BqAccordionProps, BqAccordionState> = {
     const syncPanelHeight = () => {
       const panel = self.shadowRoot?.querySelector('.panel') as HTMLElement | null;
       if (!panel) return;
+      const inner = panel.querySelector('.panel-inner') as HTMLElement | null;
       if (self.hasAttribute('open')) {
-        const inner = panel.querySelector('.panel-inner') as HTMLElement | null;
         if (inner) {
           panel.style.height = `${inner.scrollHeight}px`;
         }
       } else {
-        panel.style.height = '0';
+        if (panel.style.height === 'auto' && inner) {
+          panel.style.height = `${inner.scrollHeight}px`;
+          void panel.offsetHeight;
+        }
+        panel.style.height = '0px';
+      }
+    };
+
+    const onPanelTransitionEnd = (e: Event) => {
+      const te = e as TransitionEvent;
+      if (te.propertyName !== 'height') return;
+      const panel = self.shadowRoot?.querySelector('.panel') as HTMLElement | null;
+      if (panel && self.hasAttribute('open')) {
+        panel.style.height = 'auto';
+      }
+    };
+
+    const slotChangeHandler = () => {
+      const panel = self.shadowRoot?.querySelector('.panel') as HTMLElement | null;
+      if (self.hasAttribute('open') && panel && panel.style.height !== 'auto') {
+        syncPanelHeight();
       }
     };
 
@@ -116,8 +136,14 @@ const definition: ComponentDefinition<BqAccordionProps, BqAccordionState> = {
     s['_handler'] = handler;
     s['_kh'] = kh;
     s['_syncHeight'] = syncPanelHeight;
+    s['_onPanelTransitionEnd'] = onPanelTransitionEnd;
+    s['_slotChangeHandler'] = slotChangeHandler;
     self.shadowRoot?.addEventListener('click', handler);
     self.shadowRoot?.addEventListener('keydown', kh);
+    self.shadowRoot?.addEventListener('transitionend', onPanelTransitionEnd);
+    self.shadowRoot
+      ?.querySelector('slot')
+      ?.addEventListener('slotchange', slotChangeHandler);
 
     // Sync panel height on initial render
     requestAnimationFrame(syncPanelHeight);
@@ -126,8 +152,20 @@ const definition: ComponentDefinition<BqAccordionProps, BqAccordionState> = {
     const self = this as unknown as Record<string, unknown>;
     const h = self['_handler'] as EventListener | undefined;
     const kh = self['_kh'] as EventListener | undefined;
+    const onPanelTransitionEnd = self['_onPanelTransitionEnd'] as
+      | EventListener
+      | undefined;
+    const slotChangeHandler = self['_slotChangeHandler'] as
+      | EventListener
+      | undefined;
     if (h) this.shadowRoot?.removeEventListener('click', h);
     if (kh) this.shadowRoot?.removeEventListener('keydown', kh);
+    if (onPanelTransitionEnd)
+      this.shadowRoot?.removeEventListener('transitionend', onPanelTransitionEnd);
+    if (slotChangeHandler)
+      this.shadowRoot
+        ?.querySelector('slot')
+        ?.removeEventListener('slotchange', slotChangeHandler);
   },
   updated() {
     // Only recalculate height when the open attribute changes

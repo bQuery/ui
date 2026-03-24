@@ -95,4 +95,66 @@ describe('BqDropdownMenu', () => {
     await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
     expect(btn.getAttribute('aria-expanded')).toBe('false');
   });
+
+  it('should apply role=menuitem to slotted button items', async () => {
+    const el = doc.createElement('bq-dropdown-menu');
+    const trigger = doc.createElement('button');
+    trigger.setAttribute('slot', 'trigger');
+    trigger.textContent = 'Trigger';
+    const item = doc.createElement('button');
+    item.textContent = 'Edit';
+    el.append(trigger, item);
+    doc.body.appendChild(el);
+
+    await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+
+    expect(item.getAttribute('role')).toBe('menuitem');
+    expect(item.getAttribute('tabindex')).toBe('-1');
+  });
+
+  it('should not treat trigger clicks as menu item selection', async () => {
+    const el = doc.createElement('bq-dropdown-menu');
+    const trigger = doc.createElement('button');
+    trigger.setAttribute('slot', 'trigger');
+    trigger.textContent = 'Trigger';
+    const item = doc.createElement('button');
+    item.textContent = 'Edit';
+    el.append(trigger, item);
+    doc.body.appendChild(el);
+
+    let selected = 0;
+    el.addEventListener('bq-select', () => {
+      selected += 1;
+    });
+
+    trigger.click();
+    await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+
+    expect(selected).toBe(0);
+    expect(el.hasAttribute('open')).toBe(true);
+  });
+
+  it('should close on Tab without restoring focus to the trigger', async () => {
+    const el = doc.createElement('bq-dropdown-menu');
+    const trigger = doc.createElement('button');
+    trigger.setAttribute('slot', 'trigger');
+    trigger.textContent = 'Trigger';
+    const item = doc.createElement('button');
+    item.textContent = 'Edit';
+    const next = doc.createElement('button');
+    next.textContent = 'Next';
+    doc.body.append(el, next);
+    el.append(trigger, item);
+
+    trigger.click();
+    await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+    item.focus();
+
+    item.dispatchEvent(
+      new win.KeyboardEvent('keydown', { key: 'Tab', bubbles: true })
+    );
+
+    expect(el.hasAttribute('open')).toBe(false);
+    expect(doc.activeElement).not.toBe(trigger);
+  });
 });

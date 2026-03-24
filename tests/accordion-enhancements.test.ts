@@ -71,4 +71,21 @@ describe('BqAccordion — accessibility improvements', () => {
     expect(trigger2?.getAttribute('id')).toBeTruthy();
     expect(trigger1?.getAttribute('id')).not.toBe(trigger2?.getAttribute('id'));
   });
+
+  it('should reset panel height to auto after expand transition completes', async () => {
+    const el = doc.createElement('bq-accordion');
+    el.setAttribute('label', 'Details');
+    el.setAttribute('open', '');
+    doc.body.appendChild(el);
+    await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+
+    const panel = el.shadowRoot?.querySelector('.panel') as HTMLElement | null;
+    const transitionEvent = new win.Event('transitionend', {
+      bubbles: true,
+    }) as Event & { propertyName?: string };
+    transitionEvent.propertyName = 'height';
+    panel?.dispatchEvent(transitionEvent);
+
+    expect(panel?.style.height).toBe('auto');
+  });
 });

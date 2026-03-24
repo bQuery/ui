@@ -1,7 +1,7 @@
 /**
  * Dropdown menu component — a trigger-activated overlay for actions or navigation.
  * @element bq-dropdown-menu
- * @prop {string}  label      - Accessible label for the menu trigger
+ * @prop {string}  label      - Accessible label for the dropdown menu
  * @prop {string}  placement  - bottom-start | bottom-end | top-start | top-end
  * @prop {boolean} open       - Whether the menu is open
  * @prop {boolean} disabled
@@ -88,9 +88,48 @@ const definition: ComponentDefinition<
     if (!self.getState<string>('uid'))
       self.setState('uid', uniqueId('bq-dm'));
 
+    const getTrigger = (): HTMLElement | null =>
+      self.querySelector('[slot="trigger"]') as HTMLElement | null;
+
+    const getMenuRoots = (): HTMLElement[] => {
+      const slot = self.shadowRoot?.querySelector(
+        'slot:not([name])'
+      ) as HTMLSlotElement | null;
+      if (!slot) return [];
+      return slot.assignedElements({ flatten: true }).filter(
+        (el): el is HTMLElement => el instanceof HTMLElement
+      );
+    };
+
+    const syncTriggerA11y = () => {
+      const trigger = getTrigger();
+      if (!trigger) return;
+      const uid = self.getState<string>('uid') || 'bq-dm';
+      trigger.setAttribute('aria-haspopup', 'true');
+      trigger.setAttribute(
+        'aria-expanded',
+        self.hasAttribute('open') ? 'true' : 'false'
+      );
+      trigger.setAttribute('aria-controls', `${uid}-menu`);
+    };
+
+    const syncMenuItemRoles = () => {
+      getMenuRoots().forEach((el) => {
+        if (el.tagName === 'HR') {
+          el.setAttribute('role', 'separator');
+          return;
+        }
+        if (el.tagName === 'BUTTON' || el.tagName === 'A') {
+          if (!el.hasAttribute('role')) el.setAttribute('role', 'menuitem');
+          if (!el.hasAttribute('tabindex')) el.setAttribute('tabindex', '-1');
+        }
+      });
+    };
+
     const open = () => {
       if (self.hasAttribute('disabled') || self.hasAttribute('open')) return;
       self.setAttribute('open', '');
+      syncTriggerA11y();
       self.dispatchEvent(
         new CustomEvent('bq-open', { bubbles: true, composed: true })
       );
@@ -100,15 +139,14 @@ const definition: ComponentDefinition<
         if (items.length > 0) items[0]!.focus();
       });
     };
-    const close = () => {
+    const close = ({ restoreFocus = false }: { restoreFocus?: boolean } = {}) => {
       if (!self.hasAttribute('open')) return;
       self.removeAttribute('open');
+      syncTriggerA11y();
       self.dispatchEvent(
         new CustomEvent('bq-close', { bubbles: true, composed: true })
       );
-      // Return focus to trigger
-      const trigger = self.querySelector('[slot="trigger"]') as HTMLElement | null;
-      trigger?.focus();
+      if (restoreFocus) getTrigger()?.focus();
     };
     const toggle = () => {
       if (self.hasAttribute('open')) close();
@@ -116,16 +154,11 @@ const definition: ComponentDefinition<
     };
 
     const getMenuItems = (): HTMLElement[] => {
-      const slot = self.shadowRoot?.querySelector('slot:not([name])') as HTMLSlotElement | null;
-      if (!slot) return [];
-      return slot
-        .assignedElements({ flatten: true })
-        .filter(
-          (el): el is HTMLElement =>
-            (el instanceof HTMLElement) &&
-            (el.tagName === 'BUTTON' || el.tagName === 'A') &&
-            !el.hasAttribute('disabled')
-        );
+      return getMenuRoots().filter(
+        (el): el is HTMLElement =>
+          (el.tagName === 'BUTTON' || el.tagName === 'A') &&
+          !el.hasAttribute('disabled')
+      );
     };
 
     // Trigger click
@@ -146,18 +179,28 @@ const definition: ComponentDefinition<
     const menuClickHandler = (e: Event) => {
       const target = e.target as HTMLElement | null;
       if (!target) return;
+
+      const trigger = getTrigger();
+      if (trigger && (target === trigger || trigger.contains(target))) return;
+
       const item = target.closest('button, a');
-      if (item && !item.hasAttribute('disabled')) {
-        const value = item.getAttribute('data-value') || item.textContent?.trim() || '';
-        self.dispatchEvent(
-          new CustomEvent('bq-select', {
-            detail: { value },
-            bubbles: true,
-            composed: true,
-          })
-        );
-        close();
-      }
+      if (!item || item.hasAttribute('disabled')) return;
+
+      const isInMenu = getMenuRoots().some(
+        (el) => el === item || el.contains(item)
+      );
+      if (!isInMenu) return;
+
+      const value =
+        item.getAttribute('data-value') || item.textContent?.trim() || '';
+      self.dispatchEvent(
+        new CustomEvent('bq-select', {
+          detail: { value },
+          bubbles: true,
+          composed: true,
+        })
+      );
+      close({ restoreFocus: true });
     };
 
     // Keyboard navigation
@@ -179,7 +222,7 @@ const definition: ComponentDefinition<
           return;
         }
         if (ke.key === 'Escape') {
-          close();
+          close({ restoreFocus: true });
           return;
         }
       }
@@ -213,6 +256,8 @@ const definition: ComponentDefinition<
           break;
         }
         case 'Escape':
+          close({ restoreFocus: true });
+          break;
         case 'Tab': {
           close();
           break;
@@ -226,26 +271,32 @@ const definition: ComponentDefinition<
       if (!self.contains(e.target as Node)) close();
     };
 
+    const slotChangeHandler = () => {
+      syncTriggerA11y();
+      syncMenuItemRoles();
+    };
+
     const s = self as unknown as Record<string, unknown>;
     s['_triggerHandler'] = triggerHandler;
     s['_menuClickHandler'] = menuClickHandler;
     s['_keyHandler'] = keyHandler;
     s['_outsideHandler'] = outsideHandler;
+    s['_slotChangeHandler'] = slotChangeHandler;
 
     self.addEventListener('click', triggerHandler);
     self.addEventListener('click', menuClickHandler);
     self.addEventListener('keydown', keyHandler);
     document.addEventListener('click', outsideHandler);
+    self.shadowRoot
+      ?.querySelector('slot[name="trigger"]')
+      ?.addEventListener('slotchange', slotChangeHandler);
+    self.shadowRoot
+      ?.querySelector('slot:not([name])')
+      ?.addEventListener('slotchange', slotChangeHandler);
 
-    // Set ARIA attributes on the slotted trigger element
     requestAnimationFrame(() => {
-      const trigger = self.querySelector('[slot="trigger"]') as HTMLElement | null;
-      if (trigger) {
-        const uid = self.getState<string>('uid') || 'bq-dm';
-        trigger.setAttribute('aria-haspopup', 'true');
-        trigger.setAttribute('aria-expanded', self.hasAttribute('open') ? 'true' : 'false');
-        trigger.setAttribute('aria-controls', `${uid}-menu`);
-      }
+      syncTriggerA11y();
+      syncMenuItemRoles();
     });
   },
   disconnected() {
@@ -254,17 +305,29 @@ const definition: ComponentDefinition<
     const menuClickHandler = s['_menuClickHandler'] as EventListener | undefined;
     const keyHandler = s['_keyHandler'] as EventListener | undefined;
     const outsideHandler = s['_outsideHandler'] as EventListener | undefined;
+    const slotChangeHandler = s['_slotChangeHandler'] as
+      | EventListener
+      | undefined;
     if (triggerHandler) this.removeEventListener('click', triggerHandler);
     if (menuClickHandler) this.removeEventListener('click', menuClickHandler);
     if (keyHandler) this.removeEventListener('keydown', keyHandler);
     if (outsideHandler) document.removeEventListener('click', outsideHandler);
+    if (slotChangeHandler) {
+      this.shadowRoot
+        ?.querySelector('slot[name="trigger"]')
+        ?.removeEventListener('slotchange', slotChangeHandler);
+      this.shadowRoot
+        ?.querySelector('slot:not([name])')
+        ?.removeEventListener('slotchange', slotChangeHandler);
+    }
   },
   updated() {
-    // Sync aria-expanded on the slotted trigger element
     const trigger = this.querySelector('[slot="trigger"]') as HTMLElement | null;
-    if (trigger) {
-      trigger.setAttribute('aria-expanded', this.hasAttribute('open') ? 'true' : 'false');
-    }
+    if (trigger)
+      trigger.setAttribute(
+        'aria-expanded',
+        this.hasAttribute('open') ? 'true' : 'false'
+      );
   },
   render({ props, state }) {
     const uid = state.uid || 'bq-dm';

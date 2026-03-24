@@ -53,6 +53,24 @@ describe('BqInput — password toggle', () => {
     expect(icon).not.toBeNull();
     expect(icon?.getAttribute('aria-hidden')).toBe('true');
   });
+
+  it('should disable the password toggle when the input is disabled', () => {
+    const el = doc.createElement('bq-input');
+    el.setAttribute('type', 'password');
+    el.setAttribute('disabled', '');
+    doc.body.appendChild(el);
+    const toggle = el.shadowRoot?.querySelector('.password-toggle');
+    expect(toggle?.hasAttribute('disabled')).toBe(true);
+  });
+
+  it('should disable the password toggle when the input is readonly', () => {
+    const el = doc.createElement('bq-input');
+    el.setAttribute('type', 'password');
+    el.setAttribute('readonly', '');
+    doc.body.appendChild(el);
+    const toggle = el.shadowRoot?.querySelector('.password-toggle');
+    expect(toggle?.hasAttribute('disabled')).toBe(true);
+  });
 });
 
 describe('BqInput — character counter', () => {

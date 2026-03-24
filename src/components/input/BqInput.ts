@@ -166,6 +166,7 @@ const definition: ComponentDefinition<BqInputProps, BqInputState> = {
     };
     // Password visibility toggle
     const pwToggle = (e: Event) => {
+      if (self.hasAttribute('disabled') || self.hasAttribute('readonly')) return;
       if ((e.target as Element)?.closest('.password-toggle')) {
         const current = self.getState<boolean>('passwordVisible');
         self.setState('passwordVisible', !current);
@@ -247,7 +248,7 @@ const definition: ComponentDefinition<BqInputProps, BqInputState> = {
             ${describedBy ? `aria-describedby="${describedBy}"` : ''}
           />
           ${isPassword
-            ? `<button type="button" class="password-toggle" part="password-toggle" aria-label="${state.passwordVisible ? t('input.hidePassword') : t('input.showPassword')}" aria-pressed="${state.passwordVisible ? 'true' : 'false'}">
+            ? `<button type="button" class="password-toggle" part="password-toggle" aria-label="${state.passwordVisible ? t('input.hidePassword') : t('input.showPassword')}" aria-pressed="${state.passwordVisible ? 'true' : 'false'}" ${props.disabled || props.readonly ? 'disabled aria-disabled="true"' : ''}>
                 <span class="pw-icon" aria-hidden="true">${state.passwordVisible ? '&#9673;' : '&#9678;'}</span>
               </button>`
             : ''}
