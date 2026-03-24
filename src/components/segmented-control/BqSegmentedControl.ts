@@ -295,7 +295,7 @@ const definition: ComponentDefinition<
       );
       if (enabledButtons.length === 0) return;
 
-      let nextButton: HTMLButtonElement | null = enabledButtons[0] ?? null;
+      let nextButton: HTMLButtonElement | null = null;
 
       if (direction === 'first') {
         nextButton = enabledButtons[0] ?? null;
