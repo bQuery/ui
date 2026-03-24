@@ -58,4 +58,8 @@ The `bq-progress` component is a determinate or indeterminate progress bar.
 
 ## Accessibility
 
-The component uses a native `<progress>` element or appropriate ARIA roles to communicate progress to assistive technology. The `label` prop provides a screen-reader-friendly description.
+The component exposes `role="progressbar"` on the visual track element.
+
+- Determinate progress sets `aria-valuenow`, `aria-valuemin`, `aria-valuemax`, and a localized `aria-valuetext`.
+- Indeterminate progress omits the numeric value and instead uses `aria-busy="true"` with localized loading text.
+- The `label` prop provides the accessible name. When omitted, a localized fallback label is used.

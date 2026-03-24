@@ -50,6 +50,7 @@ The `bq-tooltip` component shows a contextual popup on hover or focus of its tri
 ## Accessibility
 
 - The tooltip has `role="tooltip"`.
+- The trigger element is automatically linked to the tooltip with `aria-describedby`.
 - The tooltip is hidden with `opacity: 0` by default and becomes visible on hover/focus.
 - Pressing `Escape` dismisses the tooltip.
 - The animation respects `prefers-reduced-motion`.

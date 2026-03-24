@@ -107,7 +107,8 @@ const definition: ComponentDefinition<BqPaginationProps> = {
     const nextDisabled = page >= total || props.disabled;
     const pageItems = pages
       .map((p) => {
-        if (p === '...') return '<span class="ellipsis">&#8230;</span>';
+        if (p === '...')
+          return '<span class="ellipsis" aria-hidden="true">&#8230;</span>';
         return `<button class="page-btn" data-page="${p}" data-current="${p === page ? 'true' : 'false'}" ${p === page ? 'aria-current="page"' : ''} type="button">${p}</button>`;
       })
       .join('');

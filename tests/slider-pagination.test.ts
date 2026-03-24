@@ -69,6 +69,7 @@ describe('BqSlider', () => {
     expect(input?.getAttribute('aria-valuemin')).toBe('10');
     expect(input?.getAttribute('aria-valuemax')).toBe('90');
     expect(input?.getAttribute('aria-valuenow')).toBe('50');
+    expect(input?.getAttribute('aria-valuetext')).toBe('Value: 50');
   });
 
   it('should create form proxy hidden input', () => {
@@ -160,5 +161,15 @@ describe('BqPagination', () => {
     ) as HTMLElement;
     page2?.click();
     expect(firedPage).toBe(2);
+  });
+
+  it('should hide pagination ellipses from assistive technology', () => {
+    const el = doc.createElement('bq-pagination');
+    el.setAttribute('total', '12');
+    el.setAttribute('page', '6');
+    doc.body.appendChild(el);
+
+    const ellipsis = el.shadowRoot?.querySelector('.ellipsis');
+    expect(ellipsis?.getAttribute('aria-hidden')).toBe('true');
   });
 });

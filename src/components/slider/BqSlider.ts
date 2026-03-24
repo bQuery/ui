@@ -135,6 +135,9 @@ const definition: ComponentDefinition<BqSliderProps> = {
           aria-valuemin="${String(props.min)}"
           aria-valuemax="${String(props.max)}"
           aria-valuenow="${String(props.value)}"
+          aria-valuetext="${escapeHtml(
+            t('slider.valueText', { value: props.value })
+          )}"
         />
       </div>
     `;

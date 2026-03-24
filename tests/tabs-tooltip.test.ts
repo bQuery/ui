@@ -1,4 +1,5 @@
-import { beforeAll, describe, expect, it } from 'bun:test';
+import { afterEach, beforeAll, describe, expect, it } from 'bun:test';
+import { waitForFrame } from './helpers.js';
 
 const win = (globalThis as unknown as Record<string, unknown>)[
   'window'
@@ -98,6 +99,10 @@ describe('BqTooltip', () => {
     await import('../src/components/tooltip/index.js');
   });
 
+  afterEach(() => {
+    doc.body.innerHTML = '';
+  });
+
   it('should define bq-tooltip as a custom element', () => {
     expect(win.customElements.get('bq-tooltip')).toBeDefined();
   });
@@ -147,5 +152,22 @@ describe('BqTooltip', () => {
     doc.body.appendChild(el);
     const tip = el.shadowRoot?.querySelector('.tip');
     expect(tip?.getAttribute('data-visible')).toBe('false');
+  });
+
+  it('should link the trigger element to the tooltip via aria-describedby', async () => {
+    const el = doc.createElement('bq-tooltip');
+    el.setAttribute('content', 'Helpful hint');
+    el.innerHTML = '<button type="button">Hover me</button>';
+    doc.body.appendChild(el);
+
+    await waitForFrame();
+
+    const trigger = el.querySelector('button');
+    const tip = el.shadowRoot?.querySelector('.tip');
+
+    expect(trigger?.getAttribute('aria-describedby')).toBe(
+      tip?.getAttribute('id')
+    );
+    expect(tip?.getAttribute('aria-hidden')).toBe('true');
   });
 });

@@ -61,6 +61,9 @@ export const en = {
     loading: 'Loading data…',
     rowsPerPage: 'Rows per page',
   },
+  progress: {
+    ariaLabel: 'Progress',
+  },
   accordion: {
     expand: 'Expand',
     collapse: 'Collapse',

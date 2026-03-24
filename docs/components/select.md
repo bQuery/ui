@@ -1,6 +1,6 @@
 # Select
 
-The `bq-select` component is a dropdown selection input with label, error state, and size options.
+The `bq-select` component is a dropdown selection input with label, hint text, error state, form participation, and size options.
 
 ## Basic Usage
 
@@ -35,6 +35,16 @@ The `bq-select` component is a dropdown selection input with label, error state,
 </bq-select>
 ```
 
+## Preselected Value
+
+```html
+<bq-select label="Plan" value="pro" hint="You can change this later.">
+  <option value="free">Free</option>
+  <option value="pro">Pro</option>
+  <option value="enterprise">Enterprise</option>
+</bq-select>
+```
+
 ## Disabled
 
 ```html
@@ -63,34 +73,42 @@ The `bq-select` component is a dropdown selection input with label, error state,
 
 ## Properties
 
-| Property | Type | Default | Description |
-|----------|------|---------|-------------|
-| `label` | `string` | — | Select label |
-| `value` | `string` | — | Currently selected value |
-| `placeholder` | `string` | — | Placeholder text when no option is selected |
-| `name` | `string` | — | Form field name |
-| `disabled` | `boolean` | `false` | Disables the select |
-| `required` | `boolean` | `false` | Marks the field as required |
-| `error` | `string` | — | Error message displayed below the select |
-| `size` | `sm \| md \| lg` | `md` | Select size |
+| Property      | Type             | Default | Description                                     |
+| ------------- | ---------------- | ------- | ----------------------------------------------- |
+| `label`       | `string`         | —       | Select label                                    |
+| `value`       | `string`         | —       | Currently selected value                        |
+| `placeholder` | `string`         | —       | Placeholder text when no option is selected     |
+| `name`        | `string`         | —       | Form field name                                 |
+| `disabled`    | `boolean`        | `false` | Disables the select                             |
+| `required`    | `boolean`        | `false` | Marks the field as required                     |
+| `error`       | `string`         | —       | Error message displayed below the select        |
+| `hint`        | `string`         | —       | Helpful supporting text shown below the control |
+| `size`        | `sm \| md \| lg` | `md`    | Select size                                     |
 
 ## Events
 
-| Event | Detail | Description |
-|-------|--------|-------------|
+| Event       | Detail              | Description                           |
+| ----------- | ------------------- | ------------------------------------- |
 | `bq-change` | `{ value: string }` | Fired when the selected value changes |
 
 ## Slots
 
-| Slot | Description |
-|------|-------------|
+| Slot        | Description                               |
+| ----------- | ----------------------------------------- |
 | *(default)* | `<option>` elements for the dropdown list |
 
 ## CSS Parts
 
-| Part | Description |
-|------|-------------|
-| `field` | The outer field wrapper |
-| `label` | Label text element |
+| Part     | Description               |
+| -------- | ------------------------- |
+| `field`  | The outer field wrapper   |
+| `label`  | Label text element        |
 | `select` | The native select control |
-| `error` | Error message element |
+| `hint`   | Supporting hint text      |
+| `error`  | Error message element     |
+
+## Accessibility
+
+- The native `<select>` is associated with its visible label through `for` / `id`.
+- Hint and error text are linked with `aria-describedby` when present.
+- The `value` prop now stays synchronized with the rendered native control and the hidden form proxy.
