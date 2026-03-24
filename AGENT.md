@@ -28,6 +28,12 @@ Install dependencies with Bun:
 bun install --frozen-lockfile
 ```
 
+If Bun is not installed globally in your environment, use:
+
+```bash
+npx bun install --frozen-lockfile
+```
+
 Use these commands to validate work:
 
 ```bash
@@ -37,7 +43,7 @@ npm run build
 npm run build:docs
 ```
 
-If Bun is not installed globally in your environment, use `npx bun ...` as a fallback.
+If Bun is not installed globally, use `npx bun test` instead of `npm run test`.
 
 ## Project-specific notes
 

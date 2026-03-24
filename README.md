@@ -146,9 +146,11 @@ See [`docs/guide/framework-integration.md`](./docs/guide/framework-integration.m
 ## Local Development
 
 ```bash
-npm ci
+bun install --frozen-lockfile
 npm run dev
 ```
+
+If Bun is not installed globally in your environment, use `npx bun install --frozen-lockfile`.
 
 ### Available scripts
 
@@ -184,7 +186,7 @@ When contributing:
 1. Keep changes focused and consistent with the existing component patterns.
 2. Validate type safety, documentation, and affected component behavior.
 3. Prefer additions that improve accessibility, composability, or API consistency.
-4. If you are working as an automated coding agent, follow the repository-specific guidance in [`AGENT.md`](./AGENT.md).
+4. If you are working as an automated coding agent, follow the repository-specific guidance in [`AGENT.md`](./AGENT.md), including the canonical Bun workflow.
 
 ## License
 
