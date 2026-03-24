@@ -68,16 +68,30 @@ const definition: ComponentDefinition<BqTooltipProps, BqTooltipState> = {
       getState<T>(k: string): T;
     };
     const self = this as unknown as BQEl;
+    const internalState = self as unknown as Record<string, unknown>;
     if (!self.getState<string>('uid')) {
       self.setState('uid', uniqueId('bq-tooltip'));
     }
-    let timer: ReturnType<typeof setTimeout> | null = null;
+    const clearShowTimer = () => {
+      const timer = internalState['_showTimer'] as
+        | ReturnType<typeof setTimeout>
+        | null
+        | undefined;
+      if (timer) {
+        clearTimeout(timer);
+      }
+      internalState['_showTimer'] = null;
+    };
     const show = () => {
+      clearShowTimer();
       const d = parseInt(self.getAttribute('delay') ?? '200', 10);
-      timer = setTimeout(() => self.setState('visible', true), d);
+      internalState['_showTimer'] = setTimeout(() => {
+        internalState['_showTimer'] = null;
+        self.setState('visible', true);
+      }, d);
     };
     const hide = () => {
-      if (timer) clearTimeout(timer);
+      clearShowTimer();
       self.setState('visible', false);
     };
     const kh = (e: Event) => {
@@ -110,10 +124,11 @@ const definition: ComponentDefinition<BqTooltipProps, BqTooltipState> = {
       }
       state['_triggerElements'] = next;
     };
-    (self as unknown as Record<string, unknown>)['_show'] = show;
-    (self as unknown as Record<string, unknown>)['_hide'] = hide;
-    (self as unknown as Record<string, unknown>)['_kh'] = kh;
-    (self as unknown as Record<string, unknown>)['_syncTrigger'] = syncTrigger;
+    internalState['_show'] = show;
+    internalState['_hide'] = hide;
+    internalState['_kh'] = kh;
+    internalState['_syncTrigger'] = syncTrigger;
+    internalState['_clearShowTimer'] = clearShowTimer;
     self.addEventListener('mouseenter', show);
     self.addEventListener('mouseleave', hide);
     self.addEventListener('focusin', show);
@@ -125,7 +140,7 @@ const definition: ComponentDefinition<BqTooltipProps, BqTooltipState> = {
       ) as HTMLSlotElement | null;
       if (!slot) return;
       slot.addEventListener('slotchange', syncTrigger);
-      (self as unknown as Record<string, unknown>)['_slot'] = slot;
+      internalState['_slot'] = slot;
       syncTrigger();
     });
   },
@@ -136,14 +151,14 @@ const definition: ComponentDefinition<BqTooltipProps, BqTooltipState> = {
     const kh = self['_kh'] as EventListener;
     const slot = self['_slot'] as HTMLSlotElement | undefined;
     const syncTrigger = self['_syncTrigger'] as EventListener | undefined;
+    const clearShowTimer = self['_clearShowTimer'] as (() => void) | undefined;
     const triggerElements =
       (self['_triggerElements'] as HTMLElement[] | undefined) ?? [];
     const tooltipId =
       (this as unknown as { getState?<T>(key: string): T }).getState?.<string>(
         'uid'
       ) ?? this.id;
-    // Clear any pending show-delay timer to prevent setState on a disconnected element
-    (hide as () => void)?.();
+    clearShowTimer?.();
     this.removeEventListener('mouseenter', show);
     this.removeEventListener('mouseleave', hide);
     this.removeEventListener('focusin', show);

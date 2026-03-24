@@ -1,5 +1,5 @@
 import { afterEach, beforeAll, describe, expect, it } from 'bun:test';
-import { waitForFrame } from './helpers.js';
+import { waitForFrame } from './helpers';
 
 const win = (globalThis as unknown as Record<string, unknown>)[
   'window'

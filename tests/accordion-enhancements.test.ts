@@ -125,11 +125,99 @@ describe('BqAccordion — accessibility improvements', () => {
 
     // data-closing should be set during animation
     expect(el.hasAttribute('data-closing')).toBe(true);
-    expect(el.hasAttribute('open')).toBe(true); // still open during animation
+    expect(el.hasAttribute('open')).toBe(false);
 
-    // After animation completes
-    await new Promise<void>((resolve) => setTimeout(resolve, 350));
+    const triggerAfterClose = el.shadowRoot?.querySelector(
+      '.trigger'
+    ) as HTMLElement | null;
+    const panelAfterClose = el.shadowRoot?.querySelector(
+      '.panel'
+    ) as HTMLElement | null;
+    expect(triggerAfterClose?.getAttribute('aria-expanded')).toBe('false');
+    expect(panelAfterClose?.getAttribute('aria-hidden')).toBe('true');
+
+    const panel = el.shadowRoot?.querySelector('.panel') as HTMLElement | null;
+    expect(panel).not.toBeNull();
+
+    const animationEvent = new Event('animationend', { bubbles: true });
+    Object.defineProperty(animationEvent, 'animationName', {
+      value: 'panel-close',
+    });
+    panel?.dispatchEvent(animationEvent);
+
     expect(el.hasAttribute('data-closing')).toBe(false);
     expect(el.hasAttribute('open')).toBe(false);
+  });
+
+  it('should dispatch bq-toggle synchronously when closing', async () => {
+    const el = doc.createElement('bq-accordion');
+    el.setAttribute('label', 'Details');
+    el.setAttribute('open', '');
+    doc.body.appendChild(el);
+    await new Promise<void>((resolve) =>
+      requestAnimationFrame(() => resolve())
+    );
+
+    const events: boolean[] = [];
+    el.addEventListener('bq-toggle', (event) => {
+      const customEvent = event as CustomEvent<{ open: boolean }>;
+      events.push(customEvent.detail.open);
+    });
+
+    const trigger = el.shadowRoot?.querySelector(
+      '.trigger'
+    ) as HTMLElement | null;
+    trigger?.click();
+
+    expect(events).toEqual([false]);
+    expect(el.hasAttribute('open')).toBe(false);
+    expect(el.hasAttribute('data-closing')).toBe(true);
+  });
+
+  it('should derive the close fallback timeout from computed animation styles', async () => {
+    const el = doc.createElement('bq-accordion');
+    el.setAttribute('label', 'Details');
+    el.setAttribute('open', '');
+    doc.body.appendChild(el);
+    await new Promise<void>((resolve) =>
+      requestAnimationFrame(() => resolve())
+    );
+
+    const originalGetComputedStyle = win.getComputedStyle.bind(win);
+    const mockedGetComputedStyle = ((node: Element) => {
+      const styles = originalGetComputedStyle(node);
+      if (node.classList.contains('panel')) {
+        return {
+          ...styles,
+          animationDuration: '600ms',
+          animationDelay: '0s',
+        } as CSSStyleDeclaration;
+      }
+      return styles;
+    }) as typeof win.getComputedStyle;
+
+    win.getComputedStyle = mockedGetComputedStyle;
+    (globalThis as unknown as Record<string, unknown>)['getComputedStyle'] =
+      mockedGetComputedStyle;
+
+    try {
+      const trigger = el.shadowRoot?.querySelector(
+        '.trigger'
+      ) as HTMLElement | null;
+      trigger?.click();
+
+      await new Promise<void>((resolve) => setTimeout(resolve, 350));
+      expect(el.hasAttribute('data-closing')).toBe(true);
+      expect(el.hasAttribute('open')).toBe(false);
+
+      await new Promise<void>((resolve) => setTimeout(resolve, 320));
+      expect(el.hasAttribute('data-closing')).toBe(false);
+      expect(el.hasAttribute('open')).toBe(false);
+    } finally {
+      win.getComputedStyle =
+        originalGetComputedStyle as typeof win.getComputedStyle;
+      (globalThis as unknown as Record<string, unknown>)['getComputedStyle'] =
+        originalGetComputedStyle;
+    }
   });
 });

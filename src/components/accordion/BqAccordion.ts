@@ -22,6 +22,42 @@ type BqAccordionProps = {
 };
 type BqAccordionState = { uid: string };
 
+const DEFAULT_SLOW_DURATION = '300ms';
+
+const parseTimeValueToMs = (value: string): number => {
+  const trimmed = value.trim();
+  if (!trimmed) return 0;
+  if (trimmed.endsWith('ms')) return Number.parseFloat(trimmed);
+  if (trimmed.endsWith('s')) return Number.parseFloat(trimmed) * 1000;
+  return Number.parseFloat(trimmed) || 0;
+};
+
+const getAnimationTimeoutMs = (el: Element): number => {
+  const view = el.ownerDocument.defaultView;
+  if (!view?.getComputedStyle) return parseTimeValueToMs(DEFAULT_SLOW_DURATION);
+
+  const styles = view.getComputedStyle(el);
+  const durations = styles.animationDuration
+    .split(',')
+    .map((value) => parseTimeValueToMs(value));
+  const delays = styles.animationDelay
+    .split(',')
+    .map((value) => parseTimeValueToMs(value));
+  const count = Math.max(durations.length, delays.length);
+
+  let longest = 0;
+  for (let i = 0; i < count; i += 1) {
+    const duration = durations[i] ?? durations[durations.length - 1] ?? 0;
+    const delay = delays[i] ?? delays[delays.length - 1] ?? 0;
+    longest = Math.max(longest, duration + delay);
+  }
+
+  if (longest > 0) return longest;
+
+  const variableDuration = styles.getPropertyValue('--bq-duration-slow');
+  return parseTimeValueToMs(variableDuration || DEFAULT_SLOW_DURATION);
+};
+
 const definition: ComponentDefinition<BqAccordionProps, BqAccordionState> = {
   props: {
     label: { type: String, default: '' },
@@ -54,8 +90,8 @@ const definition: ComponentDefinition<BqAccordionProps, BqAccordionState> = {
     :host([open]:not([data-closing])) .icon { transform: rotate(180deg); }
     .panel { display: grid; grid-template-rows: 0fr; overflow: hidden; }
     .panel-inner { overflow: hidden; min-height: 0; padding: 0 var(--bq-space-4,1rem) var(--bq-space-4,1rem); color: var(--bq-text-muted,#475569); font-size: var(--bq-font-size-sm,0.875rem); line-height: var(--bq-line-height-relaxed,1.625); }
-    :host([open]:not([data-closing])) .panel { grid-template-rows: 1fr; animation: panel-open var(--bq-duration-slow,300ms) var(--bq-easing-standard); }
-    :host([data-closing]) .panel { grid-template-rows: 1fr; animation: panel-close var(--bq-duration-slow,300ms) var(--bq-easing-standard) forwards; }
+    :host([open]:not([data-closing])) .panel { grid-template-rows: 1fr; animation: panel-open var(--bq-duration-slow,${DEFAULT_SLOW_DURATION}) var(--bq-easing-standard); }
+    :host([data-closing]) .panel { grid-template-rows: 1fr; animation: panel-close var(--bq-duration-slow,${DEFAULT_SLOW_DURATION}) var(--bq-easing-standard) forwards; }
     @keyframes panel-open { from { grid-template-rows: 0fr; } }
     @keyframes panel-close { from { grid-template-rows: 1fr; } to { grid-template-rows: 0fr; } }
     @media (prefers-reduced-motion: reduce) {
@@ -69,56 +105,87 @@ const definition: ComponentDefinition<BqAccordionProps, BqAccordionState> = {
       setState(k: 'uid', v: string): void;
       getState<T>(k: string): T;
     };
+
     const self = this as unknown as BQEl;
+    const record = self as unknown as Record<string, unknown>;
+
     if (!self.getState<string>('uid')) self.setState('uid', uniqueId('bq-acc'));
 
-    const ANIM_DURATION = 300;
+    const clearCloseFallback = () => {
+      const timeoutId = record['_closeTimeout'] as
+        | ReturnType<typeof setTimeout>
+        | undefined;
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+        delete record['_closeTimeout'];
+      }
+    };
+
+    const finishClose = () => {
+      if (!self.hasAttribute('data-closing')) return;
+      clearCloseFallback();
+      self.removeAttribute('data-closing');
+    };
 
     const handler = (e: Event) => {
-      if ((e.target as Element).closest('.trigger')) {
-        if (self.hasAttribute('disabled') || self.hasAttribute('data-closing'))
-          return;
-        const isOpen = self.hasAttribute('open');
-        if (isOpen) {
-          // Close with animation via data-closing (no re-render, CSS animation on existing DOM)
-          const reducedMotion = self.ownerDocument.defaultView?.matchMedia?.(
-            '(prefers-reduced-motion: reduce)'
-          )?.matches;
-          if (reducedMotion) {
-            self.removeAttribute('open');
-            self.dispatchEvent(
-              new CustomEvent('bq-toggle', {
-                detail: { open: false },
-                bubbles: true,
-                composed: true,
-              })
-            );
-          } else {
-            self.setAttribute('data-closing', '');
-            setTimeout(() => {
-              self.removeAttribute('data-closing');
-              self.removeAttribute('open');
-              self.dispatchEvent(
-                new CustomEvent('bq-toggle', {
-                  detail: { open: false },
-                  bubbles: true,
-                  composed: true,
-                })
-              );
-            }, ANIM_DURATION);
-          }
-        } else {
-          // Open — setting open triggers re-render, CSS animation plays on new DOM
-          self.setAttribute('open', '');
+      if (!(e.target as Element).closest('.trigger')) return;
+      if (self.hasAttribute('disabled') || self.hasAttribute('data-closing')) {
+        return;
+      }
+
+      const isOpen = self.hasAttribute('open');
+      if (isOpen) {
+        // Close with animation via data-closing (no re-render, CSS animation on existing DOM)
+        const reducedMotion = self.ownerDocument.defaultView?.matchMedia?.(
+          '(prefers-reduced-motion: reduce)'
+        )?.matches;
+
+        if (reducedMotion) {
+          self.removeAttribute('open');
           self.dispatchEvent(
             new CustomEvent('bq-toggle', {
-              detail: { open: true },
+              detail: { open: false },
               bubbles: true,
               composed: true,
             })
           );
+          return;
         }
+
+        self.setAttribute('data-closing', '');
+        self.removeAttribute('open');
+        self.dispatchEvent(
+          new CustomEvent('bq-toggle', {
+            detail: { open: false },
+            bubbles: true,
+            composed: true,
+          })
+        );
+        clearCloseFallback();
+
+        const panel = self.shadowRoot?.querySelector('.panel');
+        const timeoutMs = panel ? getAnimationTimeoutMs(panel) : 0;
+
+        if (timeoutMs <= 0) {
+          finishClose();
+        } else {
+          record['_closeTimeout'] = setTimeout(
+            finishClose,
+            Math.ceil(timeoutMs) + 20
+          );
+        }
+        return;
       }
+
+      // Open — setting open triggers re-render, CSS animation plays on new DOM
+      self.setAttribute('open', '');
+      self.dispatchEvent(
+        new CustomEvent('bq-toggle', {
+          detail: { open: true },
+          bubbles: true,
+          composed: true,
+        })
+      );
     };
 
     const kh = (e: Event) => {
@@ -132,18 +199,42 @@ const definition: ComponentDefinition<BqAccordionProps, BqAccordionState> = {
       }
     };
 
-    const s = self as unknown as Record<string, unknown>;
-    s['_handler'] = handler;
-    s['_kh'] = kh;
+    const ah = (e: Event) => {
+      const target = e.target as Element | null;
+      const animationName = (e as Event & { animationName?: string })
+        .animationName;
+
+      if (
+        !self.hasAttribute('data-closing') ||
+        !target?.classList.contains('panel') ||
+        animationName !== 'panel-close'
+      ) {
+        return;
+      }
+
+      finishClose();
+    };
+
+    record['_handler'] = handler;
+    record['_kh'] = kh;
+    record['_ah'] = ah;
+
     self.shadowRoot?.addEventListener('click', handler);
     self.shadowRoot?.addEventListener('keydown', kh);
+    self.shadowRoot?.addEventListener('animationend', ah);
   },
   disconnected() {
     const self = this as unknown as Record<string, unknown>;
     const h = self['_handler'] as EventListener | undefined;
     const kh = self['_kh'] as EventListener | undefined;
+    const ah = self['_ah'] as EventListener | undefined;
+    const closeTimeout = self['_closeTimeout'] as
+      | ReturnType<typeof setTimeout>
+      | undefined;
     if (h) this.shadowRoot?.removeEventListener('click', h);
     if (kh) this.shadowRoot?.removeEventListener('keydown', kh);
+    if (ah) this.shadowRoot?.removeEventListener('animationend', ah);
+    if (closeTimeout) clearTimeout(closeTimeout);
   },
   render({ props, state }) {
     const uid = state.uid || 'bq-acc';

@@ -1,6 +1,6 @@
 // DOM environment is provided by tests/setup.ts (preloaded via bunfig.toml)
 import { afterEach, beforeAll, describe, expect, it } from 'bun:test';
-import { waitForFrame } from './helpers.js';
+import { waitForFrame } from './helpers';
 
 const win = (globalThis as unknown as Record<string, unknown>)[
   'window'
