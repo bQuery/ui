@@ -1,10 +1,27 @@
 /**
  * Textarea form field.
  * @element bq-textarea
+ * @prop {string}  label
+ * @prop {string}  value
+ * @prop {string}  placeholder
+ * @prop {string}  name
+ * @prop {number}  rows
+ * @prop {boolean} disabled
+ * @prop {boolean} readonly
+ * @prop {boolean} required
+ * @prop {string}  error
+ * @prop {string}  hint
+ * @prop {string}  maxlength
+ * @prop {boolean} show-counter - Show character counter when maxlength is set
+ * @fires bq-input  - { value: string }
+ * @fires bq-change - { value: string }
+ * @fires bq-focus
+ * @fires bq-blur
  */
 import type { ComponentDefinition } from '@bquery/bquery/component';
 import { component, html } from '@bquery/bquery/component';
 import { escapeHtml } from '@bquery/bquery/security';
+import { t } from '../../i18n/index.js';
 import { uniqueId } from '../../utils/dom.js';
 import { createFormProxy, type FormProxy } from '../../utils/form.js';
 import { getBaseStyles } from '../../utils/styles.js';
@@ -21,6 +38,7 @@ type BqTextareaProps = {
   error: string;
   hint: string;
   maxlength: string;
+  'show-counter': boolean;
 };
 type BqTextareaState = { uid: string };
 
@@ -37,6 +55,7 @@ const definition: ComponentDefinition<BqTextareaProps, BqTextareaState> = {
     error: { type: String, default: '' },
     hint: { type: String, default: '' },
     maxlength: { type: String, default: '' },
+    'show-counter': { type: Boolean, default: false },
   },
   state: {
     uid: '',
@@ -63,6 +82,9 @@ const definition: ComponentDefinition<BqTextareaProps, BqTextareaState> = {
     textarea::placeholder { color: var(--bq-text-subtle,#94a3b8); }
     .hint { font-size: var(--bq-font-size-sm,0.875rem); color: var(--bq-text-muted,#475569); font-family: var(--bq-font-family-sans); }
     .error-msg { font-size: var(--bq-font-size-sm,0.875rem); color: var(--bq-color-danger-600,#dc2626); font-family: var(--bq-font-family-sans); }
+    .footer { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; }
+    .counter { font-size: var(--bq-font-size-sm,0.875rem); color: var(--bq-text-muted,#475569); font-family: var(--bq-font-family-sans); margin-left: auto; }
+    .counter[data-over="true"] { color: var(--bq-color-danger-600,#dc2626); }
     @media (prefers-reduced-motion: reduce) {
       textarea { transition: none; }
     }
@@ -85,6 +107,7 @@ const definition: ComponentDefinition<BqTextareaProps, BqTextareaState> = {
     const ih = (e: Event) => {
       const t = e.target as HTMLTextAreaElement | null;
       if (t?.tagName === 'TEXTAREA') {
+        self.setAttribute('value', t.value);
         proxy.setValue(t.value);
         self.dispatchEvent(
           new CustomEvent('bq-input', {
@@ -159,6 +182,16 @@ const definition: ComponentDefinition<BqTextareaProps, BqTextareaState> = {
   render({ props, state }) {
     const hasError = Boolean(props.error);
     const uid = state.uid || 'bq-ta';
+    const maxLen = props.maxlength ? parseInt(props.maxlength, 10) : 0;
+    const showCounter = props['show-counter'] && maxLen > 0;
+    const charCount = props.value.length;
+    const isOver = showCounter && charCount > maxLen;
+    const hasFooter = hasError || Boolean(props.hint) || showCounter;
+    const describedByParts: string[] = [];
+    if (hasError) describedByParts.push(`${uid}-err`);
+    else if (props.hint) describedByParts.push(`${uid}-hint`);
+    if (showCounter) describedByParts.push(`${uid}-counter`);
+    const describedBy = describedByParts.join(' ');
     return html`
       <div class="field" part="field">
         ${props.label
@@ -175,19 +208,24 @@ const definition: ComponentDefinition<BqTextareaProps, BqTextareaState> = {
           ${props.readonly ? 'readonly' : ''}
           ${props.required ? 'required' : ''}
           aria-invalid="${hasError ? 'true' : 'false'}"
-          ${hasError
-            ? `aria-describedby="${uid}-err"`
-            : props.hint
-              ? `aria-describedby="${uid}-hint"`
-              : ''}
-        >
-${escapeHtml(props.value)}</textarea
-        >
-        ${hasError
-          ? `<span class="error-msg" id="${uid}-err" role="alert" part="error">${escapeHtml(props.error)}</span>`
-          : ''}
-        ${props.hint && !hasError
-          ? `<span class="hint" id="${uid}-hint" part="hint">${escapeHtml(props.hint)}</span>`
+          ${describedBy ? `aria-describedby="${describedBy}"` : ''}
+        >${escapeHtml(props.value)}</textarea>
+        ${hasFooter
+          ? `<div class="footer" part="footer">
+              <span>
+                ${hasError
+                  ? `<span class="error-msg" id="${uid}-err" role="alert" part="error">${escapeHtml(props.error)}</span>`
+                  : ''}
+                ${props.hint && !hasError
+                  ? `<span class="hint" id="${uid}-hint" part="hint">${escapeHtml(props.hint)}</span>`
+                  : ''}
+              </span>
+              ${showCounter
+                ? `<span class="counter" id="${uid}-counter" part="counter" data-over="${isOver ? 'true' : 'false'}" aria-live="polite">${escapeHtml(
+                    t('input.characterCount', { count: charCount, max: maxLen }),
+                  )}</span>`
+                : ''}
+            </div>`
           : ''}
       </div>
     `;

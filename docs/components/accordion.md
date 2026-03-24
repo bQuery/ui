@@ -61,3 +61,16 @@ The `bq-accordion` component is a collapsible disclosure panel with a trigger bu
 | `trigger`   | The toggle button            |
 | `label`     | The label text element       |
 | `panel`     | The collapsible content area |
+
+## Accessibility
+
+- Trigger button uses `aria-expanded` reflecting open/closed state
+- Trigger has `aria-controls` pointing to the panel's unique `id`
+- Panel has `role="region"` and `aria-labelledby` pointing to the trigger's unique `id`
+- Panel is `aria-hidden="true"` when collapsed
+- Keyboard support: `Enter` and `Space` on the trigger toggle the panel
+- Focus-visible styling on the trigger button
+
+## Animation
+
+The accordion uses JavaScript-driven height animation based on `scrollHeight` for smooth expand/collapse transitions. This avoids the common `max-height` hack, supporting content of any size. The animation respects `prefers-reduced-motion: reduce`.

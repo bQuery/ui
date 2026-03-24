@@ -11,6 +11,7 @@
 import type { ComponentDefinition } from '@bquery/bquery/component';
 import { component, html } from '@bquery/bquery/component';
 import { escapeHtml } from '@bquery/bquery/security';
+import { uniqueId } from '../../utils/dom.js';
 import { getBaseStyles } from '../../utils/styles.js';
 
 type BqAccordionProps = {
@@ -19,13 +20,17 @@ type BqAccordionProps = {
   disabled: boolean;
   variant: string;
 };
+type BqAccordionState = { uid: string };
 
-const definition: ComponentDefinition<BqAccordionProps> = {
+const definition: ComponentDefinition<BqAccordionProps, BqAccordionState> = {
   props: {
     label: { type: String, default: '' },
     open: { type: Boolean, default: false },
     disabled: { type: Boolean, default: false },
     variant: { type: String, default: 'default' },
+  },
+  state: {
+    uid: '',
   },
   styles: `
     ${getBaseStyles()}
@@ -47,8 +52,7 @@ const definition: ComponentDefinition<BqAccordionProps> = {
     .trigger:focus-visible { outline: 2px solid transparent; box-shadow: var(--bq-focus-ring); }
     .icon { flex-shrink: 0; font-size: 1rem; color: var(--bq-text-muted,#475569); transition: transform var(--bq-duration-fast) var(--bq-easing-standard); }
     :host([open]) .icon { transform: rotate(180deg); }
-    .panel { overflow: hidden; max-height: 0; transition: max-height var(--bq-duration-slow,300ms) var(--bq-easing-standard); }
-    :host([open]) .panel { max-height: 2000px; }
+    .panel { overflow: hidden; height: 0; transition: height var(--bq-duration-slow,300ms) var(--bq-easing-standard); }
     .panel-inner { padding: 0 var(--bq-space-4,1rem) var(--bq-space-4,1rem); color: var(--bq-text-muted,#475569); font-size: var(--bq-font-size-sm,0.875rem); line-height: var(--bq-line-height-relaxed,1.625); }
     @media (prefers-reduced-motion: reduce) {
       .panel { transition: none; }
@@ -57,13 +61,75 @@ const definition: ComponentDefinition<BqAccordionProps> = {
     }
   `,
   connected() {
-    const self = this;
+    type BQEl = HTMLElement & {
+      setState(k: 'uid', v: string): void;
+      getState<T>(k: string): T;
+    };
+    const self = this as unknown as BQEl;
+    if (!self.getState<string>('uid'))
+      self.setState('uid', uniqueId('bq-acc'));
+
+    const syncPanelHeight = () => {
+      const panel = self.shadowRoot?.querySelector('.panel') as HTMLElement | null;
+      if (!panel) return;
+      const inner = panel.querySelector('.panel-inner') as HTMLElement | null;
+      const hasActiveHeightTransition = () => {
+        const styles = panel.ownerDocument?.defaultView?.getComputedStyle(panel);
+        if (!styles) return false;
+        const properties = styles.transitionProperty
+          .split(',')
+          .map((value) => value.trim());
+        const durations = styles.transitionDuration
+          .split(',')
+          .map((value) => value.trim());
+        const transitionsHeight = properties.some(
+          (value) => value === 'all' || value === 'height'
+        );
+        const hasDuration = durations.some((value) => parseFloat(value) > 0);
+        return transitionsHeight && hasDuration;
+      };
+      if (self.hasAttribute('open')) {
+        if (inner) {
+          panel.style.height = `${inner.scrollHeight}px`;
+          if (!hasActiveHeightTransition()) {
+            panel.style.height = 'auto';
+          }
+        }
+      } else {
+        if (panel.style.height === 'auto' && inner) {
+          panel.style.height = `${inner.scrollHeight}px`;
+          void panel.offsetHeight;
+        }
+        panel.style.height = '0px';
+      }
+    };
+
+    const onPanelTransitionEnd = (e: Event) => {
+      const te = e as TransitionEvent;
+      if (te.propertyName !== 'height') return;
+      const panel = self.shadowRoot?.querySelector('.panel') as HTMLElement | null;
+      if (!panel || te.target !== panel) return;
+      if (self.hasAttribute('open')) {
+        panel.style.height = 'auto';
+      }
+    };
+
+    const slotChangeHandler = () => {
+      const panel = self.shadowRoot?.querySelector('.panel') as HTMLElement | null;
+      if (self.hasAttribute('open') && panel && panel.style.height !== 'auto') {
+        syncPanelHeight();
+      }
+    };
+
     const handler = (e: Event) => {
       if ((e.target as Element).closest('.trigger')) {
         if (self.hasAttribute('disabled')) return;
         const newOpen = !self.hasAttribute('open');
         if (newOpen) self.setAttribute('open', '');
         else self.removeAttribute('open');
+
+        syncPanelHeight();
+
         self.dispatchEvent(
           new CustomEvent('bq-toggle', {
             detail: { open: newOpen },
@@ -73,9 +139,7 @@ const definition: ComponentDefinition<BqAccordionProps> = {
         );
       }
     };
-    (self as unknown as Record<string, unknown>)['_handler'] = handler;
-    self.shadowRoot?.addEventListener('click', handler);
-    // Keyboard: Enter/Space on trigger
+
     const kh = (e: Event) => {
       const ke = e as KeyboardEvent;
       if (
@@ -86,17 +150,57 @@ const definition: ComponentDefinition<BqAccordionProps> = {
         handler(e);
       }
     };
-    (self as unknown as Record<string, unknown>)['_kh'] = kh;
+
+    const s = self as unknown as Record<string, unknown>;
+    s['_handler'] = handler;
+    s['_kh'] = kh;
+    s['_syncHeight'] = syncPanelHeight;
+    s['_onPanelTransitionEnd'] = onPanelTransitionEnd;
+    s['_slotChangeHandler'] = slotChangeHandler;
+    self.shadowRoot?.addEventListener('click', handler);
     self.shadowRoot?.addEventListener('keydown', kh);
+    self.shadowRoot?.addEventListener('transitionend', onPanelTransitionEnd);
+    self.shadowRoot
+      ?.querySelector('slot')
+      ?.addEventListener('slotchange', slotChangeHandler);
+
+    // Sync panel height on initial render
+    requestAnimationFrame(syncPanelHeight);
   },
   disconnected() {
     const self = this as unknown as Record<string, unknown>;
     const h = self['_handler'] as EventListener | undefined;
     const kh = self['_kh'] as EventListener | undefined;
+    const onPanelTransitionEnd = self['_onPanelTransitionEnd'] as
+      | EventListener
+      | undefined;
+    const slotChangeHandler = self['_slotChangeHandler'] as
+      | EventListener
+      | undefined;
     if (h) this.shadowRoot?.removeEventListener('click', h);
     if (kh) this.shadowRoot?.removeEventListener('keydown', kh);
+    if (onPanelTransitionEnd)
+      this.shadowRoot?.removeEventListener('transitionend', onPanelTransitionEnd);
+    if (slotChangeHandler)
+      this.shadowRoot
+        ?.querySelector('slot')
+        ?.removeEventListener('slotchange', slotChangeHandler);
   },
-  render({ props }) {
+  updated() {
+    // Only recalculate height when the open attribute changes
+    const s = this as unknown as Record<string, unknown>;
+    const wasOpen = s['_wasOpen'] as boolean | undefined;
+    const isOpen = this.hasAttribute('open');
+    if (wasOpen !== isOpen) {
+      s['_wasOpen'] = isOpen;
+      const syncHeight = s['_syncHeight'] as (() => void) | undefined;
+      if (syncHeight) syncHeight();
+    }
+  },
+  render({ props, state }) {
+    const uid = state.uid || 'bq-acc';
+    const triggerId = `${uid}-trigger`;
+    const panelId = `${uid}-panel`;
     return html`
       <div
         part="accordion"
@@ -107,7 +211,9 @@ const definition: ComponentDefinition<BqAccordionProps> = {
           part="trigger"
           class="trigger"
           type="button"
+          id="${triggerId}"
           aria-expanded="${props.open ? 'true' : 'false'}"
+          aria-controls="${panelId}"
           ${props.disabled ? 'disabled aria-disabled="true"' : ''}
         >
           <span part="label">${escapeHtml(props.label)}</span>
@@ -116,7 +222,9 @@ const definition: ComponentDefinition<BqAccordionProps> = {
         <div
           part="panel"
           class="panel"
+          id="${panelId}"
           role="region"
+          aria-labelledby="${triggerId}"
           aria-hidden="${!props.open ? 'true' : 'false'}"
         >
           <div class="panel-inner"><slot></slot></div>
@@ -126,4 +234,4 @@ const definition: ComponentDefinition<BqAccordionProps> = {
   },
 };
 
-component<BqAccordionProps>('bq-accordion', definition);
+component<BqAccordionProps, BqAccordionState>('bq-accordion', definition);

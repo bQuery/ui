@@ -12,3 +12,4 @@ coverage/
 *.tsbuildinfo
 storybook-static/
 .storybook/cache/
+package-lock.json
