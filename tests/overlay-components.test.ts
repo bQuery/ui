@@ -180,6 +180,8 @@ describe('overlay and utility component fixes', () => {
     await new Promise<void>((resolve) => setTimeout(resolve, 260));
 
     expect(closed).toBe(0);
+    expect(dialog.hasAttribute('open')).toBe(false);
+    expect(dialog.hasAttribute('data-closing')).toBe(false);
   });
 
   it('moves focus into the drawer on open and restores it on close', async () => {
@@ -313,6 +315,8 @@ describe('overlay and utility component fixes', () => {
     await new Promise<void>((resolve) => setTimeout(resolve, 260));
 
     expect(closed).toBe(0);
+    expect(drawer.hasAttribute('open')).toBe(false);
+    expect(drawer.hasAttribute('data-closing')).toBe(false);
   });
 
   it('renders breadcrumb separators from the separator prop', async () => {

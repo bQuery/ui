@@ -158,7 +158,13 @@ const definition: ComponentDefinition<BqDialogProps, BqDialogState> = {
     const ch = s['_ch'] as EventListener | undefined;
     if (ch) this.shadowRoot?.removeEventListener('click', ch);
     const closeTimer = s['_closeTimer'] as ReturnType<typeof setTimeout> | undefined;
-    if (closeTimer) clearTimeout(closeTimer);
+    if (closeTimer) {
+      clearTimeout(closeTimer);
+      delete s['_closeTimer'];
+      this.removeAttribute('data-closing');
+      (this as unknown as { open?: boolean }).open = false;
+      this.removeAttribute('open');
+    }
   },
   updated() {
     updateOverlayFocus(this, this as unknown as OverlayFocusState, '.dialog');

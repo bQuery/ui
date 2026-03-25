@@ -458,5 +458,7 @@ describe('BqDropdownMenu', () => {
     await new Promise<void>((resolve) => setTimeout(resolve, 220));
 
     expect(closed).toBe(0);
+    expect(el.hasAttribute('open')).toBe(false);
+    expect(el.hasAttribute('data-closing')).toBe(false);
   });
 });

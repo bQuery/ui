@@ -454,7 +454,13 @@ const definition: ComponentDefinition<
     if (keyHandler) this.removeEventListener('keydown', keyHandler);
     if (outsideHandler) document.removeEventListener('click', outsideHandler);
     clearTypeaheadBuffer?.();
-    if (closeTimer) clearTimeout(closeTimer);
+    if (closeTimer) {
+      clearTimeout(closeTimer);
+      delete s['_closeTimer'];
+      this.removeAttribute('data-closing');
+      (this as unknown as { open?: boolean }).open = false;
+      this.removeAttribute('open');
+    }
     if (slotChangeHandler) {
       this.shadowRoot
         ?.querySelector('slot[name="trigger"]')
