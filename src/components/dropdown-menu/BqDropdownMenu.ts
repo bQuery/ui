@@ -24,6 +24,7 @@ type BqDropdownMenuProps = {
   disabled: boolean;
 };
 type BqDropdownMenuState = { uid: string };
+type BqDropdownMenuHost = HTMLElement & { open?: boolean };
 const FAST_DURATION = '150ms';
 
 const definition: ComponentDefinition<
@@ -435,6 +436,7 @@ const definition: ComponentDefinition<
     });
   },
   disconnected() {
+    const host = this as BqDropdownMenuHost;
     const s = this as unknown as Record<string, unknown>;
     const triggerHandler = s['_triggerHandler'] as EventListener | undefined;
     const menuClickHandler = s['_menuClickHandler'] as
@@ -457,9 +459,9 @@ const definition: ComponentDefinition<
     if (closeTimer) {
       clearTimeout(closeTimer);
       delete s['_closeTimer'];
-      this.removeAttribute('data-closing');
-      (this as unknown as { open?: boolean }).open = false;
-      this.removeAttribute('open');
+      host.removeAttribute('data-closing');
+      host.open = false;
+      host.removeAttribute('open');
     }
     if (slotChangeHandler) {
       this.shadowRoot

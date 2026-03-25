@@ -29,6 +29,7 @@ type BqDialogProps = {
   dismissible: boolean;
 };
 type BqDialogState = { titleId: string };
+type BqDialogHost = HTMLElement & { open?: boolean };
 const NORMAL_DURATION = '200ms';
 
 const definition: ComponentDefinition<BqDialogProps, BqDialogState> = {
@@ -149,6 +150,7 @@ const definition: ComponentDefinition<BqDialogProps, BqDialogState> = {
     self.shadowRoot?.addEventListener('click', ch);
   },
   disconnected() {
+    const host = this as BqDialogHost;
     const s = this as unknown as Record<string, unknown>;
     cleanupOverlayFocus(s as unknown as OverlayFocusState);
     const kh = s['_kh'] as EventListener | undefined;
@@ -161,9 +163,9 @@ const definition: ComponentDefinition<BqDialogProps, BqDialogState> = {
     if (closeTimer) {
       clearTimeout(closeTimer);
       delete s['_closeTimer'];
-      this.removeAttribute('data-closing');
-      (this as unknown as { open?: boolean }).open = false;
-      this.removeAttribute('open');
+      host.removeAttribute('data-closing');
+      host.open = false;
+      host.removeAttribute('open');
     }
   },
   updated() {

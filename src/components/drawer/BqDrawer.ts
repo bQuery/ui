@@ -29,6 +29,7 @@ type BqDrawerProps = {
   size: string;
 };
 type BqDrawerState = { titleId: string };
+type BqDrawerHost = HTMLElement & { open?: boolean };
 const NORMAL_DURATION = '200ms';
 
 const definition: ComponentDefinition<BqDrawerProps, BqDrawerState> = {
@@ -160,6 +161,7 @@ const definition: ComponentDefinition<BqDrawerProps, BqDrawerState> = {
     self.shadowRoot?.addEventListener('click', ch);
   },
   disconnected() {
+    const host = this as BqDrawerHost;
     const s = this as unknown as Record<string, unknown>;
     cleanupOverlayFocus(s as unknown as OverlayFocusState);
     const kh = s['_kh'] as EventListener | undefined;
@@ -172,9 +174,9 @@ const definition: ComponentDefinition<BqDrawerProps, BqDrawerState> = {
     if (closeTimer) {
       clearTimeout(closeTimer);
       delete s['_closeTimer'];
-      this.removeAttribute('data-closing');
-      (this as unknown as { open?: boolean }).open = false;
-      this.removeAttribute('open');
+      host.removeAttribute('data-closing');
+      host.open = false;
+      host.removeAttribute('open');
     }
   },
   updated() {
