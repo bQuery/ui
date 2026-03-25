@@ -47,6 +47,8 @@ For the full catalog and feature coverage, see [`docs/components/index.md`](./do
 npm install @bquery/ui
 ```
 
+Current release for the CDN-ready root bundles: **v1.1.0**
+
 ### Import once
 
 ```ts
@@ -62,6 +64,23 @@ import '@bquery/ui';
   Your changes have been saved successfully.
 </bq-alert>
 ```
+
+### Use from a CDN
+
+```html
+<!-- ESM -->
+<script type="module">
+  import 'https://cdn.jsdelivr.net/npm/@bquery/ui@1.1.0/dist/index.js';
+</script>
+
+<!-- UMD -->
+<script src="https://cdn.jsdelivr.net/npm/@bquery/ui@1.1.0"></script>
+
+<!-- IIFE -->
+<script src="https://cdn.jsdelivr.net/npm/@bquery/ui@1.1.0/dist/index.iife.js"></script>
+```
+
+The UMD and IIFE bundles expose the library on `window.BQueryUI`.
 
 ## Tree-Shakeable Usage
 

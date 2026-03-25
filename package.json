@@ -1,6 +1,6 @@
 {
   "name": "@bquery/ui",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Production-grade web component library for the bQuery project",
   "type": "module",
   "main": "./dist/index.cjs",
