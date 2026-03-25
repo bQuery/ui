@@ -155,8 +155,8 @@ describe('dom utilities', () => {
         return {
           ...styles,
           animationName: 'none',
-          animationDuration: '0s',
-          animationDelay: '0s',
+          animationDuration: '600ms',
+          animationDelay: '25ms',
         } as CSSStyleDeclaration;
       }
       return styles;

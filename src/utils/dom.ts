@@ -127,7 +127,8 @@ export function getAnimationTimeoutMs(
     longest = Math.max(longest, duration + delay);
   }
 
-  return longest > 0 || hasRealAnimationName ? longest : fallbackMs;
+  if (!hasRealAnimationName) return fallbackMs;
+  return longest;
 }
 
 /**
