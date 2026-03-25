@@ -21,6 +21,7 @@ It is designed to give teams the kind of component coverage, polish, accessibili
 - **Accessible by default** with keyboard support, ARIA roles, focus management, and screen reader announcements
 - **Themeable via design tokens** and CSS custom properties
 - **Tree-shakeable ESM exports** with per-component imports
+- **CDN-ready root bundles** for ES modules, UMD, and IIFE delivery
 - **Built-in dark mode, i18n, and event-driven APIs**
 
 ## Component Coverage
@@ -61,6 +62,23 @@ import '@bquery/ui';
   Your changes have been saved successfully.
 </bq-alert>
 ```
+
+### Use from a CDN
+
+```html
+<!-- ESM -->
+<script type="module">
+  import 'https://cdn.jsdelivr.net/npm/@bquery/ui@1.1.0/dist/index.js';
+</script>
+
+<!-- UMD -->
+<script src="https://cdn.jsdelivr.net/npm/@bquery/ui@1.1.0/dist/index.umd.js"></script>
+
+<!-- IIFE -->
+<script src="https://cdn.jsdelivr.net/npm/@bquery/ui@1.1.0/dist/index.iife.js"></script>
+```
+
+The UMD and IIFE bundles expose the library on `window.BQueryUI`.
 
 ## Tree-Shakeable Usage
 

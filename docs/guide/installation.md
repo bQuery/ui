@@ -22,13 +22,28 @@ bun add @bquery/ui
 
 :::
 
-## CDN / ESM
+## CDN / ESM / UMD / IIFE
 
-```html
+::: code-group
+
+```html [ESM]
 <script type="module">
-  import 'https://cdn.jsdelivr.net/npm/@bquery/ui/dist/index.js';
+  import 'https://cdn.jsdelivr.net/npm/@bquery/ui@1.1.0/dist/index.js';
 </script>
 ```
+
+```html [UMD]
+<script src="https://cdn.jsdelivr.net/npm/@bquery/ui@1.1.0/dist/index.umd.js"></script>
+```
+
+```html [IIFE]
+<script src="https://cdn.jsdelivr.net/npm/@bquery/ui@1.1.0/dist/index.iife.js"></script>
+```
+
+:::
+
+The UMD and IIFE bundles register all `bq-*` elements on load and expose the library on `window.BQueryUI`.
+Pinning the version in CDN URLs keeps production integrations reproducible across future releases.
 
 ## TypeScript
 
