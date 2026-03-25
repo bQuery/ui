@@ -55,37 +55,39 @@ The `bq-table` component renders data tables with sortable columns, striped rows
 
 ## Properties
 
-| Property | Type | Default | Description |
-|----------|------|---------|-------------|
-| `columns` | `string` (JSON) | — | JSON array of column definitions (`{ key, label, sortable? }`) |
-| `rows` | `string` (JSON) | — | JSON array of row data objects |
-| `sort-key` | `string` | — | Key of the currently sorted column |
-| `sort-dir` | `asc \| desc` | — | Current sort direction |
-| `striped` | `boolean` | `false` | Alternates row background colors |
-| `bordered` | `boolean` | `false` | Adds borders to cells |
-| `hover` | `boolean` | `false` | Highlights rows on hover |
-| `loading` | `boolean` | `false` | Shows a loading indicator |
+| Property   | Type            | Default | Description                                                    |
+| ---------- | --------------- | ------- | -------------------------------------------------------------- |
+| `columns`  | `string` (JSON) | —       | JSON array of column definitions (`{ key, label, sortable? }`) |
+| `rows`     | `string` (JSON) | —       | JSON array of row data objects                                 |
+| `caption`  | `string`        | —       | Accessible table caption                                       |
+| `sort-key` | `string`        | —       | Key of the currently sorted column                             |
+| `sort-dir` | `asc \| desc`   | —       | Current sort direction                                         |
+| `striped`  | `boolean`       | `false` | Alternates row background colors                               |
+| `bordered` | `boolean`       | `false` | Adds borders to cells                                          |
+| `hover`    | `boolean`       | `false` | Highlights rows on hover                                       |
+| `loading`  | `boolean`       | `false` | Shows a loading indicator                                      |
 
 ## Events
 
-| Event | Detail | Description |
-|-------|--------|-------------|
+| Event     | Detail                         | Description                                                                         |
+| --------- | ------------------------------ | ----------------------------------------------------------------------------------- |
 | `bq-sort` | `{ key: string, dir: string }` | Fired when a sortable column header is activated by click or keyboard (Enter/Space) |
-
-## Slots
-
-| Slot | Description |
-|------|-------------|
-| *(none)* | This component does not currently expose named slots |
 
 ## CSS Parts
 
-| Part | Description |
-|------|-------------|
-| `table` | The `<table>` element |
-| `thead` | Table header section |
-| `header-row` | The table header row |
-| `th` | A header cell |
-| `tbody` | Table body section |
-| `row` | A table row |
-| `td` | A table body cell |
+| Part         | Description          |
+| ------------ | -------------------- |
+| `table`      | The table element    |
+| `caption`    | Table caption        |
+| `thead`      | Table header section |
+| `header-row` | Header row           |
+| `th`         | Header cell          |
+| `tbody`      | Table body section   |
+| `row`        | Body row             |
+| `td`         | Body cell            |
+
+## Accessibility
+
+- The component preserves native `<table>` semantics for rows, headers, and cells.
+- Sortable headers are keyboard-activatable with `Enter` and `Space`.
+- Loading and empty states use localized copy from the i18n layer.

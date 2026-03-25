@@ -61,6 +61,9 @@ export const en = {
     loading: 'Loading data…',
     rowsPerPage: 'Rows per page',
   },
+  progress: {
+    ariaLabel: 'Progress',
+  },
   accordion: {
     expand: 'Expand',
     collapse: 'Collapse',
@@ -88,6 +91,9 @@ export const en = {
   dropdownMenu: {
     open: 'Open menu',
     close: 'Close menu',
+  },
+  segmentedControl: {
+    defaultLabel: 'Options',
   },
 } as const;
 

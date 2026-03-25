@@ -3,6 +3,7 @@
  * @element bq-table
  * @prop {string}  columns  - JSON array of { key, label, sortable? }
  * @prop {string}  rows     - JSON array of row objects
+ * @prop {string}  caption  - Accessible table caption
  * @prop {string}  sort-key
  * @prop {string}  sort-dir - asc | desc
  * @prop {boolean} striped
@@ -11,25 +12,36 @@
  * @prop {boolean} loading
  * @fires bq-sort - { key: string, dir: string }
  */
-import { component, html } from '@bquery/bquery/component';
 import type { ComponentDefinition } from '@bquery/bquery/component';
+import { component, html } from '@bquery/bquery/component';
 import { escapeHtml } from '@bquery/bquery/security';
-import { getBaseStyles } from '../../utils/styles.js';
 import { t } from '../../i18n/index.js';
+import { getBaseStyles } from '../../utils/styles.js';
 
 type ColDef = { key: string; label: string; sortable?: boolean };
-type BqTableProps = { columns: string; rows: string; 'sort-key': string; 'sort-dir': string; striped: boolean; bordered: boolean; hover: boolean; loading: boolean };
+type BqTableProps = {
+  columns: string;
+  rows: string;
+  caption: string;
+  'sort-key': string;
+  'sort-dir': string;
+  striped: boolean;
+  bordered: boolean;
+  hover: boolean;
+  loading: boolean;
+};
 
 const definition: ComponentDefinition<BqTableProps> = {
   props: {
-    columns:    { type: String, default: '[]' },
-    rows:       { type: String, default: '[]' },
+    columns: { type: String, default: '[]' },
+    rows: { type: String, default: '[]' },
+    caption: { type: String, default: '' },
     'sort-key': { type: String, default: '' },
     'sort-dir': { type: String, default: 'asc' },
-    striped:    { type: Boolean, default: false },
-    bordered:   { type: Boolean, default: false },
-    hover:      { type: Boolean, default: false },
-    loading:    { type: Boolean, default: false },
+    striped: { type: Boolean, default: false },
+    bordered: { type: Boolean, default: false },
+    hover: { type: Boolean, default: false },
+    loading: { type: Boolean, default: false },
   },
   styles: `
     ${getBaseStyles()}
@@ -38,6 +50,7 @@ const definition: ComponentDefinition<BqTableProps> = {
     table { width: 100%; border-collapse: collapse; font-family: var(--bq-font-family-sans); font-size: var(--bq-font-size-sm,0.875rem); }
     :host([bordered]) table { border: 1px solid var(--bq-border-base,#e2e8f0); }
     th, td { padding: 0.75rem 1rem; text-align: left; border-bottom: 1px solid var(--bq-border-base,#e2e8f0); }
+    caption { caption-side: top; text-align: left; font-size: var(--bq-font-size-sm,0.875rem); color: var(--bq-text-muted,#475569); padding: 0.5rem 1rem; font-family: var(--bq-font-family-sans); }
     :host([bordered]) th, :host([bordered]) td { border: 1px solid var(--bq-border-base,#e2e8f0); }
     th { background: var(--bq-bg-subtle,#f8fafc); font-weight: var(--bq-font-weight-semibold,600); color: var(--bq-text-base,#0f172a); white-space: nowrap; }
     td { color: var(--bq-text-muted,#475569); }
@@ -56,22 +69,33 @@ const definition: ComponentDefinition<BqTableProps> = {
       const key = th.getAttribute('data-sort-key') ?? '';
       const curDir = self.getAttribute('sort-dir') ?? 'asc';
       const curKey = self.getAttribute('sort-key') ?? '';
-      const newDir = (key === curKey && curDir === 'asc') ? 'desc' : 'asc';
+      const newDir = key === curKey && curDir === 'asc' ? 'desc' : 'asc';
       self.setAttribute('sort-key', key);
       self.setAttribute('sort-dir', newDir);
-      self.dispatchEvent(new CustomEvent('bq-sort', { detail: { key, dir: newDir }, bubbles: true, composed: true }));
+      self.dispatchEvent(
+        new CustomEvent('bq-sort', {
+          detail: { key, dir: newDir },
+          bubbles: true,
+          composed: true,
+        })
+      );
     };
     const handler = (e: Event) => {
-      const th = (e.target as Element).closest('th.sortable') as HTMLElement | null;
+      const th = (e.target as Element).closest(
+        'th.sortable'
+      ) as HTMLElement | null;
       if (!th) return;
       sortHandler(th);
     };
     const keyHandler = (e: Event) => {
       const ke = e as KeyboardEvent;
-      const th = (ke.target as Element).closest('th.sortable') as HTMLElement | null;
+      const th = (ke.target as Element).closest(
+        'th.sortable'
+      ) as HTMLElement | null;
       if (!th) return;
       const isSpaceKeydown = ke.type === 'keydown' && ke.key === ' ';
-      const isEnterKeydown = ke.type === 'keydown' && ke.key === 'Enter' && !ke.repeat;
+      const isEnterKeydown =
+        ke.type === 'keydown' && ke.key === 'Enter' && !ke.repeat;
       const isSpaceKeyup = ke.type === 'keyup' && ke.key === ' ';
       if (isSpaceKeydown) {
         e.preventDefault();
@@ -98,27 +122,60 @@ const definition: ComponentDefinition<BqTableProps> = {
   render({ props }) {
     let cols: ColDef[] = [];
     let rows: Record<string, unknown>[] = [];
-    try { cols = JSON.parse(props.columns) as ColDef[]; } catch { cols = []; }
-    try { rows = JSON.parse(props.rows) as Record<string, unknown>[]; } catch { rows = []; }
+    try {
+      cols = JSON.parse(props.columns) as ColDef[];
+    } catch {
+      cols = [];
+    }
+    try {
+      rows = JSON.parse(props.rows) as Record<string, unknown>[];
+    } catch {
+      rows = [];
+    }
     const sortKey = props['sort-key'];
     const sortDir = props['sort-dir'];
-    const theads = cols.map(col => {
-      const isSorted = col.key === sortKey;
-      const sortIcon = col.sortable
-        ? `<span class="sort-icon" data-active="${isSorted ? 'true' : 'false'}" aria-hidden="true">${isSorted && sortDir === 'desc' ? '&#9650;' : '&#9660;'}</span>`
-        : '';
-      const sortableAttrs = col.sortable
-        ? `class="sortable" data-sort-key="${escapeHtml(col.key)}" tabindex="0" aria-sort="${isSorted ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'}"`
-        : '';
-      return `<th part="th" role="columnheader" ${sortableAttrs}>${escapeHtml(col.label)}${sortIcon}</th>`;
-    }).join('');
-    const tbodies = props.loading ? `<tr><td colspan="${cols.length}" class="loading-overlay">${escapeHtml(t('table.loading'))}</td></tr>`
-      : rows.length === 0 ? `<tr class="empty-row"><td colspan="${cols.length}">${escapeHtml(t('table.noData'))}</td></tr>`
-      : rows.map(row => `<tr part="row">${cols.map(col => `<td part="td">${escapeHtml(String(row[col.key] ?? ''))}</td>`).join('')}</tr>`).join('');
+    const theads = cols
+      .map((col) => {
+        const isSorted = col.key === sortKey;
+        const sortIcon = col.sortable
+          ? `<span class="sort-icon" data-active="${isSorted ? 'true' : 'false'}" aria-hidden="true">${isSorted && sortDir === 'desc' ? '&#9650;' : '&#9660;'}</span>`
+          : '';
+        const sortLabel = col.sortable
+          ? isSorted
+            ? sortDir === 'asc'
+              ? t('table.sortDescending')
+              : t('table.sortAscending')
+            : t('table.sortAscending')
+          : '';
+        const sortableAttrs = col.sortable
+          ? `class="sortable" data-sort-key="${escapeHtml(col.key)}" tabindex="0" aria-sort="${isSorted ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'}" title="${escapeHtml(sortLabel)}"`
+          : '';
+        return `<th part="th" scope="col" role="columnheader" ${sortableAttrs}>${escapeHtml(col.label)}${sortIcon}</th>`;
+      })
+      .join('');
+    const tbodies = props.loading
+      ? `<tr><td colspan="${cols.length}" class="loading-overlay">${escapeHtml(t('table.loading'))}</td></tr>`
+      : rows.length === 0
+        ? `<tr class="empty-row"><td colspan="${cols.length}">${escapeHtml(t('table.noData'))}</td></tr>`
+        : rows
+            .map(
+              (row) =>
+                `<tr part="row">${cols.map((col) => `<td part="td">${escapeHtml(String(row[col.key] ?? ''))}</td>`).join('')}</tr>`
+            )
+            .join('');
     return html`
-      <table part="table" role="grid">
-        <thead part="thead"><tr part="header-row">${theads}</tr></thead>
-        <tbody part="tbody">${tbodies}</tbody>
+      <table part="table">
+        ${props.caption
+          ? `<caption part="caption">${escapeHtml(props.caption)}</caption>`
+          : ''}
+        <thead part="thead">
+          <tr part="header-row">
+            ${theads}
+          </tr>
+        </thead>
+        <tbody part="tbody">
+          ${tbodies}
+        </tbody>
       </table>
     `;
   },

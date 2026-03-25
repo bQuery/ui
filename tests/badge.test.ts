@@ -43,4 +43,14 @@ describe('BqBadge', () => {
     const badge = el.shadowRoot?.querySelector('.badge');
     expect(badge?.getAttribute('data-size')).toBe('sm');
   });
+
+  it('should support the pill host attribute for rounded badge styling', () => {
+    const el = doc.createElement('bq-badge');
+    el.setAttribute('pill', '');
+    doc.body.appendChild(el);
+
+    const styles = el.shadowRoot?.querySelector('style');
+    expect(el.hasAttribute('pill')).toBe(true);
+    expect(styles?.textContent).toContain(':host([pill]) .badge');
+  });
 });

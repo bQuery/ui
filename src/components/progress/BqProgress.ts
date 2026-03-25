@@ -8,21 +8,32 @@
  * @prop {boolean} indeterminate - Indeterminate/loading state
  * @prop {string}  label         - Accessible label
  */
-import { component, html } from '@bquery/bquery/component';
 import type { ComponentDefinition } from '@bquery/bquery/component';
+import { component, html } from '@bquery/bquery/component';
 import { escapeHtml } from '@bquery/bquery/security';
+import { t } from '../../i18n/index.js';
 import { getBaseStyles } from '../../utils/styles.js';
 
-type BqProgressProps = { value: number; max: number; size: string; variant: string; indeterminate: boolean; label: string };
+type BqProgressProps = {
+  value: number;
+  max: number;
+  size: string;
+  variant: string;
+  indeterminate: boolean;
+  label: string;
+};
 
 const definition: ComponentDefinition<BqProgressProps> = {
   props: {
-    value:         { type: Number, default: 0 },
-    max:           { type: Number, default: 100 },
-    size:          { type: String, default: 'md' },
-    variant:       { type: String, default: 'primary' },
+    value: { type: Number, default: 0 },
+    max: { type: Number, default: 100 },
+    size: { type: String, default: 'md' },
+    variant: { type: String, default: 'primary' },
     indeterminate: { type: Boolean, default: false },
-    label:         { type: String, default: '' },
+    label: { type: String, default: '' },
+  },
+  sanitize: {
+    allowAttributes: ['style'],
   },
   styles: `
     ${getBaseStyles()}
@@ -45,6 +56,7 @@ const definition: ComponentDefinition<BqProgressProps> = {
     :host([indeterminate]) .bar {
       width: 40% !important;
       animation: indeterminate 1.4s linear infinite;
+      will-change: transform;
     }
     @keyframes indeterminate { 0% { transform: translateX(-150%); } 100% { transform: translateX(350%); } }
     .label { font-size: var(--bq-font-size-sm,0.875rem); color: var(--bq-text-muted,#475569); margin-bottom: 0.375rem; font-family: var(--bq-font-family-sans); }
@@ -55,17 +67,48 @@ const definition: ComponentDefinition<BqProgressProps> = {
     }
   `,
   render({ props }) {
-    const pct = props.indeterminate ? 0 : Math.min(100, Math.max(0, (props.value / props.max) * 100));
+    const max = props.max > 0 ? props.max : 100;
+    const value = Math.min(max, Math.max(0, props.value));
+    const pct = props.indeterminate
+      ? 0
+      : Math.min(100, Math.max(0, (value / max) * 100));
+    const accessibleLabel =
+      props.label ||
+      (props.indeterminate ? t('common.loading') : t('progress.ariaLabel'));
+    const valueText = props.indeterminate
+      ? t('common.loading')
+      : `${Math.round(pct)}%`;
     return html`
-      ${props.label ? `<div class="label" part="label">${escapeHtml(props.label)}</div>` : ''}
-      <div part="track" class="track" data-size="${escapeHtml(props.size)}"
-        role="progressbar" aria-valuenow="${props.indeterminate ? '' : String(props.value)}"
-        aria-valuemin="0" aria-valuemax="${String(props.max)}"
-        aria-label="${escapeHtml(props.label || 'Progress')}">
-        <div part="bar" class="bar" data-variant="${escapeHtml(props.variant)}" data-value="${String(Math.round(pct))}"
-          style="width:${String(Math.round(pct))}%"></div>
+      ${props.label
+        ? `<div class="label" part="label">${escapeHtml(props.label)}</div>`
+        : ''}
+      <div
+        part="track"
+        class="track"
+        data-size="${escapeHtml(props.size)}"
+        role="progressbar"
+        ${props.indeterminate
+          ? `aria-busy="true" aria-valuetext="${escapeHtml(valueText)}"`
+          : `aria-valuenow="${String(value)}" aria-valuemin="0" aria-valuemax="${String(max)}" aria-valuetext="${escapeHtml(valueText)}"`}
+        aria-label="${escapeHtml(accessibleLabel)}"
+      >
+        <div
+          part="bar"
+          class="bar"
+          data-variant="${escapeHtml(props.variant)}"
+          data-value="${String(Math.round(pct))}"
+          style="width:${String(Math.round(pct))}%"
+        ></div>
       </div>
-      <span class="sr-only">${escapeHtml(props.label ? `${props.label}: ${Math.round(pct)}%` : `${Math.round(pct)}%`)}</span>
+      <span class="sr-only"
+        >${escapeHtml(
+          props.indeterminate
+            ? accessibleLabel
+            : props.label
+              ? `${props.label}: ${Math.round(pct)}%`
+              : `${Math.round(pct)}%`
+        )}</span
+      >
     `;
   },
 };

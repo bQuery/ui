@@ -15,6 +15,7 @@
 import type { ComponentDefinition } from '@bquery/bquery/component';
 import { component, html } from '@bquery/bquery/component';
 import { escapeHtml } from '@bquery/bquery/security';
+import { t } from '../../i18n/index.js';
 import { uniqueId } from '../../utils/dom.js';
 import { createFormProxy, type FormProxy } from '../../utils/form.js';
 import { getBaseStyles } from '../../utils/styles.js';
@@ -202,8 +203,12 @@ const definition: ComponentDefinition<
       );
       if (selectedButton) return currentValue;
 
-      const fallbackButton = buttons.find((button) => !isButtonDisabled(button));
-      const fallbackValue = fallbackButton ? getButtonValue(fallbackButton) : '';
+      const fallbackButton = buttons.find(
+        (button) => !isButtonDisabled(button)
+      );
+      const fallbackValue = fallbackButton
+        ? getButtonValue(fallbackButton)
+        : '';
 
       if (fallbackValue && fallbackValue !== currentValue) {
         self.setAttribute('value', fallbackValue);
@@ -217,9 +222,12 @@ const definition: ComponentDefinition<
     const syncButtons = () => {
       const buttons = getButtons();
       const selectedValue = ensureSelectedValue();
-      const enabledButtons = buttons.filter((button) => !isButtonDisabled(button));
+      const enabledButtons = buttons.filter(
+        (button) => !isButtonDisabled(button)
+      );
       const focusValue =
-        selectedValue || (enabledButtons[0] ? getButtonValue(enabledButtons[0]) : '');
+        selectedValue ||
+        (enabledButtons[0] ? getButtonValue(enabledButtons[0]) : '');
 
       buttons.forEach((button) => {
         const value = getButtonValue(button);
@@ -411,7 +419,9 @@ const definition: ComponentDefinition<
     if (clickHandler) this.removeEventListener('click', clickHandler);
     if (keyHandler) {
       const buttons = this.querySelectorAll('button');
-      buttons.forEach((button) => button.removeEventListener('keydown', keyHandler));
+      buttons.forEach((button) =>
+        button.removeEventListener('keydown', keyHandler)
+      );
     }
     if (slotChangeHandler) {
       this.shadowRoot
@@ -423,21 +433,22 @@ const definition: ComponentDefinition<
     proxy?.cleanup();
   },
   updated() {
-    const syncButtons = (this as unknown as Record<string, unknown>)['_syncButtons'] as
-      | (() => void)
-      | undefined;
+    const syncButtons = (this as unknown as Record<string, unknown>)[
+      '_syncButtons'
+    ] as (() => void) | undefined;
     syncButtons?.();
   },
   render({ props, state }) {
     const uid = state.uid || 'bq-segmented';
     const labelId = `${uid}-label`;
     const hintId = `${uid}-hint`;
+    const fallbackGroupLabel = t('segmentedControl.defaultLabel');
 
     const labelAttribute = props.label
       ? `aria-labelledby="${labelId}"`
       : props['aria-label']
         ? `aria-label="${escapeHtml(props['aria-label'])}"`
-        : '';
+        : `aria-label="${escapeHtml(props.name || fallbackGroupLabel)}"`;
 
     const descriptionAttribute = props.hint
       ? `aria-describedby="${hintId}"`

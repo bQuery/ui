@@ -16,6 +16,7 @@ import { t } from '../../i18n/index.js';
 import type { OverlayFocusState } from '../../utils/dom.js';
 import {
   cleanupOverlayFocus,
+  getAnimationTimeoutMs,
   uniqueId,
   updateOverlayFocus,
 } from '../../utils/dom.js';
@@ -28,6 +29,7 @@ type BqDialogProps = {
   dismissible: boolean;
 };
 type BqDialogState = { titleId: string };
+const NORMAL_DURATION = '200ms';
 
 const definition: ComponentDefinition<BqDialogProps, BqDialogState> = {
   props: {
@@ -60,6 +62,10 @@ const definition: ComponentDefinition<BqDialogProps, BqDialogState> = {
       font-family: var(--bq-font-family-sans); overflow: hidden;
     }
     @keyframes scaleIn { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+    :host([data-closing]) .overlay { animation: dlgFadeOut var(--bq-duration-normal,200ms) var(--bq-easing-accelerate) forwards; }
+    :host([data-closing]) .dialog { animation: dlgScaleOut var(--bq-duration-normal,200ms) var(--bq-easing-accelerate) forwards; }
+    @keyframes dlgFadeOut { to { opacity: 0; } }
+    @keyframes dlgScaleOut { to { transform: scale(0.95); opacity: 0; } }
     .dialog[data-size="sm"] { max-width: 28rem; }
     .dialog[data-size="md"] { max-width: 36rem; }
     .dialog[data-size="lg"] { max-width: 48rem; }
@@ -73,7 +79,7 @@ const definition: ComponentDefinition<BqDialogProps, BqDialogState> = {
     .body { padding: var(--bq-space-6,1.5rem); overflow-y: auto; flex: 1; color: var(--bq-text-muted,#475569); font-size: var(--bq-font-size-md,1rem); line-height: var(--bq-line-height-relaxed,1.625); }
     .footer { padding: var(--bq-space-4,1rem) var(--bq-space-6,1.5rem); border-top: 1px solid var(--bq-border-base,#e2e8f0); display: flex; align-items: center; justify-content: flex-end; gap: var(--bq-space-3,0.75rem); flex-shrink: 0; background: var(--bq-bg-subtle,#f8fafc); }
     @media (prefers-reduced-motion: reduce) {
-      .overlay, .dialog { animation: none; }
+      .overlay, .dialog { animation: none !important; }
       .close-btn { transition: none; }
     }
   `,
@@ -83,6 +89,7 @@ const definition: ComponentDefinition<BqDialogProps, BqDialogState> = {
       getState<T>(k: string): T;
     };
     const self = this as unknown as BQEl;
+    const record = self as unknown as Record<string, unknown>;
     if (!self.getState<string>('titleId'))
       self.setState('titleId', uniqueId('bq-dlg-title'));
     // Escape key handler
@@ -95,10 +102,41 @@ const definition: ComponentDefinition<BqDialogProps, BqDialogState> = {
       if ((e.target as Element).classList.contains('overlay')) close();
     };
     const close = () => {
-      self.removeAttribute('open');
-      self.dispatchEvent(
-        new CustomEvent('bq-close', { bubbles: true, composed: true })
-      );
+      if (self.hasAttribute('data-closing')) return;
+      const clearCloseTimer = () => {
+        const closeTimer = record['_closeTimer'] as
+          | ReturnType<typeof setTimeout>
+          | undefined;
+        if (closeTimer) {
+          clearTimeout(closeTimer);
+          delete record['_closeTimer'];
+        }
+      };
+      const reducedMotion = self.ownerDocument.defaultView?.matchMedia?.(
+        '(prefers-reduced-motion: reduce)'
+      )?.matches;
+      const finalize = () => {
+        clearCloseTimer();
+        self.removeAttribute('data-closing');
+        self.removeAttribute('open');
+        self.dispatchEvent(
+          new CustomEvent('bq-close', { bubbles: true, composed: true })
+        );
+      };
+      if (reducedMotion) {
+        finalize();
+      } else {
+        self.setAttribute('data-closing', '');
+        const overlay = self.shadowRoot?.querySelector('.overlay');
+        const timeoutMs = overlay
+          ? getAnimationTimeoutMs(overlay, NORMAL_DURATION)
+          : 0;
+        if (timeoutMs <= 0) {
+          finalize();
+        } else {
+          record['_closeTimer'] = setTimeout(finalize, Math.ceil(timeoutMs) + 20);
+        }
+      }
     };
     const ch = (e: Event) => {
       if ((e.target as Element).closest('.close-btn')) close();
@@ -119,6 +157,13 @@ const definition: ComponentDefinition<BqDialogProps, BqDialogState> = {
     if (oh) this.shadowRoot?.removeEventListener('click', oh);
     const ch = s['_ch'] as EventListener | undefined;
     if (ch) this.shadowRoot?.removeEventListener('click', ch);
+    const closeTimer = s['_closeTimer'] as ReturnType<typeof setTimeout> | undefined;
+    if (closeTimer) {
+      clearTimeout(closeTimer);
+      delete s['_closeTimer'];
+      this.removeAttribute('data-closing');
+      this.removeAttribute('open');
+    }
   },
   updated() {
     updateOverlayFocus(this, this as unknown as OverlayFocusState, '.dialog');

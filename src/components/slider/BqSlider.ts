@@ -28,6 +28,11 @@ type BqSliderProps = {
   'show-value': boolean;
 };
 
+function syncInputAccessibility(input: HTMLInputElement, value: number): void {
+  input.setAttribute('aria-valuenow', String(value));
+  input.setAttribute('aria-valuetext', t('slider.valueText', { value }));
+}
+
 const definition: ComponentDefinition<BqSliderProps> = {
   props: {
     value: { type: Number, default: 50 },
@@ -67,8 +72,11 @@ const definition: ComponentDefinition<BqSliderProps> = {
       const input = e.target as HTMLInputElement | null;
       if (!input) return;
       const v = Number(input.value);
-      self.setAttribute('value', String(v));
+      // Update form proxy and value display directly without re-rendering (prevents jank during drag)
       proxy.setValue(String(v));
+      syncInputAccessibility(input, v);
+      const valueSpan = self.shadowRoot?.querySelector('.value');
+      if (valueSpan) valueSpan.textContent = String(v);
       self.dispatchEvent(
         new CustomEvent('bq-input', {
           detail: { value: v },
@@ -80,9 +88,14 @@ const definition: ComponentDefinition<BqSliderProps> = {
     const ch = (e: Event) => {
       const input = e.target as HTMLInputElement | null;
       if (!input) return;
+      const v = Number(input.value);
+      // Commit value to attribute on change (drag end) — triggers one clean re-render
+      self.setAttribute('value', String(v));
+      proxy.setValue(String(v));
+      syncInputAccessibility(input, v);
       self.dispatchEvent(
         new CustomEvent('bq-change', {
-          detail: { value: Number(input.value) },
+          detail: { value: v },
           bubbles: true,
           composed: true,
         })
@@ -135,6 +148,9 @@ const definition: ComponentDefinition<BqSliderProps> = {
           aria-valuemin="${String(props.min)}"
           aria-valuemax="${String(props.max)}"
           aria-valuenow="${String(props.value)}"
+          aria-valuetext="${escapeHtml(
+            t('slider.valueText', { value: props.value })
+          )}"
         />
       </div>
     `;

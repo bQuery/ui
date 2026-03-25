@@ -6,6 +6,7 @@
  * @prop {string}  value    - Input value
  * @prop {boolean} checked
  * @prop {boolean} disabled
+ * @prop {boolean} required
  * @prop {string}  hint
  * @fires bq-change - { value: string, checked: boolean }
  */
@@ -21,6 +22,7 @@ type BqRadioProps = {
   value: string;
   checked: boolean;
   disabled: boolean;
+  required: boolean;
   hint: string;
 };
 
@@ -31,6 +33,7 @@ const definition: ComponentDefinition<BqRadioProps> = {
     value: { type: String, default: '' },
     checked: { type: Boolean, default: false },
     disabled: { type: Boolean, default: false },
+    required: { type: Boolean, default: false },
     hint: { type: String, default: '' },
   },
   styles: `
@@ -48,7 +51,8 @@ const definition: ComponentDefinition<BqRadioProps> = {
     }
     input[type="radio"]:focus-visible { outline: 2px solid transparent; box-shadow: var(--bq-focus-ring); }
     .label-text { font-size: var(--bq-font-size-sm,0.875rem); color: var(--bq-text-base,#0f172a); font-family: var(--bq-font-family-sans); line-height: 1.5; }
-    .hint { font-size: var(--bq-font-size-sm,0.875rem); color: var(--bq-text-muted,#475569); font-family: var(--bq-font-family-sans); padding-left: 1.75rem; }
+    .required-mark { color: var(--bq-color-danger-600,#dc2626); }
+    .hint { font-size: var(--bq-font-size-sm,0.875rem); color: var(--bq-text-muted,#475569); font-family: var(--bq-font-family-sans); padding-inline-start: 1.75rem; }
   `,
   connected() {
     const self = this;
@@ -115,9 +119,10 @@ const definition: ComponentDefinition<BqRadioProps> = {
             value="${escapeHtml(props.value)}"
             ${props.checked ? 'checked' : ''}
             ${props.disabled ? 'disabled' : ''}
+            ${props.required ? 'required' : ''}
           />
           ${props.label
-            ? `<span class="label-text" part="label">${escapeHtml(props.label)}</span>`
+            ? `<span class="label-text" part="label">${escapeHtml(props.label)}${props.required ? '<span class="required-mark" aria-hidden="true"> *</span>' : ''}</span>`
             : ''}
         </label>
         ${props.hint

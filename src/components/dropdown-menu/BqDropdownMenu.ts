@@ -14,7 +14,7 @@
 import type { ComponentDefinition } from '@bquery/bquery/component';
 import { component, html } from '@bquery/bquery/component';
 import { escapeHtml } from '@bquery/bquery/security';
-import { uniqueId } from '../../utils/dom.js';
+import { getAnimationTimeoutMs, uniqueId } from '../../utils/dom.js';
 import { getBaseStyles } from '../../utils/styles.js';
 
 type BqDropdownMenuProps = {
@@ -24,6 +24,7 @@ type BqDropdownMenuProps = {
   disabled: boolean;
 };
 type BqDropdownMenuState = { uid: string };
+const FAST_DURATION = '150ms';
 
 const definition: ComponentDefinition<
   BqDropdownMenuProps,
@@ -51,8 +52,10 @@ const definition: ComponentDefinition<
       padding: var(--bq-space-1,0.25rem) 0; font-family: var(--bq-font-family-sans);
       animation: menuFadeIn var(--bq-duration-fast,150ms) var(--bq-easing-decelerate);
     }
-    :host([open]) .menu { display: block; }
+    :host([open]:not([data-closing])) .menu { display: block; }
+    :host([open][data-closing]) .menu { display: block; animation: menuFadeOut var(--bq-duration-fast,150ms) var(--bq-easing-accelerate) forwards; }
     @keyframes menuFadeIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes menuFadeOut { to { opacity: 0; transform: translateY(-4px); } }
     :host([placement="bottom-start"]) .menu { top: 100%; left: 0; margin-top: 0.25rem; }
     :host([placement="bottom-end"]) .menu { top: 100%; right: 0; margin-top: 0.25rem; }
     :host([placement="top-start"]) .menu { bottom: 100%; left: 0; margin-bottom: 0.25rem; }
@@ -76,7 +79,7 @@ const definition: ComponentDefinition<
     ::slotted(a[aria-disabled="true"]) { opacity: 0.5; cursor: not-allowed; pointer-events: none; }
     ::slotted(hr) { border: none; border-top: 1px solid var(--bq-border-base,#e2e8f0); margin: 0.25rem 0; }
     @media (prefers-reduced-motion: reduce) {
-      .menu { animation: none; }
+      .menu { animation: none !important; }
       ::slotted(button),
       ::slotted(a) { transition: none; }
     }
@@ -87,14 +90,15 @@ const definition: ComponentDefinition<
       getState<T>(k: string): T;
     };
     const self = this as unknown as BQEl;
-    if (!self.getState<string>('uid'))
-      self.setState('uid', uniqueId('bq-dm'));
+    const record = self as unknown as Record<string, unknown>;
+    if (!self.getState<string>('uid')) self.setState('uid', uniqueId('bq-dm'));
 
     const getTrigger = (): HTMLElement | null =>
       self.querySelector('[slot="trigger"]') as HTMLElement | null;
 
     const isDisabledItem = (el: HTMLElement): boolean =>
-      el.hasAttribute('disabled') || el.getAttribute('aria-disabled') === 'true';
+      el.hasAttribute('disabled') ||
+      el.getAttribute('aria-disabled') === 'true';
 
     const getItemLabel = (el: HTMLElement): string =>
       (el.getAttribute('data-value') || el.textContent || '')
@@ -106,9 +110,9 @@ const definition: ComponentDefinition<
         'slot:not([name])'
       ) as HTMLSlotElement | null;
       if (!slot) return [];
-      return slot.assignedElements({ flatten: true }).filter(
-        (el): el is HTMLElement => el instanceof HTMLElement
-      );
+      return slot
+        .assignedElements({ flatten: true })
+        .filter((el): el is HTMLElement => el instanceof HTMLElement);
     };
 
     const syncTriggerA11y = () => {
@@ -158,22 +162,52 @@ const definition: ComponentDefinition<
       );
       // Focus first item
       requestAnimationFrame(() => {
-        if (!self.hasAttribute('open')) return;
+        if (!self.hasAttribute('open') || self.hasAttribute('data-closing'))
+          return;
         const items = getMenuItems();
         if (items.length > 0) items[0]!.focus();
       });
     };
-    const close = (
-      { restoreFocus = false }: { restoreFocus?: boolean } = {}
-    ) => {
-      if (!self.hasAttribute('open')) return;
-      self.removeAttribute('open');
+    const close = ({
+      restoreFocus = false,
+    }: { restoreFocus?: boolean } = {}) => {
+      if (!self.hasAttribute('open') || self.hasAttribute('data-closing'))
+        return;
       clearTypeaheadBuffer();
-      syncTriggerA11y();
-      self.dispatchEvent(
-        new CustomEvent('bq-close', { bubbles: true, composed: true })
-      );
-      if (restoreFocus) getTrigger()?.focus();
+      const clearCloseTimer = () => {
+        const closeTimer = record['_closeTimer'] as
+          | ReturnType<typeof setTimeout>
+          | undefined;
+        if (closeTimer) {
+          clearTimeout(closeTimer);
+          delete record['_closeTimer'];
+        }
+      };
+      const reducedMotion = self.ownerDocument.defaultView?.matchMedia?.(
+        '(prefers-reduced-motion: reduce)'
+      )?.matches;
+      const finalize = () => {
+        clearCloseTimer();
+        self.removeAttribute('data-closing');
+        self.removeAttribute('open');
+        syncTriggerA11y();
+        self.dispatchEvent(
+          new CustomEvent('bq-close', { bubbles: true, composed: true })
+        );
+        if (restoreFocus) getTrigger()?.focus();
+      };
+      if (reducedMotion) {
+        finalize();
+      } else {
+        self.setAttribute('data-closing', '');
+        const menu = self.shadowRoot?.querySelector('.menu');
+        const timeoutMs = menu ? getAnimationTimeoutMs(menu, FAST_DURATION) : 0;
+        if (timeoutMs <= 0) {
+          finalize();
+        } else {
+          record['_closeTimer'] = setTimeout(finalize, Math.ceil(timeoutMs) + 20);
+        }
+      }
     };
     const toggle = () => {
       if (self.hasAttribute('open')) close();
@@ -197,7 +231,10 @@ const definition: ComponentDefinition<
 
       const orderedItems =
         currentIndex >= 0
-          ? [...items.slice(currentIndex + 1), ...items.slice(0, currentIndex + 1)]
+          ? [
+              ...items.slice(currentIndex + 1),
+              ...items.slice(0, currentIndex + 1),
+            ]
           : items;
 
       const match = orderedItems.find((item) =>
@@ -209,14 +246,15 @@ const definition: ComponentDefinition<
     const getMenuItems = (): HTMLElement[] => {
       return getMenuRoots().filter(
         (el): el is HTMLElement =>
-          (el.tagName === 'BUTTON' || el.tagName === 'A') &&
-          !isDisabledItem(el)
+          (el.tagName === 'BUTTON' || el.tagName === 'A') && !isDisabledItem(el)
       );
     };
 
     // Trigger click
     const triggerHandler = (e: Event) => {
-      const triggerSlot = self.shadowRoot?.querySelector('slot[name="trigger"]') as HTMLSlotElement | null;
+      const triggerSlot = self.shadowRoot?.querySelector(
+        'slot[name="trigger"]'
+      ) as HTMLSlotElement | null;
       if (!triggerSlot) return;
       const assigned = triggerSlot.assignedElements({ flatten: true });
       const clickedTrigger = assigned.some(
@@ -267,7 +305,9 @@ const definition: ComponentDefinition<
       if (self.hasAttribute('disabled')) return;
 
       // On trigger: open on ArrowDown/Enter/Space
-      const triggerSlot = self.shadowRoot?.querySelector('slot[name="trigger"]') as HTMLSlotElement | null;
+      const triggerSlot = self.shadowRoot?.querySelector(
+        'slot[name="trigger"]'
+      ) as HTMLSlotElement | null;
       const triggerEls = triggerSlot?.assignedElements({ flatten: true }) ?? [];
       const isOnTrigger = triggerEls.some(
         (el) => el === ke.target || el.contains(ke.target as Node)
@@ -331,12 +371,7 @@ const definition: ComponentDefinition<
           break;
         }
         default: {
-          if (
-            ke.key.length === 1 &&
-            !ke.altKey &&
-            !ke.ctrlKey &&
-            !ke.metaKey
-          ) {
+          if (ke.key.length === 1 && !ke.altKey && !ke.ctrlKey && !ke.metaKey) {
             typeaheadBuffer = `${typeaheadBuffer}${ke.key.toLowerCase()}`;
             if (typeaheadTimeout) clearTimeout(typeaheadTimeout);
             typeaheadTimeout = window.setTimeout(() => {
@@ -402,7 +437,9 @@ const definition: ComponentDefinition<
   disconnected() {
     const s = this as unknown as Record<string, unknown>;
     const triggerHandler = s['_triggerHandler'] as EventListener | undefined;
-    const menuClickHandler = s['_menuClickHandler'] as EventListener | undefined;
+    const menuClickHandler = s['_menuClickHandler'] as
+      | EventListener
+      | undefined;
     const keyHandler = s['_keyHandler'] as EventListener | undefined;
     const outsideHandler = s['_outsideHandler'] as EventListener | undefined;
     const slotChangeHandler = s['_slotChangeHandler'] as
@@ -411,11 +448,18 @@ const definition: ComponentDefinition<
     const clearTypeaheadBuffer = s['_clearTypeaheadBuffer'] as
       | (() => void)
       | undefined;
+    const closeTimer = s['_closeTimer'] as ReturnType<typeof setTimeout> | undefined;
     if (triggerHandler) this.removeEventListener('click', triggerHandler);
     if (menuClickHandler) this.removeEventListener('click', menuClickHandler);
     if (keyHandler) this.removeEventListener('keydown', keyHandler);
     if (outsideHandler) document.removeEventListener('click', outsideHandler);
     clearTypeaheadBuffer?.();
+    if (closeTimer) {
+      clearTimeout(closeTimer);
+      delete s['_closeTimer'];
+      this.removeAttribute('data-closing');
+      this.removeAttribute('open');
+    }
     if (slotChangeHandler) {
       this.shadowRoot
         ?.querySelector('slot[name="trigger"]')
@@ -427,9 +471,13 @@ const definition: ComponentDefinition<
   },
   updated() {
     const s = this as unknown as Record<string, unknown>;
-    const syncOutsideListener = s['_syncOutsideListener'] as (() => void) | undefined;
+    const syncOutsideListener = s['_syncOutsideListener'] as
+      | (() => void)
+      | undefined;
     syncOutsideListener?.();
-    const trigger = this.querySelector('[slot="trigger"]') as HTMLElement | null;
+    const trigger = this.querySelector(
+      '[slot="trigger"]'
+    ) as HTMLElement | null;
     if (trigger)
       trigger.setAttribute(
         'aria-expanded',

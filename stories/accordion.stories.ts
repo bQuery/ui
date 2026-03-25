@@ -1,5 +1,5 @@
-import type { Meta, StoryObj } from '@storybook/web-components';
 import { storyHtml } from '@bquery/bquery/storybook';
+import type { Meta, StoryObj } from '@storybook/web-components';
 
 const meta: Meta = {
   title: 'Layout/Accordion',
@@ -10,21 +10,29 @@ const meta: Meta = {
     </bq-accordion>
   `,
   argTypes: {
-    label:    { control: 'text' },
-    open:     { control: 'boolean' },
+    label: { control: 'text' },
+    open: { control: 'boolean' },
     disabled: { control: 'boolean' },
-    variant:  { control: 'select', options: ['default','bordered','flush'] },
-    content:  { control: 'text' },
+    variant: { control: 'select', options: ['default', 'bordered', 'flush'] },
+    content: { control: 'text' },
   },
-  args: { label: 'What is bQuery?', open: false, disabled: false, variant: 'default', content: 'bQuery is a modern, lightweight web component library.' },
+  args: {
+    label: 'What is bQuery?',
+    open: false,
+    disabled: false,
+    variant: 'default',
+    content: 'bQuery is a modern, lightweight web component library.',
+  },
 };
 export default meta;
 type Story = StoryObj;
 
 export const Default: Story = {};
-export const Open:    Story = { args: { open: true } };
-export const Bordered:Story = { args: { variant: 'bordered' } };
-export const Multiple:Story = {
+export const Open: Story = { args: { open: true } };
+export const Bordered: Story = { args: { variant: 'bordered' } };
+export const Disabled: Story = { args: { disabled: true } };
+export const Flush: Story = { args: { variant: 'flush' } };
+export const Multiple: Story = {
   render: () => storyHtml`
     <div style="display:flex;flex-direction:column;gap:0.5rem">
       <bq-accordion variant="bordered" label="Section 1">Content for section 1.</bq-accordion>

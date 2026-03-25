@@ -60,28 +60,34 @@ showToast({ variant: 'info', message: 'Update available.' });
 
 ## Properties
 
-| Property | Type | Default | Description |
-|----------|------|---------|-------------|
-| `variant` | `success \| error \| warning \| info` | `info` | Visual style of the toast |
-| `message` | `string` | — | Text content of the toast |
-| `duration` | `number` | `4000` | Auto-dismiss delay in milliseconds |
-| `dismissible` | `boolean` | `true` | Shows a close button for manual dismissal |
+| Property      | Type                                  | Default | Description                               |
+| ------------- | ------------------------------------- | ------- | ----------------------------------------- |
+| `variant`     | `success \| error \| warning \| info` | `info`  | Visual style of the toast                 |
+| `message`     | `string`                              | —       | Text content of the toast                 |
+| `duration`    | `number`                              | `4000`  | Auto-dismiss delay in milliseconds        |
+| `dismissible` | `boolean`                             | `true`  | Shows a close button for manual dismissal |
 
 ## Events
 
-| Event | Detail | Description |
-|-------|--------|-------------|
-| `bq-close` | — | Fired when the toast is dismissed (auto or manual) |
+| Event      | Detail | Description                                        |
+| ---------- | ------ | -------------------------------------------------- |
+| `bq-close` | —      | Fired when the toast is dismissed (auto or manual) |
 
 ## Slots
 
-| Slot | Description |
-|------|-------------|
+| Slot        | Description                                |
+| ----------- | ------------------------------------------ |
 | *(default)* | Optional custom content for the toast body |
 
 ## CSS Parts
 
-| Part | Description |
-|------|-------------|
-| `toast` | The toast container |
+| Part      | Description                 |
+| --------- | --------------------------- |
+| `toast`   | The toast container         |
 | `content` | The toast content container |
+
+## Accessibility
+
+- Toasts use `role="status"` and `aria-live="polite"` so screen readers announce them without interrupting the user.
+- Dismissible toasts provide a close button with a localized `aria-label`.
+- Auto-dismiss duration can be set to `0` for persistent toasts that require manual dismissal.

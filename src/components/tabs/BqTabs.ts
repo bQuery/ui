@@ -14,6 +14,21 @@ import { getBaseStyles } from '../../utils/styles.js';
 
 type BqTabsProps = { 'active-tab': string; variant: string };
 
+function getAriaIdPart(tabId: string): string | null {
+  const trimmed = tabId.trim();
+  return trimmed ? encodeURIComponent(trimmed) : null;
+}
+
+function getTabButtonId(tabId: string): string | null {
+  const ariaIdPart = getAriaIdPart(tabId);
+  return ariaIdPart ? `tab-${ariaIdPart}` : null;
+}
+
+function getPanelId(tabId: string): string | null {
+  const ariaIdPart = getAriaIdPart(tabId);
+  return ariaIdPart ? `panel-${ariaIdPart}` : null;
+}
+
 const definition: ComponentDefinition<BqTabsProps> = {
   props: {
     'active-tab': { type: String, default: '' },
@@ -148,9 +163,33 @@ const definition: ComponentDefinition<BqTabsProps> = {
     // Sync panel visibility after each render
     const active = this.getAttribute('active-tab') ?? '';
     this.querySelectorAll<HTMLElement>('[data-tab]').forEach((panel) => {
-      panel.hidden = panel.getAttribute('data-tab') !== active;
+      const tabId = panel.getAttribute('data-tab') ?? '';
+      const isActive = tabId === active;
+      const panelId = panel.id || getPanelId(tabId);
+      const button = Array.from(
+        this.shadowRoot?.querySelectorAll<HTMLElement>('.tab[data-tab-id]') ?? []
+      ).find((candidate) => candidate.getAttribute('data-tab-id') === tabId);
+      const labelledBy = button?.id || (button ? getTabButtonId(tabId) : null);
+
+      if (panelId) {
+        panel.id = panelId;
+      }
+      panel.hidden = !isActive;
       panel.setAttribute('role', 'tabpanel');
-      panel.setAttribute('tabindex', '0');
+      panel.setAttribute('tabindex', isActive ? '0' : '-1');
+      if (labelledBy) {
+        panel.setAttribute('aria-labelledby', labelledBy);
+      } else {
+        panel.removeAttribute('aria-labelledby');
+      }
+      panel.setAttribute('aria-hidden', isActive ? 'false' : 'true');
+      if (button) {
+        if (panelId) {
+          button.setAttribute('aria-controls', panelId);
+        } else {
+          button.removeAttribute('aria-controls');
+        }
+      }
     });
   },
   render({ props, state }) {
@@ -160,16 +199,19 @@ const definition: ComponentDefinition<BqTabsProps> = {
         | undefined) ?? [];
     const active = props['active-tab'] || items[0]?.id || '';
     const tabsHtml = items
-      .map(
-        (tab) => `
-      <button part="tab" class="tab" data-variant="${escapeHtml(props.variant)}"
-        role="tab" data-tab-id="${escapeHtml(tab.id)}"
+      .map((tab) => {
+        const buttonId = getTabButtonId(tab.id);
+        const panelId = getPanelId(tab.id);
+        return `
+       <button part="tab" class="tab" data-variant="${escapeHtml(props.variant)}"
+        role="tab" ${buttonId ? `id="${escapeHtml(buttonId)}"` : ''} data-tab-id="${escapeHtml(tab.id)}"
         aria-selected="${tab.id === active ? 'true' : 'false'}"
+        ${panelId ? `aria-controls="${escapeHtml(panelId)}"` : ''}
         tabindex="${tab.id === active ? '0' : '-1'}"
         ${tab.disabled ? 'disabled aria-disabled="true"' : ''}
       >${escapeHtml(tab.label)}</button>
-    `
-      )
+    `;
+      })
       .join('');
     return html`
       <div class="tabs" part="tabs">

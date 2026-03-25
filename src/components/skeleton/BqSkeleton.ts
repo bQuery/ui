@@ -6,18 +6,41 @@
  * @prop {string}  height   - CSS height value
  * @prop {number}  lines    - Number of text lines
  */
-import { component, html } from '@bquery/bquery/component';
 import type { ComponentDefinition } from '@bquery/bquery/component';
+import { component, html } from '@bquery/bquery/component';
 import { escapeHtml } from '@bquery/bquery/security';
 import { getBaseStyles } from '../../utils/styles.js';
 
-type BqSkeletonProps = { variant: string; width: string; height: string; lines: number };
+type BqSkeletonProps = {
+  variant: string;
+  width: string;
+  height: string;
+  lines: number;
+};
 
-const getStyleAttribute = (width: string, height: string, widthOverride?: string): string => {
+const DISALLOWED_DIMENSION_PATTERN =
+  /[;{}]|(?:url\s*\(|expression\s*\(|javascript:|data:|@import)|[\r\n]/i;
+
+const sanitizeDimension = (value: string): string => {
+  const trimmed = value.trim();
+
+  if (!trimmed) return '';
+  if (DISALLOWED_DIMENSION_PATTERN.test(trimmed)) return '';
+
+  return trimmed;
+};
+
+const getStyleAttribute = (
+  width: string,
+  height: string,
+  widthOverride?: string
+): string => {
   const styles: string[] = [];
+  const safeWidth = sanitizeDimension(widthOverride ?? width);
+  const safeHeight = sanitizeDimension(height);
 
-  if (width) styles.push(`width:${widthOverride ?? width}`);
-  if (height) styles.push(`height:${height}`);
+  if (safeWidth) styles.push(`width:${safeWidth}`);
+  if (safeHeight) styles.push(`height:${safeHeight}`);
 
   return styles.join(';');
 };
@@ -25,9 +48,9 @@ const getStyleAttribute = (width: string, height: string, widthOverride?: string
 const definition: ComponentDefinition<BqSkeletonProps> = {
   props: {
     variant: { type: String, default: 'text' },
-    width:   { type: String, default: '100%' },
-    height:  { type: String, default: '' },
-    lines:   { type: Number, default: 1 },
+    width: { type: String, default: '100%' },
+    height: { type: String, default: '' },
+    lines: { type: Number, default: 1 },
   },
   sanitize: {
     allowAttributes: ['style'],
@@ -57,12 +80,19 @@ const definition: ComponentDefinition<BqSkeletonProps> = {
   render({ props }) {
     if (props.variant === 'text' && props.lines > 1) {
       const lineStyle = getStyleAttribute(props.width, props.height);
-      const items = Array.from({ length: props.lines }, (_, i) =>
-        `<div class="skeleton" data-variant="text" part="skeleton" style="${escapeHtml(i === props.lines - 1 ? getStyleAttribute(props.width, props.height, '70%') : lineStyle)}"></div>`
+      const items = Array.from(
+        { length: props.lines },
+        (_, i) =>
+          `<div class="skeleton" data-variant="text" part="skeleton" style="${escapeHtml(i === props.lines - 1 ? getStyleAttribute(props.width, props.height, '70%') : lineStyle)}"></div>`
       ).join('');
       return html`<div class="lines" part="lines">${items}</div>`;
     }
-    return html`<div part="skeleton" class="skeleton" data-variant="${escapeHtml(props.variant)}" style="${escapeHtml(getStyleAttribute(props.width, props.height))}"></div>`;
+    return html`<div
+      part="skeleton"
+      class="skeleton"
+      data-variant="${escapeHtml(props.variant)}"
+      style="${escapeHtml(getStyleAttribute(props.width, props.height))}"
+    ></div>`;
   },
 };
 

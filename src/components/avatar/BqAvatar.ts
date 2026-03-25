@@ -8,26 +8,73 @@
  * @prop {string} status - online | away | busy | offline | ""
  * @slot - Custom content
  */
-import { component, html } from '@bquery/bquery/component';
 import type { ComponentDefinition } from '@bquery/bquery/component';
+import { component, html } from '@bquery/bquery/component';
 import { escapeHtml } from '@bquery/bquery/security';
 import { getBaseStyles } from '../../utils/styles.js';
 
-type BqAvatarProps = { src: string; alt: string; size: string; shape: string; status: string };
+type BqAvatarProps = {
+  src: string;
+  alt: string;
+  size: string;
+  shape: string;
+  status: string;
+};
+
+type GraphemeSegment = { segment: string };
+type GraphemeSegmenter = {
+  segment(input: string): Iterable<GraphemeSegment>;
+};
+
+function getGraphemes(value: string): string[] {
+  if (!value) return [];
+
+  const intlWithSegmenter = Intl as typeof Intl & {
+    Segmenter?: new (
+      locales?: string | string[],
+      options?: { granularity: 'grapheme' }
+    ) => GraphemeSegmenter;
+  };
+
+  if (intlWithSegmenter.Segmenter) {
+    const segmenter = new intlWithSegmenter.Segmenter(undefined, {
+      granularity: 'grapheme',
+    });
+    return Array.from(segmenter.segment(value), (part) => part.segment);
+  }
+
+  return Array.from(value);
+}
 
 function getInitials(alt: string): string {
-  const words = alt.trim().split(/\s+/);
+  const words = alt.trim().split(/\s+/).filter(Boolean);
   if (!words.length || !words[0]) return '?';
-  if (words.length === 1) return (words[0]?.[0] ?? '').toUpperCase();
-  return ((words[0]?.[0] ?? '') + (words[words.length - 1]?.[0] ?? '')).toUpperCase();
+
+  if (words.length === 1) {
+    const word = words[0];
+    const graphemes = getGraphemes(word);
+    if (!graphemes.length) return '?';
+
+    const isLatinLike = /[\p{Script=Latin}\p{Number}]/u.test(word);
+    const initials = isLatinLike
+      ? (graphemes[0] ?? '')
+      : graphemes.slice(0, 2).join('');
+    return initials ? initials.toLocaleUpperCase() : '?';
+  }
+
+  const firstWord = words[0] ?? '';
+  const lastWord = words[words.length - 1] ?? firstWord;
+  const first = getGraphemes(firstWord)[0] ?? '';
+  const last = getGraphemes(lastWord)[0] ?? '';
+  return `${first}${last}`.toLocaleUpperCase();
 }
 
 const definition: ComponentDefinition<BqAvatarProps> = {
   props: {
-    src:    { type: String, default: '' },
-    alt:    { type: String, default: '' },
-    size:   { type: String, default: 'md' },
-    shape:  { type: String, default: 'circle' },
+    src: { type: String, default: '' },
+    alt: { type: String, default: '' },
+    size: { type: String, default: 'md' },
+    shape: { type: String, default: 'circle' },
     status: { type: String, default: '' },
   },
   styles: `
@@ -66,10 +113,19 @@ const definition: ComponentDefinition<BqAvatarProps> = {
       ? `<img src="${escapeHtml(props.src)}" alt="${escapeHtml(props.alt)}" />`
       : `<slot>${escapeHtml(getInitials(props.alt))}</slot>`;
     const statusEl = props.status
-      ? `<span part="status" class="status" data-status="${escapeHtml(props.status)}" title="${escapeHtml(props.status)}" aria-label="${escapeHtml(props.status)}"></span>`
+      ? `<span part="status" class="status" data-status="${escapeHtml(props.status)}" role="img" aria-label="${escapeHtml(props.status)}"></span>`
       : '';
     return html`
-      <div part="avatar" class="avatar" data-size="${escapeHtml(props.size)}" data-shape="${escapeHtml(props.shape)}" role="img" aria-label="${escapeHtml(props.alt)}">${content}</div>
+      <div
+        part="avatar"
+        class="avatar"
+        data-size="${escapeHtml(props.size)}"
+        data-shape="${escapeHtml(props.shape)}"
+        role="img"
+        aria-label="${escapeHtml(props.alt)}"
+      >
+        ${content}
+      </div>
       ${statusEl}
     `;
   },

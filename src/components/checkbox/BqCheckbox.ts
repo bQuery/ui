@@ -56,7 +56,7 @@ const definition: ComponentDefinition<BqCheckboxProps> = {
     }
     input[type="checkbox"]:focus-visible { outline: 2px solid transparent; box-shadow: var(--bq-focus-ring); }
     .label-text { font-size: var(--bq-font-size-sm,0.875rem); color: var(--bq-text-base,#0f172a); font-family: var(--bq-font-family-sans); line-height: 1.5; }
-    .hint { font-size: var(--bq-font-size-sm,0.875rem); color: var(--bq-text-muted,#475569); font-family: var(--bq-font-family-sans); padding-left: 1.75rem; }
+    .hint { font-size: var(--bq-font-size-sm,0.875rem); color: var(--bq-text-muted,#475569); font-family: var(--bq-font-family-sans); padding-inline-start: 1.75rem; }
   `,
   connected() {
     const self = this;

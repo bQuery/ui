@@ -38,6 +38,17 @@ The `bq-card` component is a flexible container with optional header, body, and 
 </bq-card>
 ```
 
+## Title with Custom Header Content
+
+The `title` prop and `header` slot can be combined. When both are provided, the title is rendered first followed by the slotted header content.
+
+```html
+<bq-card title="Settings">
+  <bq-button slot="header" size="sm" variant="ghost">Edit</bq-button>
+  <p>Card body content</p>
+</bq-card>
+```
+
 ## Padding Options
 
 ```html
@@ -49,25 +60,31 @@ The `bq-card` component is a flexible container with optional header, body, and 
 
 ## Properties
 
-| Property | Type | Default | Description |
-|----------|------|---------|-------------|
-| `title` | `string` | `''` | Renders a built-in card header title |
-| `elevated` | `boolean` | `true` | Enables the default card shadow |
-| `padding` | `none \| sm \| md \| lg` | `md` | Sets the body padding |
+| Property   | Type                     | Default | Description                          |
+| ---------- | ------------------------ | ------- | ------------------------------------ |
+| `title`    | `string`                 | `''`    | Renders a built-in card header title |
+| `elevated` | `boolean`                | `true`  | Enables the default card shadow      |
+| `padding`  | `none \| sm \| md \| lg` | `md`    | Sets the body padding                |
 
 ## Slots
 
-| Slot | Description |
-|------|-------------|
-| *(default)* | Card body content |
-| `header` | Content in the card header |
-| `footer` | Content in the card footer |
+| Slot        | Description                |
+| ----------- | -------------------------- |
+| *(default)* | Card body content          |
+| `header`    | Content in the card header |
+| `footer`    | Content in the card footer |
 
 ## CSS Parts
 
-| Part | Description |
-|------|-------------|
-| `card` | Outer card container |
-| `header` | Header section |
-| `body` | Body section |
-| `footer` | Footer section |
+| Part     | Description          |
+| -------- | -------------------- |
+| `card`   | Outer card container |
+| `header` | Header section       |
+| `body`   | Body section         |
+| `footer` | Footer section       |
+
+## Accessibility
+
+- Cards use semantic HTML with heading hierarchy (`<h3>` for the title).
+- Content is accessible via normal document flow.
+- Use the `title` prop or the `header` slot to provide a meaningful heading for the card.

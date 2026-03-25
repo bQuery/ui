@@ -57,26 +57,32 @@ The `bq-alert` component displays contextual feedback messages for user actions,
 
 ## Properties
 
-| Property | Type | Default | Description |
-|----------|------|---------|-------------|
-| `variant` | `info \| success \| warning \| danger` | `info` | Visual style indicating the alert type |
-| `title` | `string` | `''` | Alert heading text |
-| `dismissible` | `boolean` | `false` | Shows a close button to dismiss the alert |
+| Property      | Type                                   | Default | Description                               |
+| ------------- | -------------------------------------- | ------- | ----------------------------------------- |
+| `variant`     | `info \| success \| warning \| danger` | `info`  | Visual style indicating the alert type    |
+| `title`       | `string`                               | `''`    | Alert heading text                        |
+| `dismissible` | `boolean`                              | `false` | Shows a close button to dismiss the alert |
 
 ## Events
 
-| Event | Detail | Description |
-|-------|--------|-------------|
-| `bq-close` | — | Fired when the alert is dismissed via the close button |
+| Event      | Detail | Description                                            |
+| ---------- | ------ | ------------------------------------------------------ |
+| `bq-close` | —      | Fired when the alert is dismissed via the close button |
 
 ## Slots
 
-| Slot | Description |
-|------|-------------|
+| Slot        | Description        |
+| ----------- | ------------------ |
 | *(default)* | Alert body content |
 
 ## CSS Parts
 
-| Part | Description |
-|------|-------------|
+| Part    | Description              |
+| ------- | ------------------------ |
 | `alert` | The main alert container |
+
+## Accessibility
+
+- Uses `role="alert"` for danger and warning variants, `role="status"` for info and success.
+- Dismissible alerts provide a close button with an accessible label.
+- Alert content is announced by screen readers when the element appears.

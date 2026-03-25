@@ -1,8 +1,10 @@
 // DOM environment is provided by tests/setup.ts (preloaded via bunfig.toml)
-import { describe, it, expect, beforeAll, afterEach } from 'bun:test';
-import { waitForFrame } from './helpers.js';
+import { afterEach, beforeAll, describe, expect, it } from 'bun:test';
+import { waitForFrame } from './helpers';
 
-const win = (globalThis as unknown as Record<string, unknown>)['window'] as Window & typeof globalThis;
+const win = (globalThis as unknown as Record<string, unknown>)[
+  'window'
+] as Window & typeof globalThis;
 const doc = win.document as unknown as Document;
 
 describe('overlay and utility component fixes', () => {
@@ -62,8 +64,11 @@ describe('overlay and utility component fixes', () => {
     dialog.setAttribute('open', '');
     await waitForFrame(2);
 
-    const closeButton = dialog.shadowRoot?.querySelector('.close-btn') as HTMLButtonElement | null;
-    const activeWithinDialog = dialog.shadowRoot?.activeElement as Element | null;
+    const closeButton = dialog.shadowRoot?.querySelector(
+      '.close-btn'
+    ) as HTMLButtonElement | null;
+    const activeWithinDialog = dialog.shadowRoot
+      ?.activeElement as Element | null;
 
     expect(closeButton).toBeTruthy();
     expect(activeWithinDialog).toBe(closeButton);
@@ -89,8 +94,11 @@ describe('overlay and utility component fixes', () => {
     dialog.setAttribute('open', '');
     await waitForFrame(2);
 
-    const dialogSurface = dialog.shadowRoot?.querySelector('.dialog') as HTMLElement | null;
-    const activeWithinDialog = dialog.shadowRoot?.activeElement as Element | null;
+    const dialogSurface = dialog.shadowRoot?.querySelector(
+      '.dialog'
+    ) as HTMLElement | null;
+    const activeWithinDialog = dialog.shadowRoot
+      ?.activeElement as Element | null;
 
     expect(dialogSurface).toBeTruthy();
     expect(activeWithinDialog).toBe(dialogSurface);
@@ -139,7 +147,9 @@ describe('overlay and utility component fixes', () => {
     dialog.setAttribute('open', '');
     await waitForFrame(2);
 
-    const insideButton = dialog.querySelector('#inside-dialog') as HTMLButtonElement | null;
+    const insideButton = dialog.querySelector(
+      '#inside-dialog'
+    ) as HTMLButtonElement | null;
     expect(insideButton).toBeTruthy();
 
     insideButton?.focus();
@@ -149,6 +159,29 @@ describe('overlay and utility component fixes', () => {
     await waitForFrame(2);
 
     expect(doc.activeElement).toBe(insideButton);
+  });
+
+  it('clears a pending dialog close timer on disconnect', async () => {
+    const dialog = doc.createElement('bq-dialog');
+    dialog.setAttribute('title', 'Example');
+    dialog.setAttribute('open', '');
+    doc.body.appendChild(dialog);
+
+    let closed = 0;
+    dialog.addEventListener('bq-close', () => {
+      closed += 1;
+    });
+
+    const closeButton = dialog.shadowRoot?.querySelector(
+      '.close-btn'
+    ) as HTMLButtonElement | null;
+    closeButton?.click();
+    dialog.remove();
+    await new Promise<void>((resolve) => setTimeout(resolve, 260));
+
+    expect(closed).toBe(0);
+    expect(dialog.hasAttribute('open')).toBe(false);
+    expect(dialog.hasAttribute('data-closing')).toBe(false);
   });
 
   it('moves focus into the drawer on open and restores it on close', async () => {
@@ -164,8 +197,11 @@ describe('overlay and utility component fixes', () => {
     drawer.setAttribute('open', '');
     await waitForFrame(2);
 
-    const closeButton = drawer.shadowRoot?.querySelector('.close-btn') as HTMLButtonElement | null;
-    const activeWithinDrawer = drawer.shadowRoot?.activeElement as Element | null;
+    const closeButton = drawer.shadowRoot?.querySelector(
+      '.close-btn'
+    ) as HTMLButtonElement | null;
+    const activeWithinDrawer = drawer.shadowRoot
+      ?.activeElement as Element | null;
 
     expect(closeButton).toBeTruthy();
     expect(activeWithinDrawer).toBe(closeButton);
@@ -192,8 +228,11 @@ describe('overlay and utility component fixes', () => {
     closeButton?.remove();
     await waitForFrame(2);
 
-    const drawerSurface = drawer.shadowRoot?.querySelector('.drawer') as HTMLElement | null;
-    const activeWithinDrawer = drawer.shadowRoot?.activeElement as Element | null;
+    const drawerSurface = drawer.shadowRoot?.querySelector(
+      '.drawer'
+    ) as HTMLElement | null;
+    const activeWithinDrawer = drawer.shadowRoot
+      ?.activeElement as Element | null;
 
     expect(drawerSurface).toBeTruthy();
     expect(drawerSurface?.getAttribute('tabindex')).toBe('-1');
@@ -243,7 +282,9 @@ describe('overlay and utility component fixes', () => {
     drawer.setAttribute('open', '');
     await waitForFrame(2);
 
-    const insideButton = drawer.querySelector('#inside-drawer') as HTMLButtonElement | null;
+    const insideButton = drawer.querySelector(
+      '#inside-drawer'
+    ) as HTMLButtonElement | null;
     expect(insideButton).toBeTruthy();
 
     insideButton?.focus();
@@ -255,18 +296,46 @@ describe('overlay and utility component fixes', () => {
     expect(doc.activeElement).toBe(insideButton);
   });
 
+  it('clears a pending drawer close timer on disconnect', async () => {
+    const drawer = doc.createElement('bq-drawer');
+    drawer.setAttribute('title', 'Example');
+    drawer.setAttribute('open', '');
+    doc.body.appendChild(drawer);
+
+    let closed = 0;
+    drawer.addEventListener('bq-close', () => {
+      closed += 1;
+    });
+
+    const closeButton = drawer.shadowRoot?.querySelector(
+      '.close-btn'
+    ) as HTMLButtonElement | null;
+    closeButton?.click();
+    drawer.remove();
+    await new Promise<void>((resolve) => setTimeout(resolve, 260));
+
+    expect(closed).toBe(0);
+    expect(drawer.hasAttribute('open')).toBe(false);
+    expect(drawer.hasAttribute('data-closing')).toBe(false);
+  });
+
   it('renders breadcrumb separators from the separator prop', async () => {
     const el = doc.createElement('bq-breadcrumbs');
     el.setAttribute('separator', '>');
-    el.innerHTML = '<a href="/">Home</a><a href="/docs">Docs</a><a href="/api">API</a>';
+    el.innerHTML =
+      '<a href="/">Home</a><a href="/docs">Docs</a><a href="/api">API</a>';
     doc.body.appendChild(el);
     await Promise.resolve();
 
-    const separators = Array.from(el.querySelectorAll('[data-bq-breadcrumb-separator]'));
+    const separators = Array.from(
+      el.querySelectorAll('[data-bq-breadcrumb-separator]')
+    );
 
     expect(separators).toHaveLength(2);
     expect(separators.map((item) => item.textContent)).toEqual(['>', '>']);
-    expect(el.querySelector('a:last-of-type')?.getAttribute('aria-current')).toBe('page');
+    expect(
+      el.querySelector('a:last-of-type')?.getAttribute('aria-current')
+    ).toBe('page');
   });
 
   it('applies width and height styles to single skeleton variants', () => {
@@ -289,10 +358,23 @@ describe('overlay and utility component fixes', () => {
     el.setAttribute('height', '18px');
     doc.body.appendChild(el);
 
-    const lines = Array.from(el.shadowRoot?.querySelectorAll('.skeleton') ?? []);
+    const lines = Array.from(
+      el.shadowRoot?.querySelectorAll('.skeleton') ?? []
+    );
     expect(lines).toHaveLength(2);
     expect(lines[0]?.getAttribute('style')).toContain('width:320px');
     expect(lines[0]?.getAttribute('style')).toContain('height:18px');
     expect(lines[1]?.getAttribute('style')).toContain('width:70%');
+  });
+
+  it('ignores unsafe skeleton dimension values instead of emitting extra CSS declarations', () => {
+    const el = doc.createElement('bq-skeleton');
+    el.setAttribute('variant', 'rect');
+    el.setAttribute('width', '240px;background:red');
+    el.setAttribute('height', '120px;position:absolute');
+    doc.body.appendChild(el);
+
+    const skeleton = el.shadowRoot?.querySelector('.skeleton');
+    expect(skeleton?.getAttribute('style')).toBe('');
   });
 });

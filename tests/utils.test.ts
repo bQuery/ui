@@ -1,7 +1,12 @@
-import { describe, it, expect, beforeEach } from 'bun:test';
+import { describe, it, expect, beforeEach, afterEach } from 'bun:test';
 import { cn } from '../src/utils/cn.js';
+import { getAnimationTimeoutMs } from '../src/utils/dom.js';
 import { setLocale, getLocale, resetLocale, t } from '../src/i18n/index.js';
 import { en } from '../src/i18n/en.js';
+
+const win = (globalThis as unknown as Record<string, unknown>)['window'] as Window &
+  typeof globalThis;
+const doc = win.document as unknown as Document;
 
 describe('cn utility', () => {
   it('should join string classes', () => {
@@ -104,5 +109,65 @@ describe('design tokens', () => {
     expect(css).toContain('--bq-color-primary-600');
     expect(css).toContain('--bq-font-family-sans');
     expect(css).toContain('--bq-radius-md');
+  });
+});
+
+describe('dom utilities', () => {
+  afterEach(() => {
+    doc.body.innerHTML = '';
+  });
+
+  it('should respect explicit 0ms animations instead of using the fallback timeout', () => {
+    const el = doc.createElement('div');
+    doc.body.appendChild(el);
+
+    const originalGetComputedStyle = win.getComputedStyle.bind(win);
+    const mockedGetComputedStyle = ((node: Element) => {
+      const styles = originalGetComputedStyle(node);
+      if (node === el) {
+        return {
+          ...styles,
+          animationName: 'fade-out',
+          animationDuration: '0s',
+          animationDelay: '0s',
+        } as CSSStyleDeclaration;
+      }
+      return styles;
+    }) as typeof win.getComputedStyle;
+
+    win.getComputedStyle = mockedGetComputedStyle;
+
+    try {
+      expect(getAnimationTimeoutMs(el, '200ms')).toBe(0);
+    } finally {
+      win.getComputedStyle = originalGetComputedStyle as typeof win.getComputedStyle;
+    }
+  });
+
+  it('should use the fallback timeout when no animation name is present', () => {
+    const el = doc.createElement('div');
+    doc.body.appendChild(el);
+
+    const originalGetComputedStyle = win.getComputedStyle.bind(win);
+    const mockedGetComputedStyle = ((node: Element) => {
+      const styles = originalGetComputedStyle(node);
+      if (node === el) {
+        return {
+          ...styles,
+          animationName: 'none',
+          animationDuration: '600ms',
+          animationDelay: '25ms',
+        } as CSSStyleDeclaration;
+      }
+      return styles;
+    }) as typeof win.getComputedStyle;
+
+    win.getComputedStyle = mockedGetComputedStyle;
+
+    try {
+      expect(getAnimationTimeoutMs(el, '200ms')).toBe(200);
+    } finally {
+      win.getComputedStyle = originalGetComputedStyle as typeof win.getComputedStyle;
+    }
   });
 });

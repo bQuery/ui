@@ -69,6 +69,25 @@ describe('BqSlider', () => {
     expect(input?.getAttribute('aria-valuemin')).toBe('10');
     expect(input?.getAttribute('aria-valuemax')).toBe('90');
     expect(input?.getAttribute('aria-valuenow')).toBe('50');
+    expect(input?.getAttribute('aria-valuetext')).toBe('Value: 50');
+  });
+
+  it('should update live value and ARIA state during input without re-rendering', () => {
+    const el = doc.createElement('bq-slider');
+    el.setAttribute('show-value', '');
+    el.setAttribute('value', '40');
+    doc.body.appendChild(el);
+
+    const input = el.shadowRoot?.querySelector('input') as HTMLInputElement;
+    const valueEl = el.shadowRoot?.querySelector('.value');
+
+    input.value = '65';
+    input.dispatchEvent(new Event('input', { bubbles: true, composed: true }));
+
+    expect(el.getAttribute('value')).toBe('40');
+    expect(valueEl?.textContent).toBe('65');
+    expect(input.getAttribute('aria-valuenow')).toBe('65');
+    expect(input.getAttribute('aria-valuetext')).toBe('Value: 65');
   });
 
   it('should create form proxy hidden input', () => {
@@ -160,5 +179,37 @@ describe('BqPagination', () => {
     ) as HTMLElement;
     page2?.click();
     expect(firedPage).toBe(2);
+  });
+
+  it('should hide pagination ellipses from assistive technology', () => {
+    const el = doc.createElement('bq-pagination');
+    el.setAttribute('total', '12');
+    el.setAttribute('page', '6');
+    doc.body.appendChild(el);
+
+    const ellipsis = el.shadowRoot?.querySelector('.ellipsis');
+    expect(ellipsis?.getAttribute('aria-hidden')).toBe('true');
+  });
+
+  it('should clamp out-of-range page values when rendering controls', () => {
+    const el = doc.createElement('bq-pagination');
+    el.setAttribute('total', '5');
+    el.setAttribute('page', '99');
+    doc.body.appendChild(el);
+
+    const current = el.shadowRoot?.querySelector('[aria-current="page"]');
+    const prevButton = el.shadowRoot?.querySelector(
+      '.page-btn[data-page="4"]'
+    ) as HTMLButtonElement | null;
+    const nextButton = el.shadowRoot?.querySelector(
+      '.page-btn[aria-label]'
+    )?.parentElement?.querySelector('.page-btn:last-child') as
+      | HTMLButtonElement
+      | null;
+
+    expect(current?.textContent?.trim()).toBe('5');
+    expect(prevButton).toBeTruthy();
+    expect(nextButton?.getAttribute('data-page')).toBe('6');
+    expect(nextButton?.hasAttribute('disabled')).toBe(true);
   });
 });

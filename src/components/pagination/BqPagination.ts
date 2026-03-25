@@ -24,10 +24,12 @@ function buildPages(
   total: number,
   siblings: number
 ): Array<number | '...'> {
+  if (total <= 0) return [1];
+  const validPage = Math.max(1, Math.min(page, total));
   if (total <= 7 + siblings * 2)
     return Array.from({ length: total }, (_, i) => i + 1);
-  const left = Math.max(2, page - siblings);
-  const right = Math.min(total - 1, page + siblings);
+  const left = Math.max(2, validPage - siblings);
+  const right = Math.min(total - 1, validPage + siblings);
   const showLeft = left > 2;
   const showRight = right < total - 1;
   const pages: Array<number | '...'> = [1];
@@ -99,7 +101,7 @@ const definition: ComponentDefinition<BqPaginationProps> = {
     if (h) this.shadowRoot?.removeEventListener('click', h);
   },
   render({ props }) {
-    const page = props.page;
+    const page = Math.max(1, Math.min(props.page, props.total || 1));
     const total = props.total;
     const siblings = props['sibling-count'];
     const pages = buildPages(page, total, siblings);
@@ -107,8 +109,9 @@ const definition: ComponentDefinition<BqPaginationProps> = {
     const nextDisabled = page >= total || props.disabled;
     const pageItems = pages
       .map((p) => {
-        if (p === '...') return '<span class="ellipsis">&#8230;</span>';
-        return `<button class="page-btn" data-page="${p}" data-current="${p === page ? 'true' : 'false'}" ${p === page ? 'aria-current="page"' : ''} type="button">${p}</button>`;
+        if (p === '...')
+          return '<span class="ellipsis" role="separator" aria-hidden="true">&#8230;</span>';
+        return `<button class="page-btn" data-page="${p}" data-current="${p === page ? 'true' : 'false'}" ${p === page ? 'aria-current="page"' : ''} type="button" aria-label="${t('pagination.page')} ${p}">${p}</button>`;
       })
       .join('');
     return html`

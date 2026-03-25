@@ -96,6 +96,14 @@ const definition: ComponentDefinition<BqChipProps> = {
       }
       if (!isEnterKeydown && !isSpaceKeyup) return;
       e.preventDefault();
+      // Handle remove button activation via keyboard
+      const focusedTarget = ke.target as HTMLElement | null;
+      if (focusedTarget?.closest('.remove-btn')) {
+        self.dispatchEvent(
+          new CustomEvent('bq-remove', { bubbles: true, composed: true })
+        );
+        return;
+      }
       self.dispatchEvent(
         new CustomEvent('bq-click', { bubbles: true, composed: true })
       );

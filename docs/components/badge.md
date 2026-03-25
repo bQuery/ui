@@ -53,3 +53,8 @@ The `bq-badge` component is a small status or label indicator.
 | Part    | Description       |
 | ------- | ----------------- |
 | `badge` | The badge element |
+
+## Accessibility
+
+- Badges are purely presentational and should not convey critical information alone.
+- When a badge conveys status, pair it with an `aria-label` or visible text for screen readers.

@@ -208,23 +208,33 @@ const definition: ComponentDefinition<BqTextareaProps, BqTextareaState> = {
           ${props.readonly ? 'readonly' : ''}
           ${props.required ? 'required' : ''}
           aria-invalid="${hasError ? 'true' : 'false'}"
+          ${props.required ? 'aria-required="true"' : ''}
           ${describedBy ? `aria-describedby="${describedBy}"` : ''}
         >${escapeHtml(props.value)}</textarea>
         ${hasFooter
           ? `<div class="footer" part="footer">
               <span>
-                ${hasError
-                  ? `<span class="error-msg" id="${uid}-err" role="alert" part="error">${escapeHtml(props.error)}</span>`
-                  : ''}
-                ${props.hint && !hasError
-                  ? `<span class="hint" id="${uid}-hint" part="hint">${escapeHtml(props.hint)}</span>`
-                  : ''}
+                ${
+                  hasError
+                    ? `<span class="error-msg" id="${uid}-err" role="alert" part="error">${escapeHtml(props.error)}</span>`
+                    : ''
+                }
+                ${
+                  props.hint && !hasError
+                    ? `<span class="hint" id="${uid}-hint" part="hint">${escapeHtml(props.hint)}</span>`
+                    : ''
+                }
               </span>
-              ${showCounter
-                ? `<span class="counter" id="${uid}-counter" part="counter" data-over="${isOver ? 'true' : 'false'}" aria-live="polite">${escapeHtml(
-                    t('input.characterCount', { count: charCount, max: maxLen }),
-                  )}</span>`
-                : ''}
+              ${
+                showCounter
+                  ? `<span class="counter" id="${uid}-counter" part="counter" data-over="${isOver ? 'true' : 'false'}" aria-live="polite">${escapeHtml(
+                      t('input.characterCount', {
+                        count: charCount,
+                        max: maxLen,
+                      })
+                    )}</span>`
+                  : ''
+              }
             </div>`
           : ''}
       </div>

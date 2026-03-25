@@ -8,8 +8,8 @@
  * @slot header  - Custom header
  * @slot footer  - Card footer
  */
-import { component, html } from '@bquery/bquery/component';
 import type { ComponentDefinition } from '@bquery/bquery/component';
+import { component, html } from '@bquery/bquery/component';
 import { escapeHtml } from '@bquery/bquery/security';
 import { getBaseStyles } from '../../utils/styles.js';
 
@@ -17,9 +17,9 @@ type BqCardProps = { title: string; elevated: boolean; padding: string };
 
 const definition: ComponentDefinition<BqCardProps> = {
   props: {
-    title:    { type: String, default: '' },
+    title: { type: String, default: '' },
     elevated: { type: Boolean, default: true },
-    padding:  { type: String, default: 'md' },
+    padding: { type: String, default: 'md' },
   },
   styles: `
     ${getBaseStyles()}
@@ -36,6 +36,7 @@ const definition: ComponentDefinition<BqCardProps> = {
       padding: var(--bq-space-5,1.25rem) var(--bq-space-6,1.5rem);
       border-bottom: 1px solid var(--bq-border-base,#e2e8f0);
     }
+    .card-header:empty { display: none; }
     .card-title { font-size: var(--bq-font-size-lg,1.125rem); font-weight: var(--bq-font-weight-semibold,600); color: var(--bq-text-base,#0f172a); margin: 0; }
     .card-body[data-padding="none"] { padding: 0; }
     .card-body[data-padding="sm"]   { padding: var(--bq-space-3,0.75rem); }
@@ -49,12 +50,17 @@ const definition: ComponentDefinition<BqCardProps> = {
     .card-footer:empty { display: none; }
   `,
   render({ props }) {
-    const headerSlot = '<slot name="header"></slot>';
-    const title = props.title ? `<div class="card-header" part="header"><h3 class="card-title">${escapeHtml(props.title)}</h3></div>` : headerSlot;
+    const headerContent = props.title
+      ? `<div class="card-header" part="header"><h3 class="card-title">${escapeHtml(props.title)}</h3><slot name="header"></slot></div>`
+      : '<slot name="header"></slot>';
     return html`
       <article part="card" class="card">
-        ${title}
-        <div part="body" class="card-body" data-padding="${escapeHtml(props.padding)}">
+        ${headerContent}
+        <div
+          part="body"
+          class="card-body"
+          data-padding="${escapeHtml(props.padding)}"
+        >
           <slot></slot>
         </div>
         <div part="footer" class="card-footer"><slot name="footer"></slot></div>

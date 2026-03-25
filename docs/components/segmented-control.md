@@ -73,52 +73,53 @@ The host can disable the entire control, and individual segment buttons can also
 
 ## Properties
 
-| Property | Type | Default | Description |
-| --- | --- | --- | --- |
-| `label` | `string` | `''` | Visible group label. Also used to label the radiogroup. |
-| `hint` | `string` | `''` | Supporting copy rendered below the control and linked with `aria-describedby`. |
-| `name` | `string` | `''` | Form field name used for the hidden proxy input. |
-| `value` | `string` | `''` | Selected segment value. Falls back to the first enabled segment when omitted. |
-| `size` | `sm \| md \| lg` | `md` | Controls the segment button sizing. |
-| `full-width` | `boolean` | `false` | Expands the control and evenly distributes each segment. |
-| `disabled` | `boolean` | `false` | Disables the entire control. |
-| `aria-label` | `string` | `''` | Accessible label when you do not render a visible `label`. |
+| Property     | Type             | Default | Description                                                                    |
+| ------------ | ---------------- | ------- | ------------------------------------------------------------------------------ |
+| `label`      | `string`         | `''`    | Visible group label. Also used to label the radiogroup.                        |
+| `hint`       | `string`         | `''`    | Supporting copy rendered below the control and linked with `aria-describedby`. |
+| `name`       | `string`         | `''`    | Form field name used for the hidden proxy input.                               |
+| `value`      | `string`         | `''`    | Selected segment value. Falls back to the first enabled segment when omitted.  |
+| `size`       | `sm \| md \| lg` | `md`    | Controls the segment button sizing.                                            |
+| `full-width` | `boolean`        | `false` | Expands the control and evenly distributes each segment.                       |
+| `disabled`   | `boolean`        | `false` | Disables the entire control.                                                   |
+| `aria-label` | `string`         | `''`    | Accessible label when you do not render a visible `label`.                     |
 
 ## Events
 
-| Event | Detail | Description |
-| --- | --- | --- |
+| Event       | Detail              | Description                              |
+| ----------- | ------------------- | ---------------------------------------- |
 | `bq-change` | `{ value: string }` | Fired when the selected segment changes. |
 
 ## Slots
 
-| Slot | Description |
-| --- | --- |
+| Slot        | Description                                                                                                               |
+| ----------- | ------------------------------------------------------------------------------------------------------------------------- |
 | *(default)* | Segment buttons. Use native `<button value="...">...</button>` elements for the best accessibility and keyboard behavior. |
 
 ## CSS Parts
 
-| Part | Description |
-| --- | --- |
-| `field` | Wrapper around label, control, and hint |
-| `label` | Visible group label |
-| `control` | Segmented control track |
-| `hint` | Supporting text |
+| Part      | Description                             |
+| --------- | --------------------------------------- |
+| `field`   | Wrapper around label, control, and hint |
+| `label`   | Visible group label                     |
+| `control` | Segmented control track                 |
+| `hint`    | Supporting text                         |
 
 ## Keyboard Interactions
 
-| Key | Action |
-| --- | --- |
-| `ArrowRight` / `ArrowDown` | Moves to the next enabled segment and selects it |
-| `ArrowLeft` / `ArrowUp` | Moves to the previous enabled segment and selects it |
-| `Home` | Selects the first enabled segment |
-| `End` | Selects the last enabled segment |
-| `Enter` / `Space` | Selects the focused segment |
+| Key                        | Action                                               |
+| -------------------------- | ---------------------------------------------------- |
+| `ArrowRight` / `ArrowDown` | Moves to the next enabled segment and selects it     |
+| `ArrowLeft` / `ArrowUp`    | Moves to the previous enabled segment and selects it |
+| `Home`                     | Selects the first enabled segment                    |
+| `End`                      | Selects the last enabled segment                     |
+| `Enter` / `Space`          | Selects the focused segment                          |
 
 ## Accessibility Notes
 
 - The control uses `role="radiogroup"` and each slotted button receives `role="radio"` with `aria-checked`.
 - A visible `label` is preferred. If the UI should stay label-free, pass a localizable `aria-label`.
+- When neither `label` nor `aria-label` is provided, the radiogroup falls back to a localized generic label so it never becomes unnamed.
 - The selected segment keeps `tabindex="0"` while inactive or disabled items move to `tabindex="-1"` to support roving focus.
 - Arrow-key behavior follows the WAI-ARIA radio-group pattern and respects RTL layouts for horizontal navigation.
 
