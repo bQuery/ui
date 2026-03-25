@@ -47,8 +47,6 @@ For the full catalog and feature coverage, see [`docs/components/index.md`](./do
 npm install @bquery/ui
 ```
 
-Current release for the CDN-ready root bundles: **v1.1.0**
-
 ### Import once
 
 ```ts
@@ -74,7 +72,7 @@ import '@bquery/ui';
 </script>
 
 <!-- UMD -->
-<script src="https://cdn.jsdelivr.net/npm/@bquery/ui@1.1.0"></script>
+<script src="https://cdn.jsdelivr.net/npm/@bquery/ui@1.1.0/dist/index.umd.js"></script>
 
 <!-- IIFE -->
 <script src="https://cdn.jsdelivr.net/npm/@bquery/ui@1.1.0/dist/index.iife.js"></script>

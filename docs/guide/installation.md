@@ -33,7 +33,7 @@ bun add @bquery/ui
 ```
 
 ```html [UMD]
-<script src="https://cdn.jsdelivr.net/npm/@bquery/ui@1.1.0"></script>
+<script src="https://cdn.jsdelivr.net/npm/@bquery/ui@1.1.0/dist/index.umd.js"></script>
 ```
 
 ```html [IIFE]
