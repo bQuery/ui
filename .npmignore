@@ -1,0 +1,36 @@
+# Publish only runtime artifacts and package metadata.
+# Note: package.json already uses a `files` whitelist; this file adds an
+# extra defensive layer for development-only content and future changes.
+
+# Source and development-only directories
+src/
+stories/
+tests/
+docs/
+.storybook/
+.github/
+coverage/
+storybook-static/
+
+# Local dependencies and caches
+node_modules/
+.cache/
+docs/.vitepress/cache/
+docs/.vitepress/dist/
+.storybook/cache/
+
+# Environment and logs
+.env
+.env.*
+*.log
+
+# Tooling and workspace files
+AGENT.md
+bun.lock
+bunfig.toml
+tsconfig.json
+vite.config.ts
+tailwind.config.ts
+postcss.config.js
+package-lock.json
+.DS_Store
