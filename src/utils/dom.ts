@@ -96,16 +96,28 @@ export function getAnimationTimeoutMs(
   el: Element,
   fallbackDuration = '0ms'
 ): number {
+  const fallbackMs = parseTimeValueToMs(fallbackDuration);
   const view = el.ownerDocument.defaultView;
-  if (!view?.getComputedStyle) return parseTimeValueToMs(fallbackDuration);
+  if (!view?.getComputedStyle) return fallbackMs;
 
   const styles = view.getComputedStyle(el);
-  const durations = styles.animationDuration
-    .split(',')
-    .map((value) => parseTimeValueToMs(value));
-  const delays = styles.animationDelay
-    .split(',')
-    .map((value) => parseTimeValueToMs(value));
+  const animationDuration = styles.animationDuration || '';
+  const animationDelay = styles.animationDelay || '';
+  const animationName = styles.animationName || '';
+  const durationValues = animationDuration.split(',');
+  const delayValues = animationDelay.split(',');
+  const hasTimingValues =
+    durationValues.some((value) => value.trim() !== '') ||
+    delayValues.some((value) => value.trim() !== '');
+  const hasRealAnimationName = animationName.split(',').some((name) => {
+    const trimmed = name.trim();
+    return trimmed !== '' && trimmed !== 'none';
+  });
+
+  if (!hasTimingValues) return fallbackMs;
+
+  const durations = durationValues.map((value) => parseTimeValueToMs(value));
+  const delays = delayValues.map((value) => parseTimeValueToMs(value));
   const count = Math.max(durations.length, delays.length);
 
   let longest = 0;
@@ -115,7 +127,7 @@ export function getAnimationTimeoutMs(
     longest = Math.max(longest, duration + delay);
   }
 
-  return longest > 0 ? longest : parseTimeValueToMs(fallbackDuration);
+  return longest > 0 || hasRealAnimationName ? longest : fallbackMs;
 }
 
 /**
