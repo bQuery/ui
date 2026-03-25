@@ -8,6 +8,21 @@
   "types": "./dist-types/index.d.ts",
   "unpkg": "./dist/index.umd.js",
   "jsdelivr": "./dist/index.umd.js",
+  "keywords": [
+    "bquery",
+    "ui",
+    "component-library",
+    "ui-library",
+    "web-components",
+    "custom-elements",
+    "shadow-dom",
+    "design-system",
+    "design-tokens",
+    "framework-agnostic",
+    "typescript",
+    "accessible-components",
+    "a11y"
+  ],
   "exports": {
     ".": {
       "import": "./dist/index.js",
