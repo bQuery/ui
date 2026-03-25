@@ -21,6 +21,7 @@ It is designed to give teams the kind of component coverage, polish, accessibili
 - **Accessible by default** with keyboard support, ARIA roles, focus management, and screen reader announcements
 - **Themeable via design tokens** and CSS custom properties
 - **Tree-shakeable ESM exports** with per-component imports
+- **CDN-ready root bundles** for ES modules, UMD, and IIFE delivery
 - **Built-in dark mode, i18n, and event-driven APIs**
 
 ## Component Coverage

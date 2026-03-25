@@ -6,6 +6,8 @@
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
   "types": "./dist-types/index.d.ts",
+  "unpkg": "./dist/index.umd.js",
+  "jsdelivr": "./dist/index.umd.js",
   "exports": {
     ".": {
       "import": "./dist/index.js",
@@ -55,8 +57,9 @@
   ],
   "scripts": {
     "dev": "vite",
-    "build": "npm run build:lib && npm run build:types",
+    "build": "npm run build:lib && npm run build:cdn && npm run build:types",
     "build:lib": "vite build",
+    "build:cdn": "vite build --config vite.cdn.config.ts",
     "build:types": "tsc --emitDeclarationOnly --outDir dist-types",
     "build:docs": "vitepress build docs",
     "dev:docs": "vitepress dev docs",
