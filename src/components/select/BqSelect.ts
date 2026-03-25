@@ -197,7 +197,6 @@ const definition: ComponentDefinition<BqSelectProps, BqSelectState> = {
         );
       }
     };
-    const syncValue = () => syncSelectValue(self);
     const observer = new MutationObserver(() => {
       syncOptions();
     });
@@ -210,7 +209,6 @@ const definition: ComponentDefinition<BqSelectProps, BqSelectState> = {
     });
 
     (self as unknown as Record<string, unknown>)['_handler'] = handler;
-    (self as unknown as Record<string, unknown>)['_syncValue'] = syncValue;
     (self as unknown as Record<string, unknown>)['_syncOptions'] = syncOptions;
     (self as unknown as Record<string, unknown>)['_observer'] = observer;
     self.shadowRoot?.addEventListener('change', handler);
