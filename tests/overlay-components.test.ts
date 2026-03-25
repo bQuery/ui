@@ -161,6 +161,29 @@ describe('overlay and utility component fixes', () => {
     expect(doc.activeElement).toBe(insideButton);
   });
 
+  it('clears a pending dialog close timer on disconnect', async () => {
+    const dialog = doc.createElement('bq-dialog');
+    dialog.setAttribute('title', 'Example');
+    dialog.setAttribute('open', '');
+    doc.body.appendChild(dialog);
+
+    let closed = 0;
+    dialog.addEventListener('bq-close', () => {
+      closed += 1;
+    });
+
+    const closeButton = dialog.shadowRoot?.querySelector(
+      '.close-btn'
+    ) as HTMLButtonElement | null;
+    closeButton?.click();
+    dialog.remove();
+    await new Promise<void>((resolve) => setTimeout(resolve, 260));
+
+    expect(closed).toBe(0);
+    expect(dialog.hasAttribute('open')).toBe(false);
+    expect(dialog.hasAttribute('data-closing')).toBe(false);
+  });
+
   it('moves focus into the drawer on open and restores it on close', async () => {
     const trigger = doc.createElement('button');
     trigger.textContent = 'Open drawer';
@@ -271,6 +294,29 @@ describe('overlay and utility component fixes', () => {
     await waitForFrame(2);
 
     expect(doc.activeElement).toBe(insideButton);
+  });
+
+  it('clears a pending drawer close timer on disconnect', async () => {
+    const drawer = doc.createElement('bq-drawer');
+    drawer.setAttribute('title', 'Example');
+    drawer.setAttribute('open', '');
+    doc.body.appendChild(drawer);
+
+    let closed = 0;
+    drawer.addEventListener('bq-close', () => {
+      closed += 1;
+    });
+
+    const closeButton = drawer.shadowRoot?.querySelector(
+      '.close-btn'
+    ) as HTMLButtonElement | null;
+    closeButton?.click();
+    drawer.remove();
+    await new Promise<void>((resolve) => setTimeout(resolve, 260));
+
+    expect(closed).toBe(0);
+    expect(drawer.hasAttribute('open')).toBe(false);
+    expect(drawer.hasAttribute('data-closing')).toBe(false);
   });
 
   it('renders breadcrumb separators from the separator prop', async () => {

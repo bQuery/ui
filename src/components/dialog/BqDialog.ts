@@ -16,6 +16,7 @@ import { t } from '../../i18n/index.js';
 import type { OverlayFocusState } from '../../utils/dom.js';
 import {
   cleanupOverlayFocus,
+  getAnimationTimeoutMs,
   uniqueId,
   updateOverlayFocus,
 } from '../../utils/dom.js';
@@ -28,6 +29,7 @@ type BqDialogProps = {
   dismissible: boolean;
 };
 type BqDialogState = { titleId: string };
+const NORMAL_DURATION = '200ms';
 
 const definition: ComponentDefinition<BqDialogProps, BqDialogState> = {
   props: {
@@ -87,6 +89,7 @@ const definition: ComponentDefinition<BqDialogProps, BqDialogState> = {
       getState<T>(k: string): T;
     };
     const self = this as unknown as BQEl;
+    const record = self as unknown as Record<string, unknown>;
     if (!self.getState<string>('titleId'))
       self.setState('titleId', uniqueId('bq-dlg-title'));
     // Escape key handler
@@ -100,10 +103,20 @@ const definition: ComponentDefinition<BqDialogProps, BqDialogState> = {
     };
     const close = () => {
       if (self.hasAttribute('data-closing')) return;
+      const clearCloseTimer = () => {
+        const closeTimer = record['_closeTimer'] as
+          | ReturnType<typeof setTimeout>
+          | undefined;
+        if (closeTimer) {
+          clearTimeout(closeTimer);
+          delete record['_closeTimer'];
+        }
+      };
       const reducedMotion = self.ownerDocument.defaultView?.matchMedia?.(
         '(prefers-reduced-motion: reduce)'
       )?.matches;
       const finalize = () => {
+        clearCloseTimer();
         self.removeAttribute('data-closing');
         self.removeAttribute('open');
         self.dispatchEvent(
@@ -114,7 +127,15 @@ const definition: ComponentDefinition<BqDialogProps, BqDialogState> = {
         finalize();
       } else {
         self.setAttribute('data-closing', '');
-        setTimeout(finalize, 200);
+        const overlay = self.shadowRoot?.querySelector('.overlay');
+        const timeoutMs = overlay
+          ? getAnimationTimeoutMs(overlay, NORMAL_DURATION)
+          : 0;
+        if (timeoutMs <= 0) {
+          finalize();
+        } else {
+          record['_closeTimer'] = setTimeout(finalize, Math.ceil(timeoutMs) + 20);
+        }
       }
     };
     const ch = (e: Event) => {
@@ -136,6 +157,13 @@ const definition: ComponentDefinition<BqDialogProps, BqDialogState> = {
     if (oh) this.shadowRoot?.removeEventListener('click', oh);
     const ch = s['_ch'] as EventListener | undefined;
     if (ch) this.shadowRoot?.removeEventListener('click', ch);
+    const closeTimer = s['_closeTimer'] as ReturnType<typeof setTimeout> | undefined;
+    if (closeTimer) {
+      clearTimeout(closeTimer);
+      delete s['_closeTimer'];
+      this.removeAttribute('data-closing');
+      this.removeAttribute('open');
+    }
   },
   updated() {
     updateOverlayFocus(this, this as unknown as OverlayFocusState, '.dialog');

@@ -234,4 +234,17 @@ describe('BqTooltip', () => {
     );
     expect(tip?.getAttribute('aria-hidden')).toBe('true');
   });
+
+  it('should not attach aria-describedby after disconnecting before the microtask runs', async () => {
+    const el = doc.createElement('bq-tooltip');
+    el.setAttribute('content', 'Helpful hint');
+    el.innerHTML = '<button type="button">Hover me</button>';
+    doc.body.appendChild(el);
+
+    const trigger = el.querySelector('button');
+    el.remove();
+    await Promise.resolve();
+
+    expect(trigger?.hasAttribute('aria-describedby')).toBe(false);
+  });
 });

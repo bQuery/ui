@@ -84,6 +84,53 @@ export function uniqueId(prefix = 'bq'): string {
   return `${prefix}-${++_counter}`;
 }
 
+function parseTimeValueToMs(value: string): number {
+  const trimmed = value.trim();
+  if (!trimmed) return 0;
+  if (trimmed.endsWith('ms')) return Number.parseFloat(trimmed);
+  if (trimmed.endsWith('s')) return Number.parseFloat(trimmed) * 1000;
+  return Number.parseFloat(trimmed) || 0;
+}
+
+export function getAnimationTimeoutMs(
+  el: Element,
+  fallbackDuration = '0ms'
+): number {
+  const fallbackMs = parseTimeValueToMs(fallbackDuration);
+  const view = el.ownerDocument.defaultView;
+  if (!view?.getComputedStyle) return fallbackMs;
+
+  const styles = view.getComputedStyle(el);
+  const animationDuration = styles.animationDuration || '';
+  const animationDelay = styles.animationDelay || '';
+  const animationName = styles.animationName || '';
+  const durationValues = animationDuration.split(',');
+  const delayValues = animationDelay.split(',');
+  const hasTimingValues =
+    durationValues.some((value) => value.trim() !== '') ||
+    delayValues.some((value) => value.trim() !== '');
+  const hasRealAnimationName = animationName.split(',').some((name) => {
+    const trimmed = name.trim();
+    return trimmed !== '' && trimmed !== 'none';
+  });
+
+  if (!hasTimingValues) return fallbackMs;
+
+  const durations = durationValues.map((value) => parseTimeValueToMs(value));
+  const delays = delayValues.map((value) => parseTimeValueToMs(value));
+  const count = Math.max(durations.length, delays.length);
+
+  let longest = 0;
+  for (let i = 0; i < count; i += 1) {
+    const duration = durations[i] ?? durations[durations.length - 1] ?? 0;
+    const delay = delays[i] ?? delays[delays.length - 1] ?? 0;
+    longest = Math.max(longest, duration + delay);
+  }
+
+  if (!hasRealAnimationName) return fallbackMs;
+  return longest;
+}
+
 /**
  * Manages focus trapping, initial focus, and focus restoration for overlay
  * components (Dialog, Drawer). Call from `updated()`.

@@ -190,4 +190,26 @@ describe('BqPagination', () => {
     const ellipsis = el.shadowRoot?.querySelector('.ellipsis');
     expect(ellipsis?.getAttribute('aria-hidden')).toBe('true');
   });
+
+  it('should clamp out-of-range page values when rendering controls', () => {
+    const el = doc.createElement('bq-pagination');
+    el.setAttribute('total', '5');
+    el.setAttribute('page', '99');
+    doc.body.appendChild(el);
+
+    const current = el.shadowRoot?.querySelector('[aria-current="page"]');
+    const prevButton = el.shadowRoot?.querySelector(
+      '.page-btn[data-page="4"]'
+    ) as HTMLButtonElement | null;
+    const nextButton = el.shadowRoot?.querySelector(
+      '.page-btn[aria-label]'
+    )?.parentElement?.querySelector('.page-btn:last-child') as
+      | HTMLButtonElement
+      | null;
+
+    expect(current?.textContent?.trim()).toBe('5');
+    expect(prevButton).toBeTruthy();
+    expect(nextButton?.getAttribute('data-page')).toBe('6');
+    expect(nextButton?.hasAttribute('disabled')).toBe(true);
+  });
 });

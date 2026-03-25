@@ -189,6 +189,7 @@ describe('BqAccordion — accessibility improvements', () => {
       if (node.classList.contains('panel')) {
         return {
           ...styles,
+          animationName: 'panel-close',
           animationDuration: '600ms',
           animationDelay: '0s',
         } as CSSStyleDeclaration;
