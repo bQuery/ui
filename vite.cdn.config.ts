@@ -16,7 +16,7 @@ export default defineConfig({
       },
     },
     sourcemap: true,
-    minify: false,
+    minify: true,
     target: 'es2020',
   },
   resolve: {
