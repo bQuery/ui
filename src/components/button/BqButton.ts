@@ -14,7 +14,7 @@
  * @slot suffix-icon - Icon after content
  * @fires bq-click - { originalEvent: Event }
  */
-import { component, html } from '@bquery/bquery/component';
+import { bool, component, html } from '@bquery/bquery/component';
 import type { ComponentDefinition } from '@bquery/bquery/component';
 import { escapeHtml } from '@bquery/bquery/security';
 import { t } from '../../i18n/index.js';
@@ -132,7 +132,7 @@ const definition: ComponentDefinition<BqButtonProps, BqButtonState> = {
         ${props.href ? `href="${escapeHtml(props.href)}"` : ''}
         ${isLink && normalizedTarget ? `target="${escapeHtml(normalizedTarget)}"` : ''}
         ${isLink && safeRel ? `rel="${escapeHtml(safeRel)}"` : ''}
-        ${!isLink && disabled ? 'disabled' : ''}
+        ${bool('disabled', !isLink && disabled)}
         ${disabled ? 'aria-disabled="true"' : ''}
         ${isLink && disabled ? 'tabindex="-1"' : ''}
         ${props.loading ? 'aria-busy="true"' : ''}

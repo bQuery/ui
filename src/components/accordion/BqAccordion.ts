@@ -9,7 +9,7 @@
  * @fires bq-toggle - { open: boolean }
  */
 import type { ComponentDefinition } from '@bquery/bquery/component';
-import { component, html } from '@bquery/bquery/component';
+import { bool, component, html } from '@bquery/bquery/component';
 import { escapeHtml } from '@bquery/bquery/security';
 import { getAnimationTimeoutMs, uniqueId } from '../../utils/dom.js';
 import { getBaseStyles } from '../../utils/styles.js';
@@ -221,7 +221,8 @@ const definition: ComponentDefinition<BqAccordionProps, BqAccordionState> = {
           id="${triggerId}"
           aria-expanded="${props.open ? 'true' : 'false'}"
           aria-controls="${panelId}"
-          ${props.disabled ? 'disabled aria-disabled="true"' : ''}
+          ${bool('disabled', props.disabled)}
+          ${props.disabled ? 'aria-disabled="true"' : ''}
         >
           <span part="label">${escapeHtml(props.label)}</span>
           <span class="icon" aria-hidden="true">&#9662;</span>

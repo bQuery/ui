@@ -9,7 +9,7 @@
  * @fires bq-change - { checked: boolean }
  */
 import type { ComponentDefinition } from '@bquery/bquery/component';
-import { component, html } from '@bquery/bquery/component';
+import { bool, component, html } from '@bquery/bquery/component';
 import { escapeHtml } from '@bquery/bquery/security';
 import { createFormProxy, type FormProxy } from '../../utils/form.js';
 import { getBaseStyles } from '../../utils/styles.js';
@@ -119,8 +119,8 @@ const definition: ComponentDefinition<BqSwitchProps> = {
             type="checkbox"
             part="input"
             name="${escapeHtml(props.name)}"
-            ${props.checked ? 'checked' : ''}
-            ${props.disabled ? 'disabled' : ''}
+            ${bool('checked', props.checked)}
+            ${bool('disabled', props.disabled)}
             role="switch"
             aria-checked="${props.checked ? 'true' : 'false'}"
             aria-label="${escapeHtml(props.label)}"

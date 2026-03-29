@@ -11,7 +11,7 @@
  * @slot - Icon content
  * @fires bq-click
  */
-import { component, html } from '@bquery/bquery/component';
+import { bool, component, html } from '@bquery/bquery/component';
 import type { ComponentDefinition } from '@bquery/bquery/component';
 import { escapeHtml } from '@bquery/bquery/security';
 import { t } from '../../i18n/index.js';
@@ -105,7 +105,7 @@ const definition: ComponentDefinition<BqIconButtonProps, BqIconButtonState> = {
         ${trimmedTitle ? `title="${escapeHtml(trimmedTitle)}"` : ''}
         ${!isLink ? 'type="button"' : ''}
         ${props.href ? `href="${escapeHtml(props.href)}"` : ''}
-        ${!isLink && disabled ? 'disabled' : ''}
+        ${bool('disabled', !isLink && disabled)}
         ${disabled ? 'aria-disabled="true"' : ''}
         ${isLink && disabled ? 'tabindex="-1"' : ''}
         ${props.loading ? `aria-busy="true" aria-describedby="${escapeHtml(statusId)}"` : ''}
