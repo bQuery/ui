@@ -14,7 +14,7 @@
  * @fires bq-change - { value: string }
  */
 import type { ComponentDefinition } from '@bquery/bquery/component';
-import { component, html } from '@bquery/bquery/component';
+import { bool, component, html } from '@bquery/bquery/component';
 import { escapeHtml } from '@bquery/bquery/security';
 import { uniqueId } from '../../utils/dom.js';
 import { createFormProxy, type FormProxy } from '../../utils/form.js';
@@ -251,8 +251,8 @@ const definition: ComponentDefinition<BqSelectProps, BqSelectState> = {
             part="select"
             id="${uid}"
             name="${escapeHtml(props.name)}"
-            ${props.disabled ? 'disabled' : ''}
-            ${props.required ? 'required' : ''}
+            ${bool('disabled', props.disabled)}
+            ${bool('required', props.required)}
             aria-invalid="${hasError ? 'true' : 'false'}"
             ${props.required ? 'aria-required="true"' : ''}
             ${describedBy ? `aria-describedby="${describedBy}"` : ''}

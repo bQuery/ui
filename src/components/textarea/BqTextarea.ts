@@ -19,7 +19,7 @@
  * @fires bq-blur
  */
 import type { ComponentDefinition } from '@bquery/bquery/component';
-import { component, html } from '@bquery/bquery/component';
+import { bool, component, html } from '@bquery/bquery/component';
 import { escapeHtml } from '@bquery/bquery/security';
 import { t } from '../../i18n/index.js';
 import { uniqueId } from '../../utils/dom.js';
@@ -204,9 +204,9 @@ const definition: ComponentDefinition<BqTextareaProps, BqTextareaState> = {
           rows="${String(props.rows)}"
           placeholder="${escapeHtml(props.placeholder)}"
           ${props.maxlength ? `maxlength="${escapeHtml(props.maxlength)}"` : ''}
-          ${props.disabled ? 'disabled' : ''}
-          ${props.readonly ? 'readonly' : ''}
-          ${props.required ? 'required' : ''}
+          ${bool('disabled', props.disabled)}
+          ${bool('readonly', props.readonly)}
+          ${bool('required', props.required)}
           aria-invalid="${hasError ? 'true' : 'false'}"
           ${props.required ? 'aria-required="true"' : ''}
           ${describedBy ? `aria-describedby="${describedBy}"` : ''}

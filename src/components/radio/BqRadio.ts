@@ -11,7 +11,7 @@
  * @fires bq-change - { value: string, checked: boolean }
  */
 import type { ComponentDefinition } from '@bquery/bquery/component';
-import { component, html } from '@bquery/bquery/component';
+import { bool, component, html } from '@bquery/bquery/component';
 import { escapeHtml } from '@bquery/bquery/security';
 import { createFormProxy, type FormProxy } from '../../utils/form.js';
 import { getBaseStyles } from '../../utils/styles.js';
@@ -117,9 +117,9 @@ const definition: ComponentDefinition<BqRadioProps> = {
             part="input"
             name="${escapeHtml(props.name)}"
             value="${escapeHtml(props.value)}"
-            ${props.checked ? 'checked' : ''}
-            ${props.disabled ? 'disabled' : ''}
-            ${props.required ? 'required' : ''}
+            ${bool('checked', props.checked)}
+            ${bool('disabled', props.disabled)}
+            ${bool('required', props.required)}
           />
           ${props.label
             ? `<span class="label-text" part="label">${escapeHtml(props.label)}${props.required ? '<span class="required-mark" aria-hidden="true"> *</span>' : ''}</span>`

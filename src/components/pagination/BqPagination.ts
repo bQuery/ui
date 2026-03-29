@@ -8,7 +8,7 @@
  * @fires bq-page-change - { page: number }
  */
 import type { ComponentDefinition } from '@bquery/bquery/component';
-import { component, html } from '@bquery/bquery/component';
+import { bool, component, html } from '@bquery/bquery/component';
 import { t } from '../../i18n/index.js';
 import { getBaseStyles } from '../../utils/styles.js';
 
@@ -120,7 +120,7 @@ const definition: ComponentDefinition<BqPaginationProps> = {
           <button
             class="page-btn"
             data-page="${String(page - 1)}"
-            ${prevDisabled ? 'disabled' : ''}
+            ${bool('disabled', prevDisabled)}
             aria-label="${t('pagination.prev')}"
             type="button"
           >
@@ -130,7 +130,7 @@ const definition: ComponentDefinition<BqPaginationProps> = {
           <button
             class="page-btn"
             data-page="${String(page + 1)}"
-            ${nextDisabled ? 'disabled' : ''}
+            ${bool('disabled', nextDisabled)}
             aria-label="${t('pagination.next')}"
             type="button"
           >
