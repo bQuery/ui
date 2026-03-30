@@ -33,12 +33,19 @@ export default defineConfig({
         items: [
           { text: 'Getting Started', link: '/guide/getting-started' },
           { text: 'Installation', link: '/guide/installation' },
-          { text: 'Framework Integration', link: '/guide/framework-integration' },
+          { text: 'Migration from 1.1.0', link: '/guide/migration-from-1-1-0' },
+          {
+            text: 'Framework Integration',
+            link: '/guide/framework-integration',
+          },
           { text: 'Theming', link: '/guide/theming' },
           { text: 'Dark Mode', link: '/guide/dark-mode' },
           { text: 'Accessibility', link: '/guide/accessibility' },
           { text: 'Internationalization', link: '/guide/i18n' },
-          { text: 'Architecture & Roadmap', link: '/guide/architecture-roadmap' },
+          {
+            text: 'Architecture & Roadmap',
+            link: '/guide/architecture-roadmap',
+          },
         ],
       },
       {
@@ -79,15 +86,11 @@ export default defineConfig({
         ],
       },
     ],
-    socialLinks: [
-      { icon: 'github', link: 'https://github.com/bQuery/ui' },
-    ],
+    socialLinks: [{ icon: 'github', link: 'https://github.com/bQuery/ui' }],
     footer: {
       message: 'Released under the MIT License.',
       copyright: 'Copyright © 2024 bQuery',
     },
   },
-  head: [
-    ['meta', { name: 'theme-color', content: '#2563eb' }],
-  ],
+  head: [['meta', { name: 'theme-color', content: '#2563eb' }]],
 });

@@ -28,22 +28,51 @@ bun add @bquery/ui
 
 ```html [ESM]
 <script type="module">
-  import 'https://cdn.jsdelivr.net/npm/@bquery/ui@1.1.0/dist/index.js';
+  import 'https://cdn.jsdelivr.net/npm/@bquery/ui@1.2.0/dist/index.js';
 </script>
 ```
 
 ```html [UMD]
-<script src="https://cdn.jsdelivr.net/npm/@bquery/ui@1.1.0/dist/index.umd.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@bquery/ui@1.2.0/dist/index.umd.js"></script>
 ```
 
 ```html [IIFE]
-<script src="https://cdn.jsdelivr.net/npm/@bquery/ui@1.1.0/dist/index.iife.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@bquery/ui@1.2.0/dist/index.iife.js"></script>
 ```
 
 :::
 
 The UMD and IIFE bundles register all `bq-*` elements on load and expose the library on `window.BQueryUI`.
 Pinning the version in CDN URLs keeps production integrations reproducible across future releases.
+
+## Registration Model in 1.2.0
+
+`@bquery/ui` now treats import side effects as the primary registration mechanism:
+
+```typescript
+import '@bquery/ui';
+```
+
+For smaller bundles, import only the wrappers you need:
+
+```typescript
+import '@bquery/ui/components/button';
+import '@bquery/ui/components/input';
+```
+
+The legacy `registerAll()` helper remains available via `@bquery/ui/register`, but only as a deprecated compatibility shim. It no longer supports custom prefixes and should not be used in new integrations.
+
+## Additional Package Entry Points
+
+The package also publishes dedicated entry points for shared APIs:
+
+```typescript
+import { setColorScheme } from '@bquery/ui/theme';
+import { setLocale } from '@bquery/ui/i18n';
+import { announce } from '@bquery/ui/utils';
+```
+
+See the migration guide for upgrade notes from `1.1.0`: [Migration from 1.1.0](./migration-from-1-1-0.md).
 
 ## TypeScript
 

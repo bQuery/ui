@@ -79,3 +79,27 @@ export const WithOptGroup: Story = {
 };
 
 export const Required: Story = { args: { required: true } };
+
+export const HintAndError: Story = {
+  args: {
+    label: 'Country',
+    hint: 'Used for region-specific taxes and localization.',
+    error: 'Please choose a country before continuing.',
+    placeholder: 'Select a country',
+  },
+  render: (args) => storyHtml`
+    <bq-select
+      label=${args.label}
+      value=${args.value}
+      placeholder=${args.placeholder}
+      size=${args.size}
+      hint=${args.hint}
+      error=${args.error}
+      ?required=${args.required}
+    >
+      <option value="de">Germany</option>
+      <option value="jp">Japan</option>
+      <option value="us">United States</option>
+    </bq-select>
+  `,
+};

@@ -19,6 +19,8 @@ This repository is `@bquery/ui`, a framework-agnostic Web Components library bui
 2. Update documentation when behavior or public APIs change.
 3. Avoid unrelated refactors while addressing a targeted issue.
 4. Prefer accessibility, composability, and API consistency improvements.
+5. Treat import side effects (`import '@bquery/ui'`) and per-component entrypoints (`@bquery/ui/components/<name>`) as the canonical registration model; `registerAll()` is deprecated compatibility-only.
+6. When touching versioned install snippets or release-facing docs, keep pinned CDN examples aligned with the current package version in `package.json`.
 
 ## Setup and validation
 
@@ -49,3 +51,5 @@ npm run build:docs
 - Tests preload `tests/setup.ts` through `bunfig.toml`.
 - Documentation uses Markdown in `docs/` and the root `README.md`.
 - Storybook stories live in `stories/` and should stay aligned with component behavior.
+- The package exposes root side-effect registration plus subpath exports such as `@bquery/ui/theme`, `@bquery/ui/i18n`, `@bquery/ui/utils`, and `@bquery/ui/register`.
+- VitePress base resolution lives in `docs/.vitepress/config.ts`; keep docs links relative and GitHub Pages-safe when adding new guides.

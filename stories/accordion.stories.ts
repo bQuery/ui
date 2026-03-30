@@ -41,3 +41,21 @@ export const Multiple: Story = {
     </div>
   `,
 };
+
+export const LongContent: Story = {
+  render: () => storyHtml`
+    <bq-accordion label="Release notes" open>
+      <div style="display:grid;gap:0.75rem">
+        <p>The panel keeps semantic region wiring while animating open and closed.</p>
+        <p>
+          This longer content is useful for visually checking the current CSS-grid
+          expansion and collapse behaviour introduced in the latest release.
+        </p>
+        <p>
+          Reduced-motion users still get the same content and state changes without
+          relying on a height-based animation hack.
+        </p>
+      </div>
+    </bq-accordion>
+  `,
+};

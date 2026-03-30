@@ -73,4 +73,4 @@ The `bq-accordion` component is a collapsible disclosure panel with a trigger bu
 
 ## Animation
 
-The accordion uses JavaScript-driven height animation based on `scrollHeight` for smooth expand/collapse transitions. This avoids the common `max-height` hack, supporting content of any size. The animation respects `prefers-reduced-motion: reduce`.
+The accordion animates its panel with a CSS Grid `grid-template-rows` transition pattern instead of a fixed-height or `max-height` approach. Closing uses a temporary `data-closing` state so the panel can finish its exit animation before cleanup. The interaction also respects `prefers-reduced-motion: reduce`.

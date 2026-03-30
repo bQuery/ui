@@ -50,3 +50,24 @@ export const SortedByName: Story = {
 export const WithCaption: Story = {
   args: { caption: 'Team members and their roles' },
 };
+
+export const EmptyState: Story = {
+  render: () =>
+    storyHtml`<bq-table
+      columns=${JSON.stringify([
+        { key: 'name', label: 'Name', sortable: true },
+        { key: 'role', label: 'Role' },
+      ])}
+      rows=${JSON.stringify([])}
+      caption="Project contributors"
+    ></bq-table>`,
+};
+
+export const KeyboardSortingPreview: Story = {
+  args: {
+    caption: 'Press Enter or Space on the sortable headers in the preview',
+    sortKey: 'role',
+    sortDir: 'desc',
+    bordered: true,
+  },
+};

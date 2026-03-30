@@ -28,14 +28,14 @@ It is designed to give teams the kind of component coverage, polish, accessibili
 
 The current library covers the core component categories developers expect from modern UI libraries:
 
-| Category | Components |
-| --- | --- |
-| **Actions** | Button, Icon Button |
-| **Forms** | Input, Textarea, Select, Checkbox, Radio, Switch, Slider, Chip |
-| **Navigation** | Tabs, Accordion, Breadcrumbs, Pagination |
-| **Data Display** | Card, Badge, Avatar, Table, Divider, Empty State, Stat Card |
-| **Feedback** | Alert, Progress, Spinner, Skeleton, Tooltip, Toast |
-| **Overlays** | Dialog, Drawer |
+| Category         | Components                                                     |
+| ---------------- | -------------------------------------------------------------- |
+| **Actions**      | Button, Icon Button                                            |
+| **Forms**        | Input, Textarea, Select, Checkbox, Radio, Switch, Slider, Chip |
+| **Navigation**   | Tabs, Accordion, Breadcrumbs, Pagination                       |
+| **Data Display** | Card, Badge, Avatar, Table, Divider, Empty State, Stat Card    |
+| **Feedback**     | Alert, Progress, Spinner, Skeleton, Tooltip, Toast             |
+| **Overlays**     | Dialog, Drawer                                                 |
 
 For the full catalog and feature coverage, see [`docs/components/index.md`](./docs/components/index.md).
 
@@ -68,17 +68,25 @@ import '@bquery/ui';
 ```html
 <!-- ESM -->
 <script type="module">
-  import 'https://cdn.jsdelivr.net/npm/@bquery/ui@1.1.0/dist/index.js';
+  import 'https://cdn.jsdelivr.net/npm/@bquery/ui@1.2.0/dist/index.js';
 </script>
 
 <!-- UMD -->
-<script src="https://cdn.jsdelivr.net/npm/@bquery/ui@1.1.0/dist/index.umd.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@bquery/ui@1.2.0/dist/index.umd.js"></script>
 
 <!-- IIFE -->
-<script src="https://cdn.jsdelivr.net/npm/@bquery/ui@1.1.0/dist/index.iife.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@bquery/ui@1.2.0/dist/index.iife.js"></script>
 ```
 
 The UMD and IIFE bundles expose the library on `window.BQueryUI`.
+
+## What's New in 1.2.0
+
+- **Import-based registration is now the default integration path.** Import `@bquery/ui` once to register all components, or import `@bquery/ui/components/<name>` to register only the wrappers you need.
+- **Legacy root registration helpers are now compatibility-only.** `registerAll()` is still exported as a deprecated shim so older integrations do not fail abruptly, but it no longer changes prefixes or registration behavior.
+- **Subpath exports are broader and more explicit.** `@bquery/ui/theme`, `@bquery/ui/i18n`, `@bquery/ui/utils`, and `@bquery/ui/register` are all first-class package entry points.
+- **Accessibility and localization coverage expanded.** Recent updates improved password-toggle semantics, character counters, table loading and empty-state copy, reduced-motion behavior, accordion semantics, and localized defaults for components such as `bq-spinner` and `bq-empty-state`.
+- **Docs and examples now reflect the current release.** Version-pinned CDN snippets, migration guidance, and Storybook coverage are aligned with `1.2.0`.
 
 ## Tree-Shakeable Usage
 
@@ -122,15 +130,16 @@ import '@bquery/ui/components/input';
 
 Because the library is built on Web standards, the same components can be used across major frontend frameworks.
 
-| Framework | Integration note |
-| --- | --- |
-| **React** | Import the library once and subscribe to custom events through refs or wrapper components |
-| **Vue** | Use components directly in templates and listen to `bq-*` custom events |
-| **Angular** | Enable `CUSTOM_ELEMENTS_SCHEMA` and use `bq-*` elements like native controls |
-| **Svelte** | Register once during `onMount` and bind to custom events with `on:bq-*` |
-| **Plain HTML / bQuery** | Works out of the box after a single import |
+| Framework               | Integration note                                                                          |
+| ----------------------- | ----------------------------------------------------------------------------------------- |
+| **React**               | Import the library once and subscribe to custom events through refs or wrapper components |
+| **Vue**                 | Use components directly in templates and listen to `bq-*` custom events                   |
+| **Angular**             | Enable `CUSTOM_ELEMENTS_SCHEMA` and use `bq-*` elements like native controls              |
+| **Svelte**              | Register once during `onMount` and bind to custom events with `on:bq-*`                   |
+| **Plain HTML / bQuery** | Works out of the box after a single import                                                |
 
 See [`docs/guide/framework-integration.md`](./docs/guide/framework-integration.md) for examples.
+For migration guidance from older registration patterns, see [`docs/guide/migration-from-1-1-0.md`](./docs/guide/migration-from-1-1-0.md).
 
 ## Core Capabilities
 
@@ -163,6 +172,7 @@ See [`docs/guide/framework-integration.md`](./docs/guide/framework-integration.m
 
 - [Getting started](./docs/guide/getting-started.md)
 - [Installation](./docs/guide/installation.md)
+- [Migration from 1.1.0](./docs/guide/migration-from-1-1-0.md)
 - [Framework integration](./docs/guide/framework-integration.md)
 - [Theming](./docs/guide/theming.md)
 - [Accessibility](./docs/guide/accessibility.md)
