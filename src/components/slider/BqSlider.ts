@@ -12,7 +12,7 @@
  * @fires bq-change - { value: number }
  */
 import type { ComponentDefinition } from '@bquery/bquery/component';
-import { component, html } from '@bquery/bquery/component';
+import { bool, component, html } from '@bquery/bquery/component';
 import { escapeHtml } from '@bquery/bquery/security';
 import { t } from '../../i18n/index.js';
 import { createFormProxy, type FormProxy } from '../../utils/form.js';
@@ -143,7 +143,7 @@ const definition: ComponentDefinition<BqSliderProps> = {
           max="${String(props.max)}"
           value="${String(props.value)}"
           step="${String(props.step)}"
-          ${props.disabled ? 'disabled' : ''}
+          ${bool('disabled', props.disabled)}
           aria-label="${escapeHtml(props.label || t('slider.ariaLabel'))}"
           aria-valuemin="${String(props.min)}"
           aria-valuemax="${String(props.max)}"
