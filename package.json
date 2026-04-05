@@ -85,10 +85,10 @@
     "build:storybook": "storybook build --output-dir storybook-static"
   },
   "peerDependencies": {
-    "@bquery/bquery": "^1.7.0"
+    "@bquery/bquery": "^1.9.0"
   },
   "devDependencies": {
-    "@bquery/bquery": "^1.7.0",
+    "@bquery/bquery": "^1.9.0",
     "@storybook/addon-docs": "^10.3.3",
     "@storybook/web-components-vite": "^10.3.3",
     "@tailwindcss/postcss": "^4.2.2",

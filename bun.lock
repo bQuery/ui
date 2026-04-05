@@ -5,7 +5,7 @@
     "": {
       "name": "@bquery/ui",
       "devDependencies": {
-        "@bquery/bquery": "^1.7.0",
+        "@bquery/bquery": "^1.9.0",
         "@storybook/addon-docs": "^10.3.3",
         "@storybook/web-components-vite": "^10.3.3",
         "@tailwindcss/postcss": "^4.2.2",
@@ -22,7 +22,7 @@
         "vitepress": "^1.6.4",
       },
       "peerDependencies": {
-        "@bquery/bquery": "^1.7.0",
+        "@bquery/bquery": "^1.9.0",
       },
     },
   },
@@ -79,7 +79,7 @@
 
     "@babel/types": ["@babel/types@7.29.0", "", { "dependencies": { "@babel/helper-string-parser": "^7.27.1", "@babel/helper-validator-identifier": "^7.28.5" } }, "sha512-LwdZHpScM4Qz8Xw2iKSzS+cfglZzJGvofQICy7W7v4caru4EaAmyUuO6BGrbyQ2mYV11W0U8j5mBhd14dd3B0A=="],
 
-    "@bquery/bquery": ["@bquery/bquery@1.7.0", "", {}, "sha512-V3YdGTHbMzvYSiSHnx50bRlQNXR/Cnjwn19jauu5PJu/fDp9eiCOtKIzajQN2qpt09TW1I2yqvnTB7qIlWStUQ=="],
+    "@bquery/bquery": ["@bquery/bquery@1.9.0", "", {}, "sha512-LrUY5axBZUGSPzZt46O19gqiYY0CX9nGfKTz5pt4gVZAKRYkr7FOEPtp4QlhfKoT6hCjZ5JqiMd/RhjEI1rErA=="],
 
     "@docsearch/css": ["@docsearch/css@3.8.2", "", {}, "sha512-y05ayQFyUmCXze79+56v/4HpycYF3uFqB78pLPrSV5ZKAlDuIAAJNhaRi8tTdRNXh05yxX/TyNnzD6LwSM89vQ=="],
 
