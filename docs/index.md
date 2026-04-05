@@ -4,7 +4,7 @@ layout: home
 hero:
   name: "@bquery/ui"
   text: Production-grade Web Components
-  tagline: A zero-dependency, Shadow DOM–first component library built on the bQuery primitive.
+  tagline: A standards-first, Shadow DOM–first component library built on @bquery/bquery.
   actions:
     - theme: brand
       text: Get Started
@@ -34,5 +34,5 @@ features:
     details: First-class dark mode support via CSS custom properties and the data-theme attribute.
   - icon: 🌲
     title: Tree-shakeable ESM
-    details: Import the full library for automatic component registration or only the component entry points you need.
+    details: Import the full library for automatic component registration or only the component entry points you need, then use UMD/IIFE bundles when shipping directly from a CDN.
 ---

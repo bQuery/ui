@@ -8,6 +8,8 @@
 npm install @bquery/ui
 ```
 
+If your package manager does not auto-install peer dependencies, add `@bquery/bquery` alongside `@bquery/ui`.
+
 Then import the library once in your app:
 
 ```typescript

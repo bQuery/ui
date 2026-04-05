@@ -40,9 +40,10 @@ announce('Error: File too large', 'assertive');
 | Table     | `Enter` / `Space` on sortable headers                                        |
 | Chip      | `Enter` and `Space` on the chip surface; remove button stays a native button |
 
-## Recent 1.2.0 Improvements
+## Recent Improvements
 
-- `bq-accordion` now wires `aria-controls` / `aria-labelledby` with stable unique IDs and exposes the panel as a named region.
+- `bq-accordion` now wires `aria-controls` / `aria-labelledby` with stable unique IDs, exposes the panel as a named region, and respects reduced-motion-aware open/close transitions.
 - `bq-input` and `bq-textarea` character counters announce updates via `aria-live="polite"` and join `aria-describedby` automatically.
-- `bq-table` localizes loading and empty-state text while keeping sortable headers keyboard-activatable.
-- `bq-spinner` and `bq-empty-state` provide localized default status copy when authors omit custom labels.
+- `bq-table`, `bq-pagination`, and `bq-breadcrumbs` expose clearer localized status and navigation copy while keeping native table semantics and keyboard-activatable sorting.
+- `bq-chip` now supports `Space` / `Enter` activation more reliably, and its remove button remains a native accessible control with localized labels.
+- `bq-dialog`, `bq-drawer`, and `bq-dropdown-menu` tightened focus/keyboard behavior while keeping close animations aligned with `prefers-reduced-motion`.

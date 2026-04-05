@@ -3,14 +3,14 @@
 [![Repo](https://img.shields.io/badge/github-bquery%2Fui-24292f?logo=github)](https://github.com/bQuery/ui)
 [![Stars](https://img.shields.io/github/stars/bquery/ui?style=flat&logo=github)](https://github.com/bQuery/ui/stargazers)
 [![Issues](https://img.shields.io/github/issues/bquery/ui?style=flat&logo=github)](https://github.com/bQuery/ui/issues)
-[![License](https://img.shields.io/github/license/bquery/ui?style=flat)](https://github.com/bQuery/ui/blob/main/LICENSE.md)
+[![License](https://img.shields.io/github/license/bquery/ui?style=flat)](https://github.com/bQuery/ui/blob/main/LICENSE)
 [![npm](https://img.shields.io/npm/v/@bquery/ui)](https://www.npmjs.com/package/@bquery/ui)
 [![Bundle Size](https://img.shields.io/bundlephobia/minzip/@bquery/ui)](https://bundlephobia.com/package/@bquery/ui)
 [![unpkg](https://img.shields.io/badge/unpkg-browse-blue?logo=unpkg)](https://unpkg.com/@bquery/ui)
 [![CodeFactor](https://www.codefactor.io/repository/github/bquery/ui/badge)](https://www.codefactor.io/repository/github/bquery/ui)
 [![JsDelivr](https://data.jsdelivr.com/v1/package/npm/@bquery/ui/badge)](https://www.jsdelivr.com/package/npm/@bquery/ui)
 
-`@bquery/ui` is a production-grade component library built with native Web Components, Shadow DOM, and TypeScript for the bQuery ecosystem.
+`@bquery/ui` is a production-grade component library built with native Web Components, Shadow DOM, and TypeScript on top of `@bquery/bquery` for the bQuery ecosystem.
 
 It is designed to give teams the kind of component coverage, polish, accessibility, and framework interoperability that developers expect from established libraries such as Material UI, Vuetify, Angular Material, and modern Vue/Svelte UI kits—while staying framework-agnostic and standards-based.
 
@@ -21,7 +21,7 @@ It is designed to give teams the kind of component coverage, polish, accessibili
 - **Accessible by default** with keyboard support, ARIA roles, focus management, and screen reader announcements
 - **Themeable via design tokens** and CSS custom properties
 - **Tree-shakeable ESM exports** with per-component imports
-- **CDN-ready root bundles** for ES modules, UMD, and IIFE delivery
+- **Browser-ready UMD and IIFE bundles** for direct CDN delivery
 - **Built-in dark mode, i18n, and event-driven APIs**
 
 ## Component Coverage
@@ -35,7 +35,7 @@ The current library covers the core component categories developers expect from 
 | **Navigation**   | Tabs, Accordion, Breadcrumbs, Pagination                       |
 | **Data Display** | Card, Badge, Avatar, Table, Divider, Empty State, Stat Card    |
 | **Feedback**     | Alert, Progress, Spinner, Skeleton, Tooltip, Toast             |
-| **Overlays**     | Dialog, Drawer                                                 |
+| **Overlays**     | Dialog, Drawer, Dropdown Menu                                  |
 
 For the full catalog and feature coverage, see [`docs/components/index.md`](./docs/components/index.md).
 
@@ -46,6 +46,8 @@ For the full catalog and feature coverage, see [`docs/components/index.md`](./do
 ```bash
 npm install @bquery/ui
 ```
+
+If your package manager does not automatically resolve peer dependencies, install `@bquery/bquery` alongside `@bquery/ui`.
 
 ### Import once
 
@@ -63,30 +65,28 @@ import '@bquery/ui';
 </bq-alert>
 ```
 
-### Use from a CDN
+### Use in the browser without a bundler
 
 ```html
-<!-- ESM -->
-<script type="module">
-  import 'https://cdn.jsdelivr.net/npm/@bquery/ui@1.2.0/dist/index.js';
-</script>
-
 <!-- UMD -->
-<script src="https://cdn.jsdelivr.net/npm/@bquery/ui@1.2.0/dist/index.umd.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@bquery/ui@1.9.0/dist/index.umd.js"></script>
 
 <!-- IIFE -->
-<script src="https://cdn.jsdelivr.net/npm/@bquery/ui@1.2.0/dist/index.iife.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@bquery/ui@1.9.0/dist/index.iife.js"></script>
 ```
 
-The UMD and IIFE bundles expose the library on `window.BQueryUI`.
+The UMD and IIFE bundles register all components on load and expose the library on `window.BQueryUI`.
+For ESM-based app builds, prefer importing `@bquery/ui` from your bundler or other module-aware build tool.
 
-## What's New in 1.2.0
+## Current release snapshot
 
-- **Import-based registration is now the default integration path.** Import `@bquery/ui` once to register all components, or import `@bquery/ui/components/<name>` to register only the wrappers you need.
-- **Legacy root registration helpers are now compatibility-only.** `registerAll()` is still exported as a deprecated shim so older integrations do not fail abruptly, but it no longer changes prefixes or registration behavior.
-- **Subpath exports are broader and more explicit.** `@bquery/ui/theme`, `@bquery/ui/i18n`, `@bquery/ui/utils`, and `@bquery/ui/register` are all first-class package entry points.
-- **Accessibility and localization coverage expanded.** Recent updates improved password-toggle semantics, character counters, table loading and empty-state copy, reduced-motion behavior, accordion semantics, and localized defaults for components such as `bq-spinner` and `bq-empty-state`.
-- **Docs and examples now reflect the current release.** Version-pinned CDN snippets, migration guidance, and Storybook coverage are aligned with `1.2.0`.
+The current release (`1.9.0`) emphasizes:
+
+- **Import-based registration as the canonical integration path.** Import `@bquery/ui` once to register all components, or import `@bquery/ui/components/<name>` to register only the wrappers you need.
+- **A clearer shared package surface.** `@bquery/ui/tokens`, `@bquery/ui/theme`, `@bquery/ui/i18n`, `@bquery/ui/utils`, and `@bquery/ui/register` are all explicit entry points.
+- **Broader accessibility and localization coverage.** Recent releases improved accordion semantics, live form-field counters, localized table states, chip keyboard behavior, and reduced-motion-aware overlay transitions.
+- **A larger production-ready catalog.** The package now spans 31 web components across actions, forms, navigation, data display, feedback, and overlays, including `bq-dropdown-menu`, `bq-stat-card`, and the imperative toast API.
+- **Aligned docs and browser bundles.** Version-pinned CDN snippets, migration guidance, and Storybook/VitePress references now target `1.9.0`.
 
 ## Tree-Shakeable Usage
 
@@ -105,7 +105,7 @@ This import-based registration update changes how consumers integrate `@bquery/u
 - Importing `@bquery/ui` now registers all custom elements as a side effect.
 - Importing `@bquery/ui/components/<name>` registers only that component through its wrapper entrypoint.
 - Legacy root-level component registration helpers such as `registerBqButton` are no longer re-exported from `@bquery/ui`.
-- `registerAll()` remains available only as a deprecated compatibility shim.
+- The deprecated `registerAll()` named export still exists for backwards compatibility and can be imported from `@bquery/ui` or explicitly from `@bquery/ui/register`.
 - New code should avoid `registerAll()` and rely on import side effects instead.
 - Calling `registerAll()` without arguments is still accepted for temporary backward compatibility, but it does not perform any additional registration work.
 - Passing any legacy options object to `registerAll()` continues to emit a warning.
@@ -175,7 +175,9 @@ For migration guidance from older registration patterns, see [`docs/guide/migrat
 - [Migration from 1.1.0](./docs/guide/migration-from-1-1-0.md)
 - [Framework integration](./docs/guide/framework-integration.md)
 - [Theming](./docs/guide/theming.md)
+- [Dark mode](./docs/guide/dark-mode.md)
 - [Accessibility](./docs/guide/accessibility.md)
+- [Internationalization](./docs/guide/i18n.md)
 - [Component catalog](./docs/components/index.md)
 - [Button reference](./docs/components/button.md)
 - [Input reference](./docs/components/input.md)

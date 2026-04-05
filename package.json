@@ -1,6 +1,6 @@
 {
   "name": "@bquery/ui",
-  "version": "1.2.0",
+  "version": "1.9.0",
   "description": "Production-grade web component library for the bQuery project",
   "type": "module",
   "main": "./dist/index.cjs",
@@ -89,18 +89,18 @@
   },
   "devDependencies": {
     "@bquery/bquery": "^1.9.0",
-    "@storybook/addon-docs": "^10.3.3",
-    "@storybook/web-components-vite": "^10.3.3",
+    "@storybook/addon-docs": "^10.3.4",
+    "@storybook/web-components-vite": "^10.3.4",
     "@tailwindcss/postcss": "^4.2.2",
-    "@types/node": "^25.5.0",
+    "@types/node": "^25.5.2",
     "autoprefixer": "^10.4.27",
     "bun-types": "^1.3.11",
-    "happy-dom": "^20.8.8",
+    "happy-dom": "^20.8.9",
     "postcss": "^8.5.8",
-    "storybook": "^10.3.3",
+    "storybook": "^10.3.4",
     "tailwindcss": "^4.2.2",
     "typescript": "^5.9.3",
-    "vite": "^8.0.2",
+    "vite": "^8.0.3",
     "vite-plugin-dts": "^4.5.4",
     "vitepress": "^1.6.4"
   }
