@@ -69,10 +69,10 @@ import '@bquery/ui';
 
 ```html
 <!-- UMD -->
-<script src="https://cdn.jsdelivr.net/npm/@bquery/ui@1.9.0/dist/index.umd.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@bquery/ui@1.10.0/dist/index.umd.js"></script>
 
 <!-- IIFE -->
-<script src="https://cdn.jsdelivr.net/npm/@bquery/ui@1.9.0/dist/index.iife.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@bquery/ui@1.10.0/dist/index.iife.js"></script>
 ```
 
 The UMD and IIFE bundles register all components on load and expose the library on `window.BQueryUI`.
@@ -80,13 +80,13 @@ For ESM-based app builds, prefer importing `@bquery/ui` from your bundler or oth
 
 ## Current release snapshot
 
-The current release (`1.9.0`) emphasizes:
+The current release (`1.10.0`) emphasizes:
 
 - **Import-based registration as the canonical integration path.** Import `@bquery/ui` once to register all components, or import `@bquery/ui/components/<name>` to register only the wrappers you need.
 - **A clearer shared package surface.** `@bquery/ui/tokens`, `@bquery/ui/theme`, `@bquery/ui/i18n`, `@bquery/ui/utils`, and `@bquery/ui/register` are all explicit entry points.
 - **Broader accessibility and localization coverage.** Recent releases improved accordion semantics, live form-field counters, localized table states, chip keyboard behavior, and reduced-motion-aware overlay transitions.
 - **A larger production-ready catalog.** The package now spans 31 web components across actions, forms, navigation, data display, feedback, and overlays, including `bq-dropdown-menu`, `bq-stat-card`, and the imperative toast API.
-- **Aligned docs and browser bundles.** Version-pinned CDN snippets, migration guidance, and Storybook/VitePress references now target `1.9.0`.
+- **Aligned docs and browser bundles.** Version-pinned CDN snippets, migration guidance, and Storybook/VitePress references now target `1.10.0`.
 
 ## Tree-Shakeable Usage
 

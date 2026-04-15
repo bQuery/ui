@@ -1,6 +1,6 @@
 # Migration from 1.1.0
 
-Moving from `1.1.0` to the current `@bquery/ui` line (`1.9.0`) is mostly about aligning with the modern import model, the explicit package entry points, and the expanded accessibility/i18n defaults.
+Moving from `1.1.0` to the current `@bquery/ui` line (`1.10.0`) is mostly about aligning with the modern import model, the explicit package entry points, and the expanded accessibility/i18n defaults.
 
 ## Summary
 
@@ -89,7 +89,7 @@ These changes are backward compatible for most consumers, but they may affect sn
 For direct browser delivery, pin the bundled browser files to the current version:
 
 ```html
-<script src="https://cdn.jsdelivr.net/npm/@bquery/ui@1.9.0/dist/index.umd.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@bquery/ui@1.10.0/dist/index.umd.js"></script>
 ```
 
 The library ESM entry is still the right choice for bundlers, but the published `dist/index.js` keeps `@bquery/bquery` as a peer dependency, so browser-direct CDN usage should prefer `index.umd.js` or `index.iife.js`.
