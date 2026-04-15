@@ -1,6 +1,6 @@
 {
   "name": "@bquery/ui",
-  "version": "1.9.0",
+  "version": "1.10.0",
   "description": "Production-grade web component library for the bQuery project",
   "type": "module",
   "main": "./dist/index.cjs",
@@ -85,10 +85,10 @@
     "build:storybook": "storybook build --output-dir storybook-static"
   },
   "peerDependencies": {
-    "@bquery/bquery": "^1.9.0"
+    "@bquery/bquery": "^1.10.0"
   },
   "devDependencies": {
-    "@bquery/bquery": "^1.9.0",
+    "@bquery/bquery": "^1.10.0",
     "@storybook/addon-docs": "^10.3.4",
     "@storybook/web-components-vite": "^10.3.4",
     "@tailwindcss/postcss": "^4.2.2",
