@@ -14,6 +14,14 @@ The `bq-pagination` component provides page navigation with previous/next button
 <bq-pagination page="5" total="20" sibling-count="2"></bq-pagination>
 ```
 
+## With First / Last Buttons
+
+Add boundary jump buttons (« and ») on either side of prev/next:
+
+```html
+<bq-pagination page="5" total="20" show-first-last></bq-pagination>
+```
+
 ## Disabled
 
 ```html
@@ -22,12 +30,13 @@ The `bq-pagination` component provides page navigation with previous/next button
 
 ## Properties
 
-| Property        | Type      | Default | Description                                  |
-| --------------- | --------- | ------- | -------------------------------------------- |
-| `page`          | `number`  | `1`     | Current page (1-based)                       |
-| `total`         | `number`  | `1`     | Total number of pages                        |
-| `sibling-count` | `number`  | `1`     | Number of visible sibling pages on each side |
-| `disabled`      | `boolean` | `false` | Disables all interactions                    |
+| Property          | Type      | Default | Description                                    |
+| ----------------- | --------- | ------- | ---------------------------------------------- |
+| `page`            | `number`  | `1`     | Current page (1-based)                         |
+| `total`           | `number`  | `1`     | Total number of pages                          |
+| `sibling-count`   | `number`  | `1`     | Number of visible sibling pages on each side   |
+| `show-first-last` | `boolean` | `false` | Render boundary jump buttons (« first, » last) |
+| `disabled`        | `boolean` | `false` | Disables all interactions                      |
 
 ## Events
 

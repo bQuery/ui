@@ -6,7 +6,7 @@
  * @prop {boolean} checked
  * @prop {boolean} disabled
  * @prop {string}  size    - sm | md | lg
- * @fires bq-change - { checked: boolean }
+ * @fires bq-change - { value: string, checked: boolean }
  */
 import type { ComponentDefinition } from '@bquery/bquery/component';
 import { bool, component, html } from '@bquery/bquery/component';
@@ -82,7 +82,10 @@ const definition: ComponentDefinition<BqSwitchProps> = {
       proxy.setValue(input.checked ? 'on' : '');
       self.dispatchEvent(
         new CustomEvent('bq-change', {
-          detail: { checked: input.checked },
+          detail: {
+            value: self.getAttribute('value') ?? (input.checked ? 'on' : ''),
+            checked: input.checked,
+          },
           bubbles: true,
           composed: true,
         })

@@ -1,9 +1,10 @@
 /**
  * Pagination navigation component.
  * @element bq-pagination
- * @prop {number}  page          - Current page (1-based)
- * @prop {number}  total         - Total number of pages
- * @prop {number}  sibling-count - Number of sibling pages each side
+ * @prop {number}  page             - Current page (1-based)
+ * @prop {number}  total            - Total number of pages
+ * @prop {number}  sibling-count    - Number of sibling pages each side
+ * @prop {boolean} show-first-last  - Render first/last page buttons
  * @prop {boolean} disabled
  * @fires bq-page-change - { page: number }
  */
@@ -16,6 +17,7 @@ type BqPaginationProps = {
   page: number;
   total: number;
   'sibling-count': number;
+  'show-first-last': boolean;
   disabled: boolean;
 };
 
@@ -45,6 +47,7 @@ const definition: ComponentDefinition<BqPaginationProps> = {
     page: { type: Number, default: 1 },
     total: { type: Number, default: 1 },
     'sibling-count': { type: Number, default: 1 },
+    'show-first-last': { type: Boolean, default: false },
     disabled: { type: Boolean, default: false },
   },
   styles: `
@@ -107,6 +110,7 @@ const definition: ComponentDefinition<BqPaginationProps> = {
     const pages = buildPages(page, total, siblings);
     const prevDisabled = page <= 1 || props.disabled;
     const nextDisabled = page >= total || props.disabled;
+    const showFirstLast = props['show-first-last'];
     const pageItems = pages
       .map((p) => {
         if (p === '...')
@@ -117,6 +121,15 @@ const definition: ComponentDefinition<BqPaginationProps> = {
     return html`
       <nav aria-label="${t('pagination.nav')}" part="nav">
         <div class="pagination" part="pagination">
+          ${showFirstLast
+            ? `<button
+                class="page-btn"
+                data-page="1"
+                ${prevDisabled ? 'disabled' : ''}
+                aria-label="${t('pagination.firstPage')}"
+                type="button"
+              >&#171;</button>`
+            : ''}
           <button
             class="page-btn"
             data-page="${String(page - 1)}"
@@ -136,6 +149,15 @@ const definition: ComponentDefinition<BqPaginationProps> = {
           >
             &#8250;
           </button>
+          ${showFirstLast
+            ? `<button
+                class="page-btn"
+                data-page="${String(Math.max(1, total))}"
+                ${nextDisabled ? 'disabled' : ''}
+                aria-label="${t('pagination.lastPage')}"
+                type="button"
+              >&#187;</button>`
+            : ''}
         </div>
       </nav>
     `;

@@ -41,6 +41,18 @@ The `bq-breadcrumbs` component renders a navigation trail with auto-inserted sep
 | `nav`  | The `<nav>` wrapper           |
 | `list` | The breadcrumb list container |
 
+## CSS Custom Properties
+
+| Property                    | Default | Description                                                                                           |
+| --------------------------- | ------- | ----------------------------------------------------------------------------------------------------- |
+| `--bq-breadcrumb-separator` | `"/"`   | CSS `content` value used between items. Override directly when not setting the `separator` attribute. |
+
+```css
+bq-breadcrumbs {
+  --bq-breadcrumb-separator: "›";
+}
+```
+
 ## Accessibility
 
-The last breadcrumb item is automatically marked with `aria-current="page"`. The component renders inside a `<nav>` with an appropriate `aria-label`.
+The last breadcrumb item is automatically marked with `aria-current="page"`. The component renders inside a `<nav>` with an appropriate `aria-label`. Separators are produced via a CSS `::before` pseudo-element so they are visible but **not part of the DOM** — keeping them out of copy/paste output and assistive-technology readings.

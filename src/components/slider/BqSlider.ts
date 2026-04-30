@@ -65,7 +65,14 @@ const definition: ComponentDefinition<BqSliderProps> = {
     const name = self.getAttribute('name') ?? '';
     const value = self.getAttribute('value') ?? '50';
     const disabled = self.hasAttribute('disabled');
-    const proxy = createFormProxy(self, name, value, disabled);
+    const proxy = createFormProxy(self, name, value, disabled, {
+      getLiveValue: () => {
+        const input = self.shadowRoot?.querySelector(
+          'input[type="range"]'
+        ) as HTMLInputElement | null;
+        return input ? input.value : (self.getAttribute('value') ?? '50');
+      },
+    });
     (self as unknown as Record<string, unknown>)['_formProxy'] = proxy;
 
     const ih = (e: Event) => {

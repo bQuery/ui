@@ -106,14 +106,19 @@ const definition: ComponentDefinition<BqInputProps, BqInputState> = {
     .counter[data-over="true"] { color: var(--bq-color-danger-600,#dc2626); }
     .password-toggle {
       display: inline-flex; align-items: center; justify-content: center;
-      background: none; border: none; cursor: pointer; padding: 0 0.25rem;
+      background: none; border: none; cursor: pointer;
+      padding: 0 0.5rem; margin-inline-start: 0.25rem;
+      border-inline-start: 1px solid var(--bq-border-base,#e2e8f0);
       color: var(--bq-text-muted,#475569); font-size: 0.875rem; line-height: 1;
+      align-self: stretch;
+      transition: color var(--bq-duration-fast) var(--bq-easing-standard), background var(--bq-duration-fast) var(--bq-easing-standard);
     }
-    .password-toggle:hover { color: var(--bq-text-base,#0f172a); }
+    .password-toggle:hover { color: var(--bq-text-base,#0f172a); background: var(--bq-bg-subtle,#f8fafc); }
+    .password-toggle:disabled { cursor: not-allowed; opacity: 0.5; }
     .password-toggle:focus-visible { outline: 2px solid transparent; box-shadow: var(--bq-focus-ring); border-radius: var(--bq-radius-sm,0.25rem); }
     .pw-icon { font-size: 1.125rem; line-height: 1; }
     @media (prefers-reduced-motion: reduce) {
-      input, .input-wrap { transition: none; }
+      input, .input-wrap, .password-toggle { transition: none; }
     }
   `,
   connected() {
@@ -125,7 +130,14 @@ const definition: ComponentDefinition<BqInputProps, BqInputState> = {
     const name = self.getAttribute('name') ?? '';
     const value = self.getAttribute('value') ?? '';
     const disabled = self.hasAttribute('disabled');
-    const proxy = createFormProxy(self, name, value, disabled);
+    const proxy = createFormProxy(self, name, value, disabled, {
+      getLiveValue: () => {
+        const input = self.shadowRoot?.querySelector(
+          'input'
+        ) as HTMLInputElement | null;
+        return input ? input.value : (self.getAttribute('value') ?? '');
+      },
+    });
     (self as unknown as Record<string, unknown>)['_formProxy'] = proxy;
 
     const ih = (e: Event) => {
@@ -258,6 +270,7 @@ const definition: ComponentDefinition<BqInputProps, BqInputState> = {
             aria-invalid="${hasError ? 'true' : 'false'}"
             ${props.required ? 'aria-required="true"' : ''}
             ${describedBy ? `aria-describedby="${describedBy}"` : ''}
+            ${hasError ? `aria-errormessage="${uid}-err"` : ''}
           />
           ${isPassword
             ? `<button type="button" class="password-toggle" part="password-toggle" aria-label="${escapeHtml(state.passwordVisible ? t('input.hidePassword') : t('input.showPassword'))}" aria-pressed="${state.passwordVisible ? 'true' : 'false'}" ${props.disabled || props.readonly ? 'disabled aria-disabled="true"' : ''}>

@@ -1,6 +1,6 @@
 {
   "name": "@bquery/ui",
-  "version": "1.10.0",
+  "version": "1.11.0",
   "description": "Production-grade web component library for the bQuery project",
   "type": "module",
   "main": "./dist/index.cjs",
@@ -85,23 +85,23 @@
     "build:storybook": "storybook build --output-dir storybook-static"
   },
   "peerDependencies": {
-    "@bquery/bquery": "^1.10.0"
+    "@bquery/bquery": "^1.11.0"
   },
   "devDependencies": {
-    "@bquery/bquery": "^1.10.0",
-    "@storybook/addon-docs": "^10.3.4",
-    "@storybook/web-components-vite": "^10.3.4",
-    "@tailwindcss/postcss": "^4.2.2",
-    "@types/node": "^25.5.2",
-    "autoprefixer": "^10.4.27",
-    "bun-types": "^1.3.11",
-    "happy-dom": "^20.8.9",
-    "postcss": "^8.5.8",
-    "storybook": "^10.3.4",
-    "tailwindcss": "^4.2.2",
-    "typescript": "^5.9.3",
-    "vite": "^8.0.3",
-    "vite-plugin-dts": "^4.5.4",
+    "@bquery/bquery": "^1.11.0",
+    "@storybook/addon-docs": "^10.3.6",
+    "@storybook/web-components-vite": "^10.3.6",
+    "@tailwindcss/postcss": "^4.2.4",
+    "@types/node": "^25.6.0",
+    "autoprefixer": "^10.5.0",
+    "bun-types": "^1.3.13",
+    "happy-dom": "^20.9.0",
+    "postcss": "^8.5.12",
+    "storybook": "^10.3.6",
+    "tailwindcss": "^4.2.4",
+    "typescript": "^6.0.3",
+    "vite": "^8.0.10",
+    "vite-plugin-dts": "^5.0.0",
     "vitepress": "^1.6.4"
   }
 }

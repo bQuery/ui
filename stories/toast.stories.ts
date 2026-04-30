@@ -49,3 +49,30 @@ export const NonDismissible: Story = {
     <bq-toast variant="info" message="This notification cannot be dismissed." duration="0" ?dismissible=${false}></bq-toast>
   `,
 };
+
+/**
+ * Demonstrates the imperative `showToast()` API across the six anchor positions.
+ * Each button mounts a real toast in its target corner; the underlying container
+ * is created lazily on first use and re-used for subsequent calls.
+ */
+export const ImperativePositions: Story = {
+  render: () => storyHtml`
+    <div style="display:flex;flex-wrap:wrap;gap:0.5rem;max-width:32rem">
+      <button onclick="window.__showToast?.('top-left')">top-left</button>
+      <button onclick="window.__showToast?.('top-center')">top-center</button>
+      <button onclick="window.__showToast?.('top-right')">top-right</button>
+      <button onclick="window.__showToast?.('bottom-left')">bottom-left</button>
+      <button onclick="window.__showToast?.('bottom-center')">bottom-center</button>
+      <button onclick="window.__showToast?.('bottom-right')">bottom-right</button>
+    </div>
+    <script type="module">
+      import { showToast } from '/src/components/toast/BqToast.ts';
+      window.__showToast = (position) => showToast({
+        variant: 'info',
+        message: 'Anchored at ' + position,
+        position,
+        duration: 3000,
+      });
+    </script>
+  `,
+};

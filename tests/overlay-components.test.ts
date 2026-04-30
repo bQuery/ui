@@ -326,16 +326,19 @@ describe('overlay and utility component fixes', () => {
       '<a href="/">Home</a><a href="/docs">Docs</a><a href="/api">API</a>';
     doc.body.appendChild(el);
     await Promise.resolve();
+    await new Promise<void>((resolve) => queueMicrotask(() => resolve()));
 
-    const separators = Array.from(
-      el.querySelectorAll('[data-bq-breadcrumb-separator]')
-    );
-
-    expect(separators).toHaveLength(2);
-    expect(separators.map((item) => item.textContent)).toEqual(['>', '>']);
+    // Separators are now rendered via CSS ::before pseudo-elements driven by
+    // the --bq-breadcrumb-separator custom property — no DOM injection.
+    const injected = el.querySelectorAll('[data-bq-breadcrumb-separator]');
+    expect(injected).toHaveLength(0);
+    expect(el.style.getPropertyValue('--bq-breadcrumb-separator')).toBe('">"');
     expect(
       el.querySelector('a:last-of-type')?.getAttribute('aria-current')
     ).toBe('page');
+    expect(
+      el.querySelector('a:first-of-type')?.hasAttribute('aria-current')
+    ).toBe(false);
   });
 
   it('applies width and height styles to single skeleton variants', () => {

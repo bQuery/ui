@@ -180,7 +180,14 @@ const definition: ComponentDefinition<BqSelectProps, BqSelectState> = {
     const name = self.getAttribute('name') ?? '';
     const value = self.getAttribute('value') ?? '';
     const disabled = self.hasAttribute('disabled');
-    const proxy = createFormProxy(self, name, value, disabled);
+    const proxy = createFormProxy(self, name, value, disabled, {
+      getLiveValue: () => {
+        const select = self.shadowRoot?.querySelector(
+          'select'
+        ) as HTMLSelectElement | null;
+        return select ? select.value : (self.getAttribute('value') ?? '');
+      },
+    });
     (self as unknown as Record<string, unknown>)['_formProxy'] = proxy;
 
     const handler = (e: Event) => {
@@ -256,6 +263,7 @@ const definition: ComponentDefinition<BqSelectProps, BqSelectState> = {
             aria-invalid="${hasError ? 'true' : 'false'}"
             ${props.required ? 'aria-required="true"' : ''}
             ${describedBy ? `aria-describedby="${describedBy}"` : ''}
+            ${hasError ? `aria-errormessage="${uid}-err"` : ''}
           >
             ${optionsMarkup}
           </select>

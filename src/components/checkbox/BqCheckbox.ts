@@ -9,7 +9,7 @@
  * @prop {boolean} disabled
  * @prop {boolean} required
  * @prop {string}  hint
- * @fires bq-change - { checked: boolean, value: string }
+ * @fires bq-change - { value: string, checked: boolean }
  */
 import type { ComponentDefinition } from '@bquery/bquery/component';
 import { bool, component, html } from '@bquery/bquery/component';
@@ -79,8 +79,8 @@ const definition: ComponentDefinition<BqCheckboxProps> = {
       self.dispatchEvent(
         new CustomEvent('bq-change', {
           detail: {
-            checked: input.checked,
             value: self.getAttribute('value') ?? '',
+            checked: input.checked,
           },
           bubbles: true,
           composed: true,

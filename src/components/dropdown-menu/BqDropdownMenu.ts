@@ -205,7 +205,10 @@ const definition: ComponentDefinition<
         if (timeoutMs <= 0) {
           finalize();
         } else {
-          record['_closeTimer'] = setTimeout(finalize, Math.ceil(timeoutMs) + 20);
+          record['_closeTimer'] = setTimeout(
+            finalize,
+            Math.ceil(timeoutMs) + 20
+          );
         }
       }
     };
@@ -371,6 +374,10 @@ const definition: ComponentDefinition<
           break;
         }
         default: {
+          // Skip typeahead while an IME composition is active — the keys
+          // are part of the candidate selection, not menu navigation.
+          // Also ignore the synthetic key fired on composition end (229).
+          if (ke.isComposing || ke.keyCode === 229) break;
           if (ke.key.length === 1 && !ke.altKey && !ke.ctrlKey && !ke.metaKey) {
             typeaheadBuffer = `${typeaheadBuffer}${ke.key.toLowerCase()}`;
             if (typeaheadTimeout) clearTimeout(typeaheadTimeout);
@@ -448,7 +455,9 @@ const definition: ComponentDefinition<
     const clearTypeaheadBuffer = s['_clearTypeaheadBuffer'] as
       | (() => void)
       | undefined;
-    const closeTimer = s['_closeTimer'] as ReturnType<typeof setTimeout> | undefined;
+    const closeTimer = s['_closeTimer'] as
+      | ReturnType<typeof setTimeout>
+      | undefined;
     if (triggerHandler) this.removeEventListener('click', triggerHandler);
     if (menuClickHandler) this.removeEventListener('click', menuClickHandler);
     if (keyHandler) this.removeEventListener('keydown', keyHandler);

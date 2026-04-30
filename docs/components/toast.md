@@ -56,7 +56,24 @@ showToast({
 
 // Info toast
 showToast({ variant: 'info', message: 'Update available.' });
+
+// Choose where the toast stack is anchored. Each position uses its own
+// container, lazily created on first use.
+showToast({
+  variant: 'success',
+  message: 'Saved!',
+  position: 'top-center',
+});
 ```
+
+### `showToast(options)` reference
+
+| Option     | Type                                                                                              | Default       | Description                       |
+| ---------- | ------------------------------------------------------------------------------------------------- | ------------- | --------------------------------- |
+| `message`  | `string`                                                                                          | —             | Toast body text                   |
+| `variant`  | `'success' \| 'error' \| 'warning' \| 'info'`                                                     | `'info'`      | Visual style                      |
+| `duration` | `number`                                                                                          | `4000`        | Auto-dismiss delay (`0` = sticky) |
+| `position` | `'top-left' \| 'top-right' \| 'top-center' \| 'bottom-left' \| 'bottom-right' \| 'bottom-center'` | `'top-right'` | Anchor for the toast container    |
 
 ## Properties
 

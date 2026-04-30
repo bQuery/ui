@@ -2,7 +2,9 @@
  * Breadcrumbs navigation.
  * @element bq-breadcrumbs
  * @prop {string} separator - Separator character or text (default: /)
- * @slot - <a> or other link elements
+ * @slot - <a> or other link elements; the last item is automatically marked as `aria-current="page"`
+ *
+ * @cssprop --bq-breadcrumb-separator - Override the separator string ("/" by default)
  */
 import type { ComponentDefinition } from '@bquery/bquery/component';
 import { component, html } from '@bquery/bquery/component';
@@ -10,13 +12,13 @@ import { t } from '../../i18n/index.js';
 import { getBaseStyles } from '../../utils/styles.js';
 
 type BqBreadcrumbsProps = { separator: string };
-const SEPARATOR_ATTR = 'data-bq-breadcrumb-separator';
 
-const isSeparatorElement = (element: Element): boolean =>
-  element.hasAttribute(SEPARATOR_ATTR);
-
-const getBreadcrumbSignature = (items: Element[], separator: string): string =>
-  `${separator}::${items.map((item) => `${item.tagName}:${item.getAttribute('href') ?? ''}:${item.textContent?.trim() ?? ''}`).join('|')}`;
+/**
+ * Escape a string for safe use as a CSS `content` value.
+ * Wraps in quotes and backslash-escapes embedded backslashes / quotes.
+ */
+const cssQuote = (raw: string): string =>
+  `"${raw.replace(/\\/g, '\\\\').replace(/"/g, '\\"')}"`;
 
 const definition: ComponentDefinition<BqBreadcrumbsProps> = {
   props: {
@@ -27,10 +29,18 @@ const definition: ComponentDefinition<BqBreadcrumbsProps> = {
     *, *::before, *::after { box-sizing: border-box; }
     :host { display: block; }
     .breadcrumbs { display: flex; align-items: center; flex-wrap: wrap; list-style: none; margin: 0; padding: 0; font-family: var(--bq-font-family-sans); font-size: var(--bq-font-size-sm,0.875rem); gap: 0; }
+    ::slotted(*) { display: inline-flex; align-items: center; }
+    ::slotted(*:not(:first-child))::before {
+      content: var(--bq-breadcrumb-separator, "/");
+      color: var(--bq-text-subtle,#94a3b8);
+      margin: 0 var(--bq-space-2,0.5rem);
+      user-select: none;
+      pointer-events: none;
+      speak: never;
+    }
     ::slotted(a) { color: var(--bq-text-muted,#475569); text-decoration: none; transition: color var(--bq-duration-fast); }
     ::slotted(a:hover) { color: var(--bq-color-primary-600,#2563eb); text-decoration: underline; }
     ::slotted([aria-current="page"]) { color: var(--bq-text-base,#0f172a); font-weight: var(--bq-font-weight-medium,500); pointer-events: none; }
-    ::slotted([data-bq-breadcrumb-separator]) { color: var(--bq-text-subtle,#94a3b8); margin: 0 var(--bq-space-2,0.5rem); user-select: none; }
     @media (prefers-reduced-motion: reduce) {
       ::slotted(a) { transition: none; }
     }
@@ -42,49 +52,27 @@ const definition: ComponentDefinition<BqBreadcrumbsProps> = {
         'slot'
       ) as HTMLSlotElement | null;
       if (!slot) return;
-      const items = slot
-        .assignedElements({ flatten: true })
-        .filter((item) => !isSeparatorElement(item));
-      const separatorText = self.getAttribute('separator') || '/';
-      const state = self as unknown as Record<string, unknown>;
-      if (state['_syncingSeparators']) return;
-      const signature = getBreadcrumbSignature(items, separatorText);
-
+      const items = slot.assignedElements({ flatten: true });
       items.forEach((item, i) => {
         if (i === items.length - 1) item.setAttribute('aria-current', 'page');
         else item.removeAttribute('aria-current');
       });
-
-      const separatorCount = self.querySelectorAll<HTMLElement>(
-        `[${SEPARATOR_ATTR}]`
-      ).length;
-      if (
-        state['_separatorSignature'] === signature &&
-        separatorCount === Math.max(0, items.length - 1)
-      ) {
+    };
+    const applySeparatorVar = () => {
+      // Only set an inline override when the host explicitly carries a
+      // `separator` attribute. This keeps the `--bq-breadcrumb-separator`
+      // CSS custom property externally overridable when the prop is omitted.
+      const attr = self.getAttribute('separator');
+      if (attr === null) {
+        self.style.removeProperty('--bq-breadcrumb-separator');
         return;
       }
-
-      state['_syncingSeparators'] = true;
-      state['_separatorSignature'] = signature;
-      try {
-        self
-          .querySelectorAll<HTMLElement>(`[${SEPARATOR_ATTR}]`)
-          .forEach((separator) => separator.remove());
-        items.forEach((item, i) => {
-          if (i < items.length - 1) {
-            const separator = document.createElement('span');
-            separator.setAttribute(SEPARATOR_ATTR, '');
-            separator.setAttribute('aria-hidden', 'true');
-            separator.textContent = separatorText;
-            item.after(separator);
-          }
-        });
-      } finally {
-        state['_syncingSeparators'] = false;
-      }
+      self.style.setProperty('--bq-breadcrumb-separator', cssQuote(attr));
     };
     (self as unknown as Record<string, unknown>)['_applyAttrs'] = applyAttrs;
+    (self as unknown as Record<string, unknown>)['_applySeparatorVar'] =
+      applySeparatorVar;
+    applySeparatorVar();
     queueMicrotask(() => {
       const slot = self.shadowRoot?.querySelector(
         'slot'
@@ -102,12 +90,11 @@ const definition: ComponentDefinition<BqBreadcrumbsProps> = {
     if (slot && applyAttrs) slot.removeEventListener('slotchange', applyAttrs);
   },
   updated() {
-    const applyAttrs = (this as unknown as Record<string, unknown>)[
-      '_applyAttrs'
-    ] as (() => void) | undefined;
-    applyAttrs?.();
+    const s = this as unknown as Record<string, unknown>;
+    (s['_applySeparatorVar'] as (() => void) | undefined)?.();
+    (s['_applyAttrs'] as (() => void) | undefined)?.();
   },
-  render({ props }) {
+  render() {
     return html`
       <nav aria-label="${t('breadcrumbs.nav')}" part="nav">
         <ol class="breadcrumbs" part="list">

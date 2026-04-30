@@ -109,23 +109,45 @@ const definition: ComponentDefinition<BqToastProps> = {
 };
 
 /** Imperative toast API */
+export type ToastPosition =
+  | 'top-left'
+  | 'top-right'
+  | 'top-center'
+  | 'bottom-left'
+  | 'bottom-right'
+  | 'bottom-center';
+
 export interface ToastOptions {
   message: string;
   variant?: 'success' | 'error' | 'warning' | 'info';
   duration?: number;
+  /** Where the toast container is anchored (default: 'top-right'). */
+  position?: ToastPosition;
 }
 
 const TOAST_CONTAINER_ID = 'bq-toast-container';
+const POSITIONS: Record<ToastPosition, string> = {
+  'top-left': 'top: 1rem; left: 1rem;',
+  'top-right': 'top: 1rem; right: 1rem;',
+  'top-center': 'top: 1rem; left: 50%; transform: translateX(-50%);',
+  'bottom-left': 'bottom: 1rem; left: 1rem;',
+  'bottom-right': 'bottom: 1rem; right: 1rem;',
+  'bottom-center': 'bottom: 1rem; left: 50%; transform: translateX(-50%);',
+};
 
-function getOrCreateContainer(): HTMLElement {
-  let container = document.getElementById(TOAST_CONTAINER_ID);
+function getOrCreateContainer(
+  position: ToastPosition = 'top-right'
+): HTMLElement {
+  const id = `${TOAST_CONTAINER_ID}-${position}`;
+  let container = document.getElementById(id);
   if (!container) {
     container = document.createElement('div');
-    container.id = TOAST_CONTAINER_ID;
+    container.id = id;
     container.setAttribute('role', 'region');
     container.setAttribute('aria-label', 'Notifications');
+    container.dataset['bqToastPosition'] = position;
     container.style.cssText = `
-      position: fixed; top: 1rem; right: 1rem; z-index: var(--bq-z-toast, 600);
+      position: fixed; ${POSITIONS[position]} z-index: var(--bq-z-toast, 600);
       display: flex; flex-direction: column; gap: 0.5rem; pointer-events: none;
       max-height: 100vh; overflow: hidden;
     `.replace(/\s+/g, ' ');
@@ -138,7 +160,7 @@ export function showToast(
   options: ToastOptions,
   container?: HTMLElement
 ): HTMLElement {
-  const host = container ?? getOrCreateContainer();
+  const host = container ?? getOrCreateContainer(options.position);
   const toast = document.createElement('bq-toast');
   toast.style.pointerEvents = 'auto';
   toast.setAttribute('message', options.message);

@@ -101,7 +101,14 @@ const definition: ComponentDefinition<BqTextareaProps, BqTextareaState> = {
     const name = self.getAttribute('name') ?? '';
     const value = self.getAttribute('value') ?? '';
     const disabled = self.hasAttribute('disabled');
-    const proxy = createFormProxy(self, name, value, disabled);
+    const proxy = createFormProxy(self, name, value, disabled, {
+      getLiveValue: () => {
+        const ta = self.shadowRoot?.querySelector(
+          'textarea'
+        ) as HTMLTextAreaElement | null;
+        return ta ? ta.value : (self.getAttribute('value') ?? '');
+      },
+    });
     (self as unknown as Record<string, unknown>)['_formProxy'] = proxy;
 
     const ih = (e: Event) => {
@@ -210,7 +217,10 @@ const definition: ComponentDefinition<BqTextareaProps, BqTextareaState> = {
           aria-invalid="${hasError ? 'true' : 'false'}"
           ${props.required ? 'aria-required="true"' : ''}
           ${describedBy ? `aria-describedby="${describedBy}"` : ''}
-        >${escapeHtml(props.value)}</textarea>
+          ${hasError ? `aria-errormessage="${uid}-err"` : ''}
+        >
+${escapeHtml(props.value)}</textarea
+        >
         ${hasFooter
           ? `<div class="footer" part="footer">
               <span>
