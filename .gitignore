@@ -1,15 +1,59 @@
+# Dependencies
 node_modules/
+bower_components/
+
+# Build outputs
 dist/
 dist-types/
-.cache/
-*.log
+build/
+out/
+storybook-static/
+*.min.js
+*.min.css
+
+# IDE and editor files
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS generated files
 .DS_Store
+.DS_Store?
+._*
+Thumbs.db
+ehthumbs.db
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment files
 .env
 .env.local
-docs/.vitepress/dist/
-docs/.vitepress/cache/
+.env.*.local
+
+# Test coverage
 coverage/
+.nyc_output/
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.temp
 *.tsbuildinfo
-storybook-static/
+
+# Cache
+.cache/
+.npm/
+*/.vitepress/cache/
 .storybook/cache/
 package-lock.json
+
+# Generated documentation outputs
+docs/.vitepress/dist/

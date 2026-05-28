@@ -1,0 +1,60 @@
+name: Feature request
+description: Suggest an improvement to @bquery/ui components, tokens, or developer experience.
+title: "[Feature]: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping shape @bquery/ui.
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Pre-flight checklist
+      options:
+        - label: I searched existing issues and did not find a duplicate request.
+          required: true
+        - label: I explained the problem or use case, not just the desired API.
+          required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem or use case
+      placeholder: Describe the workflow, pain point, or missing capability.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      placeholder: Explain the desired outcome and who benefits from it.
+    validations:
+      required: true
+  - type: textarea
+    id: api-shape
+    attributes:
+      label: Possible API or UX shape
+      placeholder: Props, slots, events, CSS custom properties, or visual expectations.
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+  - type: dropdown
+    id: area
+    attributes:
+      label: Relevant area
+      options:
+        - new component
+        - existing component
+        - tokens / design system
+        - theme
+        - i18n
+        - utils
+        - docs
+        - build or tooling
+        - other
+    validations:
+      required: true
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional context

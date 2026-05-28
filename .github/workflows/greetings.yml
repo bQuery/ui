@@ -1,0 +1,28 @@
+name: Greetings
+
+on: [pull_request, issues]
+
+jobs:
+  greeting:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      pull-requests: write
+    steps:
+      - uses: actions/first-interaction@v2
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          issue-message: |
+            👋 Thanks for opening your first issue in this repository!
+
+            Please make sure your report includes reproduction steps, expected vs. actual behaviour, and your @bquery/ui version.
+
+            Before filing new issues, please review our contribution guidelines:
+            https://github.com/${{ github.repository }}/blob/main/CONTRIBUTING.md
+          pr-message: |
+            🎉 Thank you for opening your first pull request!
+
+            Please confirm that you've reviewed our contribution guidelines:
+            https://github.com/${{ github.repository }}/blob/main/CONTRIBUTING.md
+
+            A maintainer will review your changes as soon as possible.

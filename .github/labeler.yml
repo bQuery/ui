@@ -1,0 +1,53 @@
+components:
+  - changed-files:
+      - any-glob-to-any-file: 'src/components/**'
+
+tokens:
+  - changed-files:
+      - any-glob-to-any-file: 'src/tokens/**'
+
+theme:
+  - changed-files:
+      - any-glob-to-any-file: 'src/theme/**'
+
+i18n:
+  - changed-files:
+      - any-glob-to-any-file: 'src/i18n/**'
+
+utils:
+  - changed-files:
+      - any-glob-to-any-file: 'src/utils/**'
+
+docs:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'docs/**'
+          - '*.md'
+
+tests:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'tests/**'
+          - '**/*.test.ts'
+
+build:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'package.json'
+          - 'bun.lock'
+          - 'bunfig.toml'
+          - 'vite*.ts'
+          - 'tsconfig*.json'
+          - 'eslint.config.js'
+          - '.prettier*'
+
+ci/cd:
+  - changed-files:
+      - any-glob-to-any-file: '.github/workflows/**'
+
+github:
+  - changed-files:
+      - any-glob-to-any-file:
+          - '.github/labeler.yml'
+          - '.github/ISSUE_TEMPLATE/**'
+          - '.github/FUNDING.yml'
