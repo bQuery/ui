@@ -26,7 +26,10 @@ import { bool, component, css, html } from '@bquery/bquery/component';
 import { escapeHtml } from '@bquery/bquery/security';
 import { t } from '../../i18n/index.js';
 import { uniqueId } from '../../utils/dom.js';
-import { createFormProxy, type FormProxy } from '../../utils/form.js';
+import { bindFormProxy, syncFormProxy } from '../../utils/form.js';
+import { bind, release, store } from '../../utils/component.js';
+import { captureFocus, restoreFocus, type FocusSnapshot } from '../../utils/focus.js';
+import { bindValidation } from '../../utils/validation.js';
 import { baseStyles } from '../../utils/styles.js';
 
 type BqInputProps = {
@@ -49,6 +52,14 @@ type BqInputEl = HTMLElement & {
   setState(k: 'uid' | 'passwordVisible', v: string | boolean): void;
   getState<T>(k: string): T;
 };
+
+/**
+ * Holds the pre-render focus snapshot. Rendering replaces the whole shadow
+ * tree, so without this the field the user is typing in is destroyed on
+ * every keystroke that reflects a value to an attribute.
+ */
+const inputFocusStore = (owner: object) =>
+  store<{ snapshot?: FocusSnapshot | null }>(owner, () => ({}));
 
 const definition: ComponentDefinition<BqInputProps, BqInputState> = {
   props: {
@@ -126,19 +137,22 @@ const definition: ComponentDefinition<BqInputProps, BqInputState> = {
     if (!self.getState<string>('uid'))
       self.setState('uid', uniqueId('bq-input'));
 
-    // Form proxy for native <form> participation
-    const name = self.getAttribute('name') ?? '';
-    const value = self.getAttribute('value') ?? '';
-    const disabled = self.hasAttribute('disabled');
-    const proxy = createFormProxy(self, name, value, disabled, {
-      getLiveValue: () => {
+    const scope = bind(self);
+
+    const readValue = () => {
         const input = self.shadowRoot?.querySelector(
           'input'
         ) as HTMLInputElement | null;
         return input ? input.value : (self.getAttribute('value') ?? '');
-      },
-    });
-    (self as unknown as Record<string, unknown>)['_formProxy'] = proxy;
+    };
+
+    // Form proxy for native <form> participation
+    const proxy = bindFormProxy(self, scope, { value: readValue });
+
+    // The proxy submits through a hidden input, which the platform bars from
+    // constraint validation — so `required`/`pattern`/`minlength` have to be
+    // enforced here or they would render but never apply.
+    bindValidation(self, scope, { value: readValue });
 
     const ih = (e: Event) => {
       const input = e.target as HTMLInputElement | null;
@@ -186,34 +200,22 @@ const definition: ComponentDefinition<BqInputProps, BqInputState> = {
         self.setState('passwordVisible', !current);
       }
     };
-    const s = self as unknown as Record<string, unknown>;
-    s['_ih'] = ih;
-    s['_ch'] = ch;
-    s['_fh'] = fh;
-    s['_bh'] = bh;
-    s['_pwToggle'] = pwToggle;
-    self.shadowRoot?.addEventListener('input', ih);
-    self.shadowRoot?.addEventListener('change', ch);
-    self.shadowRoot?.addEventListener('focusin', fh);
-    self.shadowRoot?.addEventListener('focusout', bh);
-    self.shadowRoot?.addEventListener('click', pwToggle);
+    const shadow = self.shadowRoot;
+    scope.on(shadow, 'input', ih);
+    scope.on(shadow, 'change', ch);
+    scope.on(shadow, 'focusin', fh);
+    scope.on(shadow, 'focusout', bh);
+    scope.on(shadow, 'click', pwToggle);
   },
   disconnected() {
-    const s = this as unknown as Record<string, unknown>;
-    const sr = this.shadowRoot;
-    const ih = s['_ih'] as EventListener | undefined;
-    if (ih) sr?.removeEventListener('input', ih);
-    const ch = s['_ch'] as EventListener | undefined;
-    if (ch) sr?.removeEventListener('change', ch);
-    const fh = s['_fh'] as EventListener | undefined;
-    if (fh) sr?.removeEventListener('focusin', fh);
-    const bh = s['_bh'] as EventListener | undefined;
-    if (bh) sr?.removeEventListener('focusout', bh);
-    const pwToggle = s['_pwToggle'] as EventListener | undefined;
-    if (pwToggle) sr?.removeEventListener('click', pwToggle);
-    (s['_formProxy'] as FormProxy | undefined)?.cleanup();
+    release(this);
+  },
+  beforeUpdate() {
+    inputFocusStore(this).snapshot = captureFocus(this.shadowRoot);
   },
   updated() {
+    restoreFocus(this.shadowRoot, inputFocusStore(this).snapshot);
+    inputFocusStore(this).snapshot = null;
     const self = this as unknown as BqInputEl;
     if (
       this.getAttribute('type') !== 'password' &&
@@ -221,13 +223,7 @@ const definition: ComponentDefinition<BqInputProps, BqInputState> = {
     ) {
       self.setState('passwordVisible', false);
     }
-    const s = this as unknown as Record<string, unknown>;
-    const proxy = s['_formProxy'] as FormProxy | undefined;
-    if (proxy) {
-      proxy.setName(this.getAttribute('name') ?? '');
-      proxy.setValue(this.getAttribute('value') ?? '');
-      proxy.setDisabled(this.hasAttribute('disabled'));
-    }
+    syncFormProxy(this);
   },
   render({ props, state }) {
     const hasError = Boolean(props.error);

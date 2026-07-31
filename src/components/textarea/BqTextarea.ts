@@ -23,7 +23,10 @@ import { bool, component, css, html } from '@bquery/bquery/component';
 import { escapeHtml } from '@bquery/bquery/security';
 import { t } from '../../i18n/index.js';
 import { uniqueId } from '../../utils/dom.js';
-import { createFormProxy, type FormProxy } from '../../utils/form.js';
+import { bindFormProxy, syncFormProxy } from '../../utils/form.js';
+import { bind, release, store } from '../../utils/component.js';
+import { captureFocus, restoreFocus, type FocusSnapshot } from '../../utils/focus.js';
+import { bindValidation } from '../../utils/validation.js';
 import { baseStyles } from '../../utils/styles.js';
 
 type BqTextareaProps = {
@@ -41,6 +44,14 @@ type BqTextareaProps = {
   'show-counter': boolean;
 };
 type BqTextareaState = { uid: string };
+
+/**
+ * Holds the pre-render focus snapshot. Rendering replaces the whole shadow
+ * tree, so without this the field the user is typing in is destroyed on
+ * every keystroke that reflects a value to an attribute.
+ */
+const textareaFocusStore = (owner: object) =>
+  store<{ snapshot?: FocusSnapshot | null }>(owner, () => ({}));
 
 const definition: ComponentDefinition<BqTextareaProps, BqTextareaState> = {
   props: {
@@ -97,19 +108,22 @@ const definition: ComponentDefinition<BqTextareaProps, BqTextareaState> = {
     const self = this as unknown as BQEl;
     if (!self.getState<string>('uid')) self.setState('uid', uniqueId('bq-ta'));
 
-    // Form proxy for native <form> participation
-    const name = self.getAttribute('name') ?? '';
-    const value = self.getAttribute('value') ?? '';
-    const disabled = self.hasAttribute('disabled');
-    const proxy = createFormProxy(self, name, value, disabled, {
-      getLiveValue: () => {
+    const scope = bind(self);
+
+    const readValue = () => {
         const ta = self.shadowRoot?.querySelector(
           'textarea'
         ) as HTMLTextAreaElement | null;
         return ta ? ta.value : (self.getAttribute('value') ?? '');
-      },
-    });
-    (self as unknown as Record<string, unknown>)['_formProxy'] = proxy;
+    };
+
+    // Form proxy for native <form> participation
+    const proxy = bindFormProxy(self, scope, { value: readValue });
+
+    // The proxy submits through a hidden input, which the platform bars from
+    // constraint validation — so `required`/`pattern`/`minlength` have to be
+    // enforced here or they would render but never apply.
+    bindValidation(self, scope, { value: readValue });
 
     const ih = (e: Event) => {
       const t = e.target as HTMLTextAreaElement | null;
@@ -148,43 +162,22 @@ const definition: ComponentDefinition<BqTextareaProps, BqTextareaState> = {
           new CustomEvent('bq-blur', { bubbles: true, composed: true })
         );
     };
-    const s = self as unknown as Record<string, unknown>;
-    s['_ih'] = ih;
-    s['_ch'] = ch;
-    s['_fh'] = fh;
-    s['_bh'] = bh;
-    self.shadowRoot?.addEventListener('input', ih);
-    self.shadowRoot?.addEventListener('change', ch);
-    self.shadowRoot?.addEventListener('focusin', fh);
-    self.shadowRoot?.addEventListener('focusout', bh);
+    const shadow = self.shadowRoot;
+    scope.on(shadow, 'input', ih);
+    scope.on(shadow, 'change', ch);
+    scope.on(shadow, 'focusin', fh);
+    scope.on(shadow, 'focusout', bh);
   },
   disconnected() {
-    const s = this as unknown as Record<string, unknown>;
-    const sr = this.shadowRoot;
-    (['_ih', '_ch', '_fh', '_bh'] as const).forEach((k) => {
-      const h = s[k] as EventListener | undefined;
-      if (h)
-        sr?.removeEventListener(
-          k === '_ih'
-            ? 'input'
-            : k === '_ch'
-              ? 'change'
-              : k === '_fh'
-                ? 'focusin'
-                : 'focusout',
-          h
-        );
-    });
-    (s['_formProxy'] as FormProxy | undefined)?.cleanup();
+    release(this);
+  },
+  beforeUpdate() {
+    textareaFocusStore(this).snapshot = captureFocus(this.shadowRoot);
   },
   updated() {
-    const s = this as unknown as Record<string, unknown>;
-    const proxy = s['_formProxy'] as FormProxy | undefined;
-    if (proxy) {
-      proxy.setName(this.getAttribute('name') ?? '');
-      proxy.setValue(this.getAttribute('value') ?? '');
-      proxy.setDisabled(this.hasAttribute('disabled'));
-    }
+    restoreFocus(this.shadowRoot, textareaFocusStore(this).snapshot);
+    textareaFocusStore(this).snapshot = null;
+    syncFormProxy(this);
   },
   render({ props, state }) {
     const hasError = Boolean(props.error);

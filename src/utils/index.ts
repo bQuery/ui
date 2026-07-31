@@ -9,6 +9,8 @@ export {
   unlinkDescribedBy,
 } from './aria.js';
 export { cn } from './cn.js';
+export { captureFocus, restoreFocus } from './focus.js';
+export type { FocusSnapshot } from './focus.js';
 export { bind, host, release, store } from './component.js';
 export type { ComponentScope, Disposer } from './component.js';
 export {
@@ -19,8 +21,41 @@ export {
   trapFocus,
   uniqueId,
 } from './dom.js';
-export { createFormProxy } from './form.js';
-export type { FormProxy } from './form.js';
+export { bindFormProxy, createFormProxy, syncFormProxy } from './form.js';
+export type {
+  FormProxy,
+  FormProxyBinding,
+  FormProxyBindingOptions,
+} from './form.js';
+export {
+  bindValidation,
+  validateValue,
+  validationMessageFor,
+} from './validation.js';
+export type {
+  ValidatableElement,
+  ValidationBindingOptions,
+  ValidationRules,
+  ValidityFlags,
+} from './validation.js';
+export {
+  autoPosition,
+  computePosition,
+  formatPlacement,
+  parsePlacement,
+  positionElement,
+  resolvePosition,
+} from './position.js';
+export type {
+  Align,
+  Placement,
+  PlacementInput,
+  PositionOptions,
+  PositionResult,
+  Rect,
+  ResolvePositionInput,
+  Side,
+} from './position.js';
 export {
   baseStyles,
   focusVisible,

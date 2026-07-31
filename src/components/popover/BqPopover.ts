@@ -23,6 +23,7 @@ import { t } from '../../i18n/index.js';
 import type { Disposer } from '../../utils/component.js';
 import { bind, host, release, store } from '../../utils/component.js';
 import { uniqueId } from '../../utils/dom.js';
+import { autoPosition } from '../../utils/position.js';
 import { baseStyles, reset } from '../../utils/styles.js';
 
 type BqPopoverProps = {
@@ -35,7 +36,7 @@ type BqPopoverProps = {
 type BqPopoverState = { uid: string };
 
 const popoverStore = (owner: object) =>
-  store<{ sync?: () => void }>(owner, () => ({}));
+  store<{ sync?: () => void; syncPosition?: () => void }>(owner, () => ({}));
 
 const definition: ComponentDefinition<BqPopoverProps, BqPopoverState> = {
   props: {
@@ -68,6 +69,8 @@ const definition: ComponentDefinition<BqPopoverProps, BqPopoverState> = {
     }
     :host([open]) .panel { opacity: 1; visibility: visible; }
 
+    /* Static fallback until the positioning engine has real geometry to work
+       with; its inline styles override these once the panel is measurable. */
     .panel[data-placement^="bottom"] { top: calc(100% + 8px); }
     .panel[data-placement^="top"]    { bottom: calc(100% + 8px); }
     .panel[data-placement^="left"]   { right: calc(100% + 8px); top: 0; }
@@ -105,12 +108,23 @@ const definition: ComponentDefinition<BqPopoverProps, BqPopoverState> = {
       border: 1px solid var(--bq-border-base,#e2e8f0);
       transform: rotate(45deg);
     }
+    /* Which edge the arrow hangs off, and which of its borders are visible,
+       follows the *effective* side so a flipped panel still points correctly.
+       The cross-axis offset is supplied inline by the positioning engine; the
+       percentage rules below only cover the unmeasured fallback. */
+    .panel[data-side="bottom"] .arrow { top: -5px; border-right: none; border-bottom: none; }
+    .panel[data-side="top"]    .arrow { bottom: -5px; border-left: none; border-top: none; }
+    .panel[data-side="left"]   .arrow { right: -5px; border-left: none; border-bottom: none; }
+    .panel[data-side="right"]  .arrow { left: -5px; border-right: none; border-top: none; }
     .panel[data-placement^="bottom"] .arrow { top: -5px; left: 50%; margin-left: -0.25rem; border-right: none; border-bottom: none; }
     .panel[data-placement^="top"]    .arrow { bottom: -5px; left: 50%; margin-left: -0.25rem; border-left: none; border-top: none; }
     .panel[data-placement^="left"]   .arrow { right: -5px; top: 0.75rem; border-left: none; border-bottom: none; }
     .panel[data-placement^="right"]  .arrow { left: -5px; top: 0.75rem; border-right: none; border-top: none; }
     .panel[data-placement$="-start"] .arrow { left: 1rem; margin-left: 0; }
     .panel[data-placement$="-end"]   .arrow { left: auto; right: 1rem; margin-left: 0; }
+    /* The engine writes an absolute cross-axis offset, so the centring margin
+       must not be added on top of it. */
+    .panel[data-side] .arrow { margin-left: 0; }
 
     @media (prefers-reduced-motion: reduce) {
       .panel { transition: none; }
@@ -149,6 +163,31 @@ const definition: ComponentDefinition<BqPopoverProps, BqPopoverState> = {
       );
       if (restoreFocus) getTrigger()?.focus();
     };
+
+    // Anchored positioning is only tracked while the panel is open, and is
+    // re-established after every render because the shadow tree — panel and
+    // arrow included — is rebuilt from scratch each time.
+    let stopPosition: Disposer | null = null;
+    const syncPosition = () => {
+      stopPosition?.();
+      stopPosition = null;
+      if (!self.hasAttribute('open')) return;
+      const panel = self.shadowRoot?.querySelector(
+        '.panel'
+      ) as HTMLElement | null;
+      if (!panel) return;
+      const arrow = self.shadowRoot?.querySelector(
+        '.arrow'
+      ) as HTMLElement | null;
+      stopPosition = scope.add(
+        autoPosition(self, panel, {
+          placement: self.getAttribute('placement') ?? 'bottom',
+          offset: 8,
+          arrowElement: arrow,
+        })
+      );
+    };
+    local.syncPosition = syncPosition;
 
     // The outside-click listener only exists while open; the scope owns its
     // removal so a disconnect while open cannot strand it on `document`.
@@ -194,7 +233,9 @@ const definition: ComponentDefinition<BqPopoverProps, BqPopoverState> = {
   },
   updated() {
     const self = host<BqPopoverState>(this);
-    popoverStore(self).sync?.();
+    const local = popoverStore(self);
+    local.sync?.();
+    local.syncPosition?.();
     const trigger = self.querySelector('[slot="trigger"]');
     if (!trigger) return;
     trigger.setAttribute(

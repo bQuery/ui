@@ -11,7 +11,7 @@ import type { ComponentDefinition } from '@bquery/bquery/component';
 import { component, css, html } from '@bquery/bquery/component';
 import { escapeHtml } from '@bquery/bquery/security';
 import { t } from '../../i18n/index.js';
-import { host } from '../../utils/component.js';
+import { bind, host, release } from '../../utils/component.js';
 import { baseStyles } from '../../utils/styles.js';
 
 type BqToastProps = {
@@ -64,20 +64,15 @@ const definition: ComponentDefinition<BqToastProps> = {
     const ch = (e: Event) => {
       if ((e.target as Element).closest('.close')) close();
     };
+    const scope = bind(self);
     const dur = parseInt(self.getAttribute('duration') ?? '4000', 10);
-    if (dur > 0) {
-      const timer = setTimeout(close, dur);
-      (self as unknown as Record<string, unknown>)['_timer'] = timer;
-    }
-    (self as unknown as Record<string, unknown>)['_ch'] = ch;
-    self.shadowRoot?.addEventListener('click', ch);
+    // The auto-dismiss timer is scope-owned, so a toast removed by hand
+    // cannot fire `close()` on an already-detached element afterwards.
+    if (dur > 0) scope.timeout(close, dur);
+    scope.on(self.shadowRoot, 'click', ch);
   },
   disconnected() {
-    const s = this as unknown as Record<string, unknown>;
-    const timer = s['_timer'] as ReturnType<typeof setTimeout> | undefined;
-    if (timer) clearTimeout(timer);
-    const ch = s['_ch'] as EventListener | undefined;
-    if (ch) this.shadowRoot?.removeEventListener('click', ch);
+    release(this);
   },
   render({ props }) {
     const icons: Record<string, string> = {

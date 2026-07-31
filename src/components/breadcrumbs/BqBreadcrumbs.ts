@@ -9,10 +9,17 @@
 import type { ComponentDefinition } from '@bquery/bquery/component';
 import { component, css, html } from '@bquery/bquery/component';
 import { t } from '../../i18n/index.js';
-import { host } from '../../utils/component.js';
+import { bind, host, release, store } from '../../utils/component.js';
 import { baseStyles } from '../../utils/styles.js';
 
 type BqBreadcrumbsProps = { separator: string };
+
+/** Per-instance callbacks `updated()` re-runs after every render. */
+const breadcrumbsStore = (owner: object) =>
+  store<{ applyAttrs?: () => void; applySeparatorVar?: () => void }>(
+    owner,
+    () => ({})
+  );
 
 /**
  * Escape a string for safe use as a CSS `content` value.
@@ -48,6 +55,7 @@ const definition: ComponentDefinition<BqBreadcrumbsProps> = {
   `,
   connected() {
     const self = host(this);
+    const scope = bind(self);
     const applyAttrs = () => {
       const slot = self.shadowRoot?.querySelector(
         'slot'
@@ -70,30 +78,31 @@ const definition: ComponentDefinition<BqBreadcrumbsProps> = {
       }
       self.style.setProperty('--bq-breadcrumb-separator', cssQuote(attr));
     };
-    (self as unknown as Record<string, unknown>)['_applyAttrs'] = applyAttrs;
-    (self as unknown as Record<string, unknown>)['_applySeparatorVar'] =
-      applySeparatorVar;
+    const local = breadcrumbsStore(self);
+    local.applyAttrs = applyAttrs;
+    local.applySeparatorVar = applySeparatorVar;
     applySeparatorVar();
+
+    // The slot only exists once the first render has run. Registering the
+    // listener on the scope means an element disconnected before this
+    // microtask settles still unwinds cleanly.
     queueMicrotask(() => {
+      if (!self.isConnected) return;
       const slot = self.shadowRoot?.querySelector(
         'slot'
       ) as HTMLSlotElement | null;
       if (!slot) return;
-      slot.addEventListener('slotchange', applyAttrs);
-      (self as unknown as Record<string, unknown>)['_slot'] = slot;
+      scope.on(slot, 'slotchange', applyAttrs);
       applyAttrs();
     });
   },
   disconnected() {
-    const self = this as unknown as Record<string, unknown>;
-    const applyAttrs = self['_applyAttrs'] as EventListener | undefined;
-    const slot = self['_slot'] as HTMLSlotElement | null | undefined;
-    if (slot && applyAttrs) slot.removeEventListener('slotchange', applyAttrs);
+    release(this);
   },
   updated() {
-    const s = this as unknown as Record<string, unknown>;
-    (s['_applySeparatorVar'] as (() => void) | undefined)?.();
-    (s['_applyAttrs'] as (() => void) | undefined)?.();
+    const local = breadcrumbsStore(this);
+    local.applySeparatorVar?.();
+    local.applyAttrs?.();
   },
   render() {
     return html`

@@ -38,6 +38,7 @@ import { __bqComponentEntry as buttonComponentEntry } from './components/button/
 import { __bqComponentEntry as cardComponentEntry } from './components/card/index.js';
 import { __bqComponentEntry as checkboxComponentEntry } from './components/checkbox/index.js';
 import { __bqComponentEntry as chipComponentEntry } from './components/chip/index.js';
+import { __bqComponentEntry as comboboxComponentEntry } from './components/combobox/index.js';
 import { __bqComponentEntry as dialogComponentEntry } from './components/dialog/index.js';
 import { __bqComponentEntry as dividerComponentEntry } from './components/divider/index.js';
 import { __bqComponentEntry as drawerComponentEntry } from './components/drawer/index.js';
@@ -56,6 +57,7 @@ import { __bqComponentEntry as spinnerComponentEntry } from './components/spinne
 import { __bqComponentEntry as statCardComponentEntry } from './components/stat-card/index.js';
 import { __bqComponentEntry as switchComponentEntry } from './components/switch/index.js';
 import { __bqComponentEntry as tableComponentEntry } from './components/table/index.js';
+import { __bqComponentEntry as tagInputComponentEntry } from './components/tag-input/index.js';
 import { __bqComponentEntry as tabsComponentEntry } from './components/tabs/index.js';
 import { __bqComponentEntry as textareaComponentEntry } from './components/textarea/index.js';
 import { __bqComponentEntry as tooltipComponentEntry } from './components/tooltip/index.js';
@@ -87,6 +89,7 @@ Object.defineProperty(registerAll, COMPONENT_ENTRY_MAP_KEY, {
     'card': cardComponentEntry,
     'checkbox': checkboxComponentEntry,
     'chip': chipComponentEntry,
+    'combobox': comboboxComponentEntry,
     'dialog': dialogComponentEntry,
     'divider': dividerComponentEntry,
     'drawer': drawerComponentEntry,
@@ -105,6 +108,7 @@ Object.defineProperty(registerAll, COMPONENT_ENTRY_MAP_KEY, {
     'stat-card': statCardComponentEntry,
     'switch': switchComponentEntry,
     'table': tableComponentEntry,
+    'tag-input': tagInputComponentEntry,
     'tabs': tabsComponentEntry,
     'textarea': textareaComponentEntry,
     'tooltip': tooltipComponentEntry,

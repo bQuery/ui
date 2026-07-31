@@ -17,7 +17,13 @@ import type { ComponentDefinition } from '@bquery/bquery/component';
 import { bool, component, css, html } from '@bquery/bquery/component';
 import { escapeHtml } from '@bquery/bquery/security';
 import { uniqueId } from '../../utils/dom.js';
-import { createFormProxy, type FormProxy } from '../../utils/form.js';
+import {
+  bindFormProxy,
+  syncFormProxy,
+  type FormProxyBinding,
+} from '../../utils/form.js';
+import { bind, host, release, store } from '../../utils/component.js';
+import { bindValidation } from '../../utils/validation.js';
 import { baseStyles } from '../../utils/styles.js';
 
 type BqSelectProps = {
@@ -85,6 +91,12 @@ const buildOptionsMarkup = (host: HTMLElement, placeholder: string): string => {
   return `${placeholderMarkup}${childrenMarkup}`;
 };
 
+const selectStore = (owner: object) =>
+  store<{ syncOptions?: () => void; proxy?: FormProxyBinding }>(
+    owner,
+    () => ({})
+  );
+
 const syncSelectValue = (host: HTMLElement): void => {
   const select = host.shadowRoot?.querySelector(
     'select'
@@ -105,10 +117,7 @@ const syncSelectValue = (host: HTMLElement): void => {
     host.setAttribute('value', normalizedValue);
   }
 
-  const proxy = (host as unknown as Record<string, unknown>)['_formProxy'] as
-    | FormProxy
-    | undefined;
-  proxy?.setValue(normalizedValue);
+  selectStore(host).proxy?.setValue(normalizedValue);
 };
 
 const definition: ComponentDefinition<BqSelectProps, BqSelectState> = {
@@ -158,13 +167,12 @@ const definition: ComponentDefinition<BqSelectProps, BqSelectState> = {
     }
   `,
   connected() {
-    type BQEl = HTMLElement & {
-      setState(k: 'uid' | 'optionsMarkup', v: string): void;
-      getState<T>(k: string): T;
-    };
-    const self = this as unknown as BQEl;
+    const self = host<BqSelectState>(this);
+    const scope = bind(self);
+    const local = selectStore(self);
     if (!self.getState<string>('uid'))
       self.setState('uid', uniqueId('bq-select'));
+
     const syncOptions = () => {
       const markup = buildOptionsMarkup(
         self,
@@ -173,24 +181,28 @@ const definition: ComponentDefinition<BqSelectProps, BqSelectState> = {
       if (self.getState<string>('optionsMarkup') !== markup) {
         self.setState('optionsMarkup', markup);
       }
-      requestAnimationFrame(() => syncSelectValue(self));
+      // The shadow `<select>` only exists after the render that markup
+      // triggers, so the value has to be reapplied a frame later.
+      scope.frame(() => syncSelectValue(self));
+    };
+    local.syncOptions = syncOptions;
+
+    const readValue = () => {
+      const select = self.shadowRoot?.querySelector(
+        'select'
+      ) as HTMLSelectElement | null;
+      return select ? select.value : (self.getAttribute('value') ?? '');
     };
 
     // Form proxy for native <form> participation
-    const name = self.getAttribute('name') ?? '';
-    const value = self.getAttribute('value') ?? '';
-    const disabled = self.hasAttribute('disabled');
-    const proxy = createFormProxy(self, name, value, disabled, {
-      getLiveValue: () => {
-        const select = self.shadowRoot?.querySelector(
-          'select'
-        ) as HTMLSelectElement | null;
-        return select ? select.value : (self.getAttribute('value') ?? '');
-      },
-    });
-    (self as unknown as Record<string, unknown>)['_formProxy'] = proxy;
+    const proxy = bindFormProxy(self, scope, { value: readValue });
+    local.proxy = proxy;
 
-    const handler = (e: Event) => {
+    // The hidden proxy input is barred from constraint validation, so a
+    // `required` select would otherwise submit with nothing chosen.
+    bindValidation(self, scope, { value: readValue });
+
+    scope.on(self.shadowRoot, 'change', (e) => {
       const select = e.target as HTMLSelectElement | null;
       if (select?.tagName === 'SELECT') {
         self.setAttribute('value', select.value);
@@ -203,10 +215,11 @@ const definition: ComponentDefinition<BqSelectProps, BqSelectState> = {
           })
         );
       }
-    };
-    const observer = new MutationObserver(() => {
-      syncOptions();
     });
+
+    // Light-DOM <option>/<optgroup> children are the source of truth, so the
+    // shadow <select> is rebuilt whenever they change.
+    const observer = new MutationObserver(() => syncOptions());
     observer.observe(self, {
       childList: true,
       subtree: true,
@@ -214,30 +227,16 @@ const definition: ComponentDefinition<BqSelectProps, BqSelectState> = {
       attributes: true,
       attributeFilter: ['disabled', 'label', 'selected', 'value'],
     });
+    scope.add(() => observer.disconnect());
 
-    (self as unknown as Record<string, unknown>)['_handler'] = handler;
-    (self as unknown as Record<string, unknown>)['_syncOptions'] = syncOptions;
-    (self as unknown as Record<string, unknown>)['_observer'] = observer;
-    self.shadowRoot?.addEventListener('change', handler);
     syncOptions();
   },
   disconnected() {
-    const s = this as unknown as Record<string, unknown>;
-    const h = s['_handler'] as EventListener | undefined;
-    if (h) this.shadowRoot?.removeEventListener('change', h);
-    const observer = s['_observer'] as MutationObserver | undefined;
-    observer?.disconnect();
-    (s['_formProxy'] as FormProxy | undefined)?.cleanup();
+    release(this);
   },
   updated() {
-    const s = this as unknown as Record<string, unknown>;
-    const proxy = s['_formProxy'] as FormProxy | undefined;
-    if (proxy) {
-      proxy.setName(this.getAttribute('name') ?? '');
-      proxy.setValue(this.getAttribute('value') ?? '');
-      proxy.setDisabled(this.hasAttribute('disabled'));
-    }
-    (s['_syncOptions'] as (() => void) | undefined)?.();
+    syncFormProxy(this);
+    selectStore(this).syncOptions?.();
   },
   render({ props, state }) {
     const hasError = Boolean(props.error);

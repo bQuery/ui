@@ -19,7 +19,7 @@ import type { ComponentDefinition } from '@bquery/bquery/component';
 import { escapeHtml } from '@bquery/bquery/security';
 import { t } from '../../i18n/index.js';
 import { uniqueId } from '../../utils/dom.js';
-import { host } from '../../utils/component.js';
+import { bind, host, release } from '../../utils/component.js';
 import { baseStyles } from '../../utils/styles.js';
 
 type BqButtonProps = {
@@ -97,22 +97,17 @@ const definition: ComponentDefinition<BqButtonProps, BqButtonState> = {
     }
   `,
   connected() {
-    type BqButtonElement = HTMLElement & { setState(k: 'statusId', v: string): void; getState<T>(k: string): T };
-    const self = this as unknown as BqButtonElement;
+    const self = host<BqButtonState>(this);
     if (!self.getState<string>('statusId')) self.setState('statusId', uniqueId('bq-button-status'));
-    const handler = (e: Event) => {
+    bind(self).on(self.shadowRoot, 'click', (e) => {
       if (self.hasAttribute('disabled') || self.hasAttribute('loading')) {
         e.preventDefault(); e.stopPropagation(); return;
       }
       self.dispatchEvent(new CustomEvent('bq-click', { detail: { originalEvent: e }, bubbles: true, composed: true }));
-    };
-    (self as unknown as Record<string, unknown>)['_clickHandler'] = handler;
-    self.shadowRoot?.addEventListener('click', handler);
+    });
   },
   disconnected() {
-    const self = host(this);
-    const handler = (self as unknown as Record<string, unknown>)['_clickHandler'] as EventListener | undefined;
-    if (handler) self.shadowRoot?.removeEventListener('click', handler);
+    release(this);
   },
   render({ props, state }) {
     const tag = props.href ? 'a' : 'button';

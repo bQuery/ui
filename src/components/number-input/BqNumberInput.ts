@@ -27,6 +27,7 @@ import { t } from '../../i18n/index.js';
 import { bind, host, release, store } from '../../utils/component.js';
 import { uniqueId } from '../../utils/dom.js';
 import { createFormProxy, type FormProxy } from '../../utils/form.js';
+import { bindValidation } from '../../utils/validation.js';
 import { baseStyles, reset, srOnly } from '../../utils/styles.js';
 
 type BqNumberInputProps = {
@@ -206,6 +207,13 @@ const definition: ComponentDefinition<BqNumberInputProps, BqNumberInputState> = 
         delete local.proxy;
       });
     }
+
+    // The value is already clamped into range on commit, so in practice this
+    // enforces `required` — but reading the constraints generically keeps the
+    // control honest if a value is written straight to the attribute.
+    bindValidation(self, scope, {
+      value: () => (self.getAttribute('value') ?? '').trim(),
+    });
 
     const commit = (next: number, eventName: 'bq-input' | 'bq-change') => {
       if (self.hasAttribute('disabled') || self.hasAttribute('readonly')) return;

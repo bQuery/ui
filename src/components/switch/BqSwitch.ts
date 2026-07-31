@@ -11,8 +11,8 @@
 import type { ComponentDefinition } from '@bquery/bquery/component';
 import { bool, component, css, html } from '@bquery/bquery/component';
 import { escapeHtml } from '@bquery/bquery/security';
-import { createFormProxy, type FormProxy } from '../../utils/form.js';
-import { host } from '../../utils/component.js';
+import { bindFormProxy, syncFormProxy } from '../../utils/form.js';
+import { bind, host, release } from '../../utils/component.js';
 import { baseStyles } from '../../utils/styles.js';
 
 type BqSwitchProps = {
@@ -67,13 +67,12 @@ const definition: ComponentDefinition<BqSwitchProps> = {
   `,
   connected() {
     const self = host(this);
+    const scope = bind(self);
 
     // Form proxy for native <form> participation
-    const name = self.getAttribute('name') ?? '';
-    const value = self.hasAttribute('checked') ? 'on' : '';
-    const disabled = self.hasAttribute('disabled');
-    const proxy = createFormProxy(self, name, value, disabled);
-    (self as unknown as Record<string, unknown>)['_formProxy'] = proxy;
+    const proxy = bindFormProxy(self, scope, {
+      value: () => (self.hasAttribute('checked') ? 'on' : ''),
+    });
 
     const handler = (e: Event) => {
       const input = e.target as HTMLInputElement | null;
@@ -92,28 +91,13 @@ const definition: ComponentDefinition<BqSwitchProps> = {
         })
       );
     };
-    (self as unknown as Record<string, unknown>)['_handler'] = handler;
-    self.shadowRoot?.addEventListener('change', handler);
+    scope.on(self.shadowRoot, 'change', handler);
   },
   disconnected() {
-    const h = (this as unknown as Record<string, unknown>)['_handler'] as
-      | EventListener
-      | undefined;
-    if (h) this.shadowRoot?.removeEventListener('change', h);
-    (
-      (this as unknown as Record<string, unknown>)['_formProxy'] as
-        | FormProxy
-        | undefined
-    )?.cleanup();
+    release(this);
   },
   updated() {
-    const s = this as unknown as Record<string, unknown>;
-    const proxy = s['_formProxy'] as FormProxy | undefined;
-    if (proxy) {
-      proxy.setName(this.getAttribute('name') ?? '');
-      proxy.setValue(this.hasAttribute('checked') ? 'on' : '');
-      proxy.setDisabled(this.hasAttribute('disabled'));
-    }
+    syncFormProxy(this);
   },
   render({ props }) {
     return html`

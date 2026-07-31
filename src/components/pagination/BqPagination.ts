@@ -11,7 +11,7 @@
 import type { ComponentDefinition } from '@bquery/bquery/component';
 import { bool, component, css, html } from '@bquery/bquery/component';
 import { t } from '../../i18n/index.js';
-import { host } from '../../utils/component.js';
+import { bind, host, release } from '../../utils/component.js';
 import { baseStyles } from '../../utils/styles.js';
 
 type BqPaginationProps = {
@@ -95,14 +95,10 @@ const definition: ComponentDefinition<BqPaginationProps> = {
         })
       );
     };
-    (self as unknown as Record<string, unknown>)['_handler'] = handler;
-    self.shadowRoot?.addEventListener('click', handler);
+    bind(self).on(self.shadowRoot, 'click', handler);
   },
   disconnected() {
-    const h = (this as unknown as Record<string, unknown>)['_handler'] as
-      | EventListener
-      | undefined;
-    if (h) this.shadowRoot?.removeEventListener('click', h);
+    release(this);
   },
   render({ props }) {
     const page = Math.max(1, Math.min(props.page, props.total || 1));

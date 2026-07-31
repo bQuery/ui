@@ -16,7 +16,7 @@ import type { ComponentDefinition } from '@bquery/bquery/component';
 import { component, css, html } from '@bquery/bquery/component';
 import { escapeHtml } from '@bquery/bquery/security';
 import { t } from '../../i18n/index.js';
-import { host } from '../../utils/component.js';
+import { bind, host, release } from '../../utils/component.js';
 import { baseStyles } from '../../utils/styles.js';
 
 type ColDef = { key: string; label: string; sortable?: boolean };
@@ -106,19 +106,13 @@ const definition: ComponentDefinition<BqTableProps> = {
       e.preventDefault();
       sortHandler(th);
     };
-    (self as unknown as Record<string, unknown>)['_handler'] = handler;
-    (self as unknown as Record<string, unknown>)['_keyHandler'] = keyHandler;
-    self.shadowRoot?.addEventListener('click', handler);
-    self.shadowRoot?.addEventListener('keydown', keyHandler);
-    self.shadowRoot?.addEventListener('keyup', keyHandler);
+    const scope = bind(self);
+    scope.on(self.shadowRoot, 'click', handler);
+    scope.on(self.shadowRoot, 'keydown', keyHandler);
+    scope.on(self.shadowRoot, 'keyup', keyHandler);
   },
   disconnected() {
-    const s = this as unknown as Record<string, unknown>;
-    const h = s['_handler'] as EventListener | undefined;
-    const kh = s['_keyHandler'] as EventListener | undefined;
-    if (h) this.shadowRoot?.removeEventListener('click', h);
-    if (kh) this.shadowRoot?.removeEventListener('keydown', kh);
-    if (kh) this.shadowRoot?.removeEventListener('keyup', kh);
+    release(this);
   },
   render({ props }) {
     let cols: ColDef[] = [];

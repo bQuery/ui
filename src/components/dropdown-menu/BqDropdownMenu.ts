@@ -17,6 +17,7 @@ import { escapeHtml } from '@bquery/bquery/security';
 import type { Disposer } from '../../utils/component.js';
 import { bind, host, release, store } from '../../utils/component.js';
 import { getAnimationTimeoutMs, uniqueId } from '../../utils/dom.js';
+import { autoPosition } from '../../utils/position.js';
 import { baseStyles } from '../../utils/styles.js';
 
 type BqDropdownMenuProps = {
@@ -30,7 +31,10 @@ const FAST_DURATION = '150ms';
 
 /** Per-instance handles that `updated()` needs after `connected()` set them up. */
 const menuStore = (owner: object) =>
-  store<{ syncOutsideListener?: () => void }>(owner, () => ({}));
+  store<{ syncOutsideListener?: () => void; syncPosition?: () => void }>(
+    owner,
+    () => ({})
+  );
 
 const definition: ComponentDefinition<
   BqDropdownMenuProps,
@@ -164,8 +168,10 @@ const definition: ComponentDefinition<
       self.dispatchEvent(
         new CustomEvent('bq-open', { bubbles: true, composed: true })
       );
-      // Focus first item
-      requestAnimationFrame(() => {
+      // Focus first item once the open render has landed. Scope-owned so a
+      // menu closed or disconnected within the same frame cannot pull focus
+      // afterwards.
+      scope.frame(() => {
         if (!self.hasAttribute('open') || self.hasAttribute('data-closing'))
           return;
         const items = getMenuItems();
@@ -405,8 +411,32 @@ const definition: ComponentDefinition<
       syncMenuItemRoles();
     };
 
+    // A menu opened near the bottom of the viewport used to render past the
+    // fold; the engine flips it above the trigger instead. Tracking only runs
+    // while the menu is open and is rebuilt after each render.
+    let stopPosition: Disposer | null = null;
+    const syncPosition = () => {
+      stopPosition?.();
+      stopPosition = null;
+      // `data-closing` still shows the menu, but repositioning mid-exit only
+      // makes the animation jump.
+      if (!self.hasAttribute('open') || self.hasAttribute('data-closing'))
+        return;
+      const menu = self.shadowRoot?.querySelector(
+        '.menu'
+      ) as HTMLElement | null;
+      if (!menu) return;
+      stopPosition = scope.add(
+        autoPosition(self, menu, {
+          placement: self.getAttribute('placement') ?? 'bottom-start',
+          offset: 4,
+        })
+      );
+    };
+
     // `updated()` has to re-evaluate the outside listener after every render.
     menuStore(self).syncOutsideListener = syncOutsideListener;
+    menuStore(self).syncPosition = syncPosition;
 
     // An interrupted close animation must not strand the menu half-closed.
     scope.add(() => {
@@ -434,6 +464,7 @@ const definition: ComponentDefinition<
       syncTriggerA11y();
       syncMenuItemRoles();
       syncOutsideListener();
+      syncPosition();
     });
   },
   disconnected() {
@@ -441,6 +472,7 @@ const definition: ComponentDefinition<
   },
   updated() {
     menuStore(this).syncOutsideListener?.();
+    menuStore(this).syncPosition?.();
     const trigger = this.querySelector(
       '[slot="trigger"]'
     ) as HTMLElement | null;

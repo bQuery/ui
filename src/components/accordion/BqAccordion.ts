@@ -11,6 +11,8 @@
 import type { ComponentDefinition } from '@bquery/bquery/component';
 import { bool, component, css, html } from '@bquery/bquery/component';
 import { escapeHtml } from '@bquery/bquery/security';
+import type { Disposer } from '../../utils/component.js';
+import { bind, release } from '../../utils/component.js';
 import { getAnimationTimeoutMs, uniqueId } from '../../utils/dom.js';
 import { baseStyles } from '../../utils/styles.js';
 
@@ -73,18 +75,17 @@ const definition: ComponentDefinition<BqAccordionProps, BqAccordionState> = {
     };
 
     const self = this as unknown as BQEl;
-    const record = self as unknown as Record<string, unknown>;
+    const scope = bind(self);
 
     if (!self.getState<string>('uid')) self.setState('uid', uniqueId('bq-acc'));
 
+    // The exit-animation fallback timer is scope-owned so an accordion
+    // collapsed and then removed mid-animation cannot fire against a
+    // detached element.
+    let cancelCloseFallback: Disposer | null = null;
     const clearCloseFallback = () => {
-      const timeoutId = record['_closeTimeout'] as
-        | ReturnType<typeof setTimeout>
-        | undefined;
-      if (timeoutId) {
-        clearTimeout(timeoutId);
-        delete record['_closeTimeout'];
-      }
+      cancelCloseFallback?.();
+      cancelCloseFallback = null;
     };
 
     const finishClose = () => {
@@ -137,7 +138,7 @@ const definition: ComponentDefinition<BqAccordionProps, BqAccordionState> = {
         if (timeoutMs <= 0) {
           finishClose();
         } else {
-          record['_closeTimeout'] = setTimeout(
+          cancelCloseFallback = scope.timeout(
             finishClose,
             Math.ceil(timeoutMs) + 20
           );
@@ -183,26 +184,12 @@ const definition: ComponentDefinition<BqAccordionProps, BqAccordionState> = {
       finishClose();
     };
 
-    record['_handler'] = handler;
-    record['_kh'] = kh;
-    record['_ah'] = ah;
-
-    self.shadowRoot?.addEventListener('click', handler);
-    self.shadowRoot?.addEventListener('keydown', kh);
-    self.shadowRoot?.addEventListener('animationend', ah);
+    scope.on(self.shadowRoot, 'click', handler);
+    scope.on(self.shadowRoot, 'keydown', kh);
+    scope.on(self.shadowRoot, 'animationend', ah);
   },
   disconnected() {
-    const self = this as unknown as Record<string, unknown>;
-    const h = self['_handler'] as EventListener | undefined;
-    const kh = self['_kh'] as EventListener | undefined;
-    const ah = self['_ah'] as EventListener | undefined;
-    const closeTimeout = self['_closeTimeout'] as
-      | ReturnType<typeof setTimeout>
-      | undefined;
-    if (h) this.shadowRoot?.removeEventListener('click', h);
-    if (kh) this.shadowRoot?.removeEventListener('keydown', kh);
-    if (ah) this.shadowRoot?.removeEventListener('animationend', ah);
-    if (closeTimeout) clearTimeout(closeTimeout);
+    release(this);
   },
   render({ props, state }) {
     const uid = state.uid || 'bq-acc';

@@ -10,6 +10,7 @@ import type { ComponentDefinition } from '@bquery/bquery/component';
 import { component, css, html } from '@bquery/bquery/component';
 import { escapeHtml } from '@bquery/bquery/security';
 import { t } from '../../i18n/index.js';
+import { bind, release } from '../../utils/component.js';
 import { baseStyles } from '../../utils/styles.js';
 
 type BqTabsProps = { 'active-tab': string; variant: string };
@@ -72,6 +73,7 @@ const definition: ComponentDefinition<BqTabsProps> = {
     const self = this as unknown as BQEl &
       HTMLElement &
       Record<string, unknown>;
+    const scope = bind(self);
 
     const readTabs = () => {
       const items = Array.from(
@@ -98,7 +100,7 @@ const definition: ComponentDefinition<BqTabsProps> = {
       attributes: true,
       attributeFilter: ['label', 'disabled', 'id'],
     });
-    self['_obs'] = obs;
+    scope.add(() => obs.disconnect());
 
     const clickH = (e: Event) => {
       const btn = (e.target as Element).closest(
@@ -145,19 +147,11 @@ const definition: ComponentDefinition<BqTabsProps> = {
           panel.hidden = panel.getAttribute('data-tab') !== activeId;
         });
     };
-    self['_clickH'] = clickH;
-    self['_keyH'] = keyH;
-    (self as HTMLElement).shadowRoot?.addEventListener('click', clickH);
-    (self as HTMLElement).shadowRoot?.addEventListener('keydown', keyH);
+    scope.on((self as HTMLElement).shadowRoot, 'click', clickH);
+    scope.on((self as HTMLElement).shadowRoot, 'keydown', keyH);
   },
   disconnected() {
-    const s = this as unknown as Record<string, unknown>;
-    const obs = s['_obs'] as MutationObserver | undefined;
-    if (obs) obs.disconnect();
-    const ch = s['_clickH'] as EventListener | undefined;
-    if (ch) this.shadowRoot?.removeEventListener('click', ch);
-    const kh = s['_keyH'] as EventListener | undefined;
-    if (kh) this.shadowRoot?.removeEventListener('keydown', kh);
+    release(this);
   },
   updated() {
     // Sync panel visibility after each render

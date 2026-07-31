@@ -10,7 +10,7 @@
 import { component, css, html } from '@bquery/bquery/component';
 import type { ComponentDefinition } from '@bquery/bquery/component';
 import { escapeHtml } from '@bquery/bquery/security';
-import { host } from '../../utils/component.js';
+import { bind, host, release } from '../../utils/component.js';
 import { baseStyles } from '../../utils/styles.js';
 import { t } from '../../i18n/index.js';
 
@@ -46,18 +46,15 @@ const definition: ComponentDefinition<BqAlertProps> = {
   `,
   connected() {
     const self = host(this);
-    const handler = (e: Event) => {
+    bind(self).on(self.shadowRoot, 'click', (e) => {
       if ((e.target as Element).closest('.close')) {
         self.setAttribute('hidden', '');
         self.dispatchEvent(new CustomEvent('bq-close', { bubbles: true, composed: true }));
       }
-    };
-    (self as unknown as Record<string, unknown>)['_handler'] = handler;
-    self.shadowRoot?.addEventListener('click', handler);
+    });
   },
   disconnected() {
-    const handler = (this as unknown as Record<string, unknown>)['_handler'] as EventListener | undefined;
-    if (handler) this.shadowRoot?.removeEventListener('click', handler);
+    release(this);
   },
   render({ props }) {
     const icons: Record<string, string> = { info: 'ℹ', success: '✓', warning: '⚠', danger: '✕' };

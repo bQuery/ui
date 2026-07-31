@@ -14,7 +14,7 @@ import type { ComponentDefinition } from '@bquery/bquery/component';
 import { component, css, html } from '@bquery/bquery/component';
 import { escapeHtml } from '@bquery/bquery/security';
 import { t } from '../../i18n/index.js';
-import { host } from '../../utils/component.js';
+import { bind, host, release } from '../../utils/component.js';
 import { baseStyles } from '../../utils/styles.js';
 
 type BqChipProps = {
@@ -109,22 +109,13 @@ const definition: ComponentDefinition<BqChipProps> = {
         new CustomEvent('bq-click', { bubbles: true, composed: true })
       );
     };
-    (self as unknown as Record<string, unknown>)['_handler'] = handler;
-    (self as unknown as Record<string, unknown>)['_keyHandler'] = keyHandler;
-    self.shadowRoot?.addEventListener('click', handler);
-    self.shadowRoot?.addEventListener('keydown', keyHandler);
-    self.shadowRoot?.addEventListener('keyup', keyHandler);
+    const scope = bind(self);
+    scope.on(self.shadowRoot, 'click', handler);
+    scope.on(self.shadowRoot, 'keydown', keyHandler);
+    scope.on(self.shadowRoot, 'keyup', keyHandler);
   },
   disconnected() {
-    const handler = (this as unknown as Record<string, unknown>)['_handler'] as
-      | EventListener
-      | undefined;
-    const keyHandler = (this as unknown as Record<string, unknown>)[
-      '_keyHandler'
-    ] as EventListener | undefined;
-    if (handler) this.shadowRoot?.removeEventListener('click', handler);
-    if (keyHandler) this.shadowRoot?.removeEventListener('keydown', keyHandler);
-    if (keyHandler) this.shadowRoot?.removeEventListener('keyup', keyHandler);
+    release(this);
   },
   render({ props }) {
     return html`

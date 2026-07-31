@@ -15,8 +15,8 @@ import type { ComponentDefinition } from '@bquery/bquery/component';
 import { bool, component, css, html } from '@bquery/bquery/component';
 import { escapeHtml } from '@bquery/bquery/security';
 import { t } from '../../i18n/index.js';
-import { createFormProxy, type FormProxy } from '../../utils/form.js';
-import { host } from '../../utils/component.js';
+import { bindFormProxy, syncFormProxy } from '../../utils/form.js';
+import { bind, host, release } from '../../utils/component.js';
 import { baseStyles } from '../../utils/styles.js';
 
 type BqSliderProps = {
@@ -61,20 +61,19 @@ const definition: ComponentDefinition<BqSliderProps> = {
   `,
   connected() {
     const self = host(this);
+    const scope = bind(self);
 
-    // Form proxy for native <form> participation
-    const name = self.getAttribute('name') ?? '';
-    const value = self.getAttribute('value') ?? '50';
-    const disabled = self.hasAttribute('disabled');
-    const proxy = createFormProxy(self, name, value, disabled, {
-      getLiveValue: () => {
+    // Form proxy for native <form> participation. The live read matters here:
+    // dragging updates the range input without committing an attribute, so a
+    // submit mid-drag would otherwise post the pre-drag value.
+    const proxy = bindFormProxy(self, scope, {
+      value: () => {
         const input = self.shadowRoot?.querySelector(
           'input[type="range"]'
         ) as HTMLInputElement | null;
         return input ? input.value : (self.getAttribute('value') ?? '50');
       },
     });
-    (self as unknown as Record<string, unknown>)['_formProxy'] = proxy;
 
     const ih = (e: Event) => {
       const input = e.target as HTMLInputElement | null;
@@ -109,31 +108,14 @@ const definition: ComponentDefinition<BqSliderProps> = {
         })
       );
     };
-    (self as unknown as Record<string, unknown>)['_ih'] = ih;
-    (self as unknown as Record<string, unknown>)['_ch'] = ch;
-    self.shadowRoot?.addEventListener('input', ih);
-    self.shadowRoot?.addEventListener('change', ch);
+    scope.on(self.shadowRoot, 'input', ih);
+    scope.on(self.shadowRoot, 'change', ch);
   },
   disconnected() {
-    const s = this as unknown as Record<string, unknown>;
-    const ih = s['_ih'] as EventListener | undefined;
-    const ch = s['_ch'] as EventListener | undefined;
-    if (ih) this.shadowRoot?.removeEventListener('input', ih);
-    if (ch) this.shadowRoot?.removeEventListener('change', ch);
-    (
-      (this as unknown as Record<string, unknown>)['_formProxy'] as
-        | FormProxy
-        | undefined
-    )?.cleanup();
+    release(this);
   },
   updated() {
-    const s = this as unknown as Record<string, unknown>;
-    const proxy = s['_formProxy'] as FormProxy | undefined;
-    if (proxy) {
-      proxy.setName(this.getAttribute('name') ?? '');
-      proxy.setValue(this.getAttribute('value') ?? '50');
-      proxy.setDisabled(this.hasAttribute('disabled'));
-    }
+    syncFormProxy(this);
   },
   render({ props }) {
     return html`

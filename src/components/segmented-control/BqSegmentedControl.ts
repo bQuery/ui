@@ -17,7 +17,8 @@ import { component, css, html } from '@bquery/bquery/component';
 import { escapeHtml } from '@bquery/bquery/security';
 import { t } from '../../i18n/index.js';
 import { uniqueId } from '../../utils/dom.js';
-import { createFormProxy, type FormProxy } from '../../utils/form.js';
+import { bindFormProxy, syncFormProxy } from '../../utils/form.js';
+import { bind, release, store } from '../../utils/component.js';
 import { baseStyles } from '../../utils/styles.js';
 
 type BqSegmentedControlProps = {
@@ -34,6 +35,10 @@ type BqSegmentedControlProps = {
 type BqSegmentedControlState = {
   uid: string;
 };
+
+/** Per-instance callbacks `updated()` re-runs after every render. */
+const segmentedStore = (owner: object) =>
+  store<{ syncButtons?: () => void }>(owner, () => ({}));
 
 const definition: ComponentDefinition<
   BqSegmentedControlProps,
@@ -156,19 +161,16 @@ const definition: ComponentDefinition<
       getState<T>(key: string): T;
     };
 
-    const self = this as unknown as BQEl & Record<string, unknown>;
+    const self = this as unknown as BQEl;
+    const scope = bind(self);
 
     if (!self.getState<string>('uid')) {
       self.setState('uid', uniqueId('bq-segmented'));
     }
 
-    const proxy = createFormProxy(
-      self,
-      self.getAttribute('name') ?? '',
-      self.getAttribute('value') ?? '',
-      self.hasAttribute('disabled')
-    );
-    self['_formProxy'] = proxy;
+    const proxy = bindFormProxy(self, scope, {
+      value: () => self.getAttribute('value') ?? '',
+    });
 
     const getButtons = (): HTMLButtonElement[] => {
       const slot = self.shadowRoot?.querySelector(
@@ -252,14 +254,10 @@ const definition: ComponentDefinition<
           'tabindex',
           !disabled && value === focusValue ? '0' : '-1'
         );
-
-        button.removeEventListener('keydown', keyHandler);
-        button.addEventListener('keydown', keyHandler);
       });
 
-      proxy.setName(self.getAttribute('name') ?? '');
       proxy.setValue(selectedValue);
-      proxy.setDisabled(self.hasAttribute('disabled'));
+      syncFormProxy(self);
     };
 
     const selectButton = (
@@ -392,51 +390,27 @@ const definition: ComponentDefinition<
       attributeFilter: ['disabled', 'value', 'data-value'],
     });
 
-    self['_syncButtons'] = syncButtons;
-    self['_clickHandler'] = clickHandler;
-    self['_keyHandler'] = keyHandler;
-    self['_slotChangeHandler'] = slotChangeHandler;
-    self['_observer'] = observer;
+    scope.add(() => observer.disconnect());
+    segmentedStore(self).syncButtons = syncButtons;
 
-    self.addEventListener('click', clickHandler);
-    self.shadowRoot
-      ?.querySelector('slot:not([name])')
-      ?.addEventListener('slotchange', slotChangeHandler);
+    scope.on(self, 'click', clickHandler);
+    // Delegated rather than bound per button: `keyHandler` already resolves
+    // its button from the event target, and binding each button meant a
+    // button removed from the light DOM kept its listener behind.
+    scope.on(self, 'keydown', keyHandler);
+    scope.on(
+      self.shadowRoot?.querySelector('slot:not([name])'),
+      'slotchange',
+      slotChangeHandler
+    );
 
-    requestAnimationFrame(syncButtons);
+    scope.frame(syncButtons);
   },
   disconnected() {
-    const self = this as unknown as Record<string, unknown>;
-
-    const clickHandler = self['_clickHandler'] as EventListener | undefined;
-    const keyHandler = self['_keyHandler'] as EventListener | undefined;
-    const slotChangeHandler = self['_slotChangeHandler'] as
-      | EventListener
-      | undefined;
-    const observer = self['_observer'] as MutationObserver | undefined;
-    const proxy = self['_formProxy'] as FormProxy | undefined;
-
-    if (clickHandler) this.removeEventListener('click', clickHandler);
-    if (keyHandler) {
-      const buttons = this.querySelectorAll('button');
-      buttons.forEach((button) =>
-        button.removeEventListener('keydown', keyHandler)
-      );
-    }
-    if (slotChangeHandler) {
-      this.shadowRoot
-        ?.querySelector('slot:not([name])')
-        ?.removeEventListener('slotchange', slotChangeHandler);
-    }
-
-    observer?.disconnect();
-    proxy?.cleanup();
+    release(this);
   },
   updated() {
-    const syncButtons = (this as unknown as Record<string, unknown>)[
-      '_syncButtons'
-    ] as (() => void) | undefined;
-    syncButtons?.();
+    segmentedStore(this).syncButtons?.();
   },
   render({ props, state }) {
     const uid = state.uid || 'bq-segmented';
