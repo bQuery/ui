@@ -97,6 +97,8 @@ export function getTokensCSS(): string {
   --bq-font-size-lg: 1.125rem;
   --bq-font-size-xl: 1.25rem;
   --bq-font-size-2xl: 1.5rem;
+  --bq-font-size-3xl: 1.875rem;
+  --bq-font-size-4xl: 2.25rem;
   --bq-font-weight-normal: 400;
   --bq-font-weight-medium: 500;
   --bq-font-weight-semibold: 600;
@@ -104,6 +106,11 @@ export function getTokensCSS(): string {
   --bq-line-height-tight: 1.25;
   --bq-line-height-normal: 1.5;
   --bq-line-height-relaxed: 1.625;
+  /* Headings and all-caps labels need the tracking pulled in or pushed out;
+     body copy is drawn at the font's natural spacing. */
+  --bq-letter-spacing-tight: -0.015em;
+  --bq-letter-spacing-normal: 0;
+  --bq-letter-spacing-wide: 0.04em;
 
   /* === Spacing === */
   --bq-space-0: 0;
@@ -127,20 +134,42 @@ export function getTokensCSS(): string {
   --bq-radius-2xl: 1rem;
   --bq-radius-full: 9999px;
 
-  /* === Shadows === */
-  --bq-shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  --bq-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  --bq-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-  --bq-shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-  --bq-shadow-inner: inset 0 2px 4px 0 rgba(0, 0, 0, 0.06);
+  /* === Borders === */
+  --bq-border-width: 1px;
+  --bq-border-width-control: 1.5px;
+
+  /* === Control metrics ===
+     One height scale for every control that sits on a form row, so a button,
+     an input and a select line up on the same baseline without each component
+     inventing its own padding. */
+  --bq-control-height-sm: 2rem;
+  --bq-control-height-md: 2.5rem;
+  --bq-control-height-lg: 3rem;
+  --bq-control-height-xl: 3.5rem;
+  --bq-control-padding-sm: 0.75rem;
+  --bq-control-padding-md: 0.875rem;
+  --bq-control-padding-lg: 1rem;
+
+  /* === Shadows ===
+     Tinted with the neutral ramp rather than pure black: a grey-blue shadow
+     reads as depth, while black over a coloured surface reads as dirt. */
+  --bq-shadow-xs: 0 1px 2px 0 rgba(15, 23, 42, 0.04);
+  --bq-shadow-sm: 0 1px 2px 0 rgba(15, 23, 42, 0.06), 0 1px 3px 0 rgba(15, 23, 42, 0.1);
+  --bq-shadow-md: 0 2px 4px -1px rgba(15, 23, 42, 0.06), 0 4px 8px -2px rgba(15, 23, 42, 0.1);
+  --bq-shadow-lg: 0 4px 6px -2px rgba(15, 23, 42, 0.05), 0 12px 20px -4px rgba(15, 23, 42, 0.12);
+  --bq-shadow-xl: 0 8px 10px -6px rgba(15, 23, 42, 0.08), 0 24px 40px -8px rgba(15, 23, 42, 0.16);
+  --bq-shadow-inner: inset 0 1px 2px 0 rgba(15, 23, 42, 0.06);
 
   /* === Motion === */
+  --bq-duration-instant: 75ms;
   --bq-duration-fast: 150ms;
   --bq-duration-normal: 200ms;
   --bq-duration-slow: 300ms;
+  --bq-duration-slower: 450ms;
   --bq-easing-standard: cubic-bezier(0.4, 0, 0.2, 1);
   --bq-easing-decelerate: cubic-bezier(0, 0, 0.2, 1);
   --bq-easing-accelerate: cubic-bezier(0.4, 0, 1, 1);
+  --bq-easing-emphasized: cubic-bezier(0.2, 0, 0, 1);
   --bq-easing-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
 
   /* === Z-Index === */

@@ -14,11 +14,23 @@
  * @fires bq-change - { value: string }
  */
 import type { ComponentDefinition } from '@bquery/bquery/component';
-import { bool, component, html } from '@bquery/bquery/component';
+import { bool, component, css, html } from '@bquery/bquery/component';
 import { escapeHtml } from '@bquery/bquery/security';
 import { uniqueId } from '../../utils/dom.js';
-import { createFormProxy, type FormProxy } from '../../utils/form.js';
-import { getBaseStyles } from '../../utils/styles.js';
+import {
+  bindFormProxy,
+  syncFormProxy,
+  type FormProxyBinding,
+} from '../../utils/form.js';
+import { bind, host, release, store } from '../../utils/component.js';
+import { bindValidation } from '../../utils/validation.js';
+import { iconCss } from '../../utils/icons.js';
+import {
+  baseStyles,
+  fieldStyles,
+  focusRing,
+  reset,
+} from '../../utils/styles.js';
 
 type BqSelectProps = {
   label: string;
@@ -85,6 +97,12 @@ const buildOptionsMarkup = (host: HTMLElement, placeholder: string): string => {
   return `${placeholderMarkup}${childrenMarkup}`;
 };
 
+const selectStore = (owner: object) =>
+  store<{ syncOptions?: () => void; proxy?: FormProxyBinding }>(
+    owner,
+    () => ({})
+  );
+
 const syncSelectValue = (host: HTMLElement): void => {
   const select = host.shadowRoot?.querySelector(
     'select'
@@ -105,10 +123,7 @@ const syncSelectValue = (host: HTMLElement): void => {
     host.setAttribute('value', normalizedValue);
   }
 
-  const proxy = (host as unknown as Record<string, unknown>)['_formProxy'] as
-    | FormProxy
-    | undefined;
-  proxy?.setValue(normalizedValue);
+  selectStore(host).proxy?.setValue(normalizedValue);
 };
 
 const definition: ComponentDefinition<BqSelectProps, BqSelectState> = {
@@ -127,44 +142,52 @@ const definition: ComponentDefinition<BqSelectProps, BqSelectState> = {
     uid: '',
     optionsMarkup: '',
   },
-  styles: `
-    ${getBaseStyles()}
-    *, *::before, *::after { box-sizing: border-box; }
+  styles: css`
+    ${baseStyles}
+    ${reset}
+    ${fieldStyles}
+    ${focusRing}
+    ${iconCss('chevron-down')}
     :host { display: block; }
-    .field { display: flex; flex-direction: column; gap: 0.375rem; }
-    .label { font-size: var(--bq-font-size-sm,0.875rem); font-weight: var(--bq-font-weight-medium,500); color: var(--bq-text-base,#0f172a); font-family: var(--bq-font-family-sans); }
-    .required-mark { color: var(--bq-color-danger-600,#dc2626); }
-    .select-wrap { position: relative; }
+    .select-wrap { position: relative; display: flex; }
     select {
-      display: block; width: 100%;
-      border: 1.5px solid var(--bq-border-emphasis,#cbd5e1);
+      display: block; inline-size: 100%;
+      border: var(--bq-border-width-control,1.5px) solid var(--bq-border-emphasis,#cbd5e1);
       border-radius: var(--bq-radius-lg,0.5rem); background: var(--bq-bg-base,#fff);
       color: var(--bq-text-base,#0f172a); font-family: var(--bq-font-family-sans);
       appearance: none; -webkit-appearance: none;
-      padding-right: 2rem; outline: none; cursor: pointer;
-      transition: border-color var(--bq-duration-fast) var(--bq-easing-standard), box-shadow var(--bq-duration-fast) var(--bq-easing-standard);
+      padding-inline-end: 2.25rem; outline: none; cursor: pointer;
+      transition: border-color var(--bq-duration-fast) var(--bq-easing-standard),
+                  background-color var(--bq-duration-fast) var(--bq-easing-standard),
+                  box-shadow var(--bq-duration-fast) var(--bq-easing-standard);
     }
-    :host([size="sm"]) select { font-size: 0.875rem; padding: 0.375rem 2rem 0.375rem 0.75rem; min-height: 2rem; }
-    :host([size="md"]) select, :host(:not([size])) select { font-size: 1rem; padding: 0.5rem 2rem 0.5rem 0.875rem; min-height: 2.5rem; }
-    :host([size="lg"]) select { font-size: 1.125rem; padding: 0.625rem 2rem 0.625rem 1rem; min-height: 3rem; }
+    :host([size="sm"]) select { font-size: var(--bq-font-size-sm,0.875rem); padding-block: 0.375rem; padding-inline-start: var(--bq-control-padding-sm,0.75rem); min-block-size: var(--bq-control-height-sm,2rem); }
+    :host([size="md"]) select, :host(:not([size])) select { font-size: var(--bq-font-size-md,1rem); padding-block: 0.5rem; padding-inline-start: var(--bq-control-padding-md,0.875rem); min-block-size: var(--bq-control-height-md,2.5rem); }
+    :host([size="lg"]) select { font-size: var(--bq-font-size-lg,1.125rem); padding-block: 0.625rem; padding-inline-start: var(--bq-control-padding-lg,1rem); min-block-size: var(--bq-control-height-lg,3rem); }
+    select:hover:not(:disabled) { border-color: var(--bq-border-strong,#94a3b8); }
+    select:focus-visible { border-color: var(--bq-border-focus,#2563eb); box-shadow: var(--bq-focus-ring); }
+    /* Opening a native select fires no focus-visible in every browser, so the
+       ring is also drawn for plain :focus — a select is never focused by a
+       pointer without the list opening. */
     select:focus { border-color: var(--bq-border-focus,#2563eb); box-shadow: var(--bq-focus-ring); }
     :host([error]:not([error=""])) select { border-color: var(--bq-color-danger-500,#ef4444); }
-    :host([disabled]) select { opacity: 0.5; cursor: not-allowed; background: var(--bq-bg-muted,#f1f5f9); }
-    .arrow { position: absolute; right: 0.75rem; top: 50%; transform: translateY(-50%); pointer-events: none; color: var(--bq-text-muted,#475569); font-size: 0.75rem; }
-    .hint { font-size: var(--bq-font-size-sm,0.875rem); color: var(--bq-text-muted,#475569); font-family: var(--bq-font-family-sans); }
-    .error-msg { font-size: var(--bq-font-size-sm,0.875rem); color: var(--bq-color-danger-600,#dc2626); font-family: var(--bq-font-family-sans); }
-    @media (prefers-reduced-motion: reduce) {
-      select { transition: none; }
+    :host([error]:not([error=""])) select:focus { box-shadow: var(--bq-focus-ring-danger); }
+    :host([disabled]) select { opacity: 0.55; cursor: not-allowed; background: var(--bq-bg-muted,#f1f5f9); }
+    .arrow {
+      position: absolute; inset-inline-end: 0.75rem; inset-block-start: 50%;
+      transform: translateY(-50%); pointer-events: none;
+      color: var(--bq-text-muted,#475569);
+      --bq-icon-size: 1.125rem;
     }
+    :host([disabled]) .arrow { opacity: 0.55; }
   `,
   connected() {
-    type BQEl = HTMLElement & {
-      setState(k: 'uid' | 'optionsMarkup', v: string): void;
-      getState<T>(k: string): T;
-    };
-    const self = this as unknown as BQEl;
+    const self = host<BqSelectState>(this);
+    const scope = bind(self);
+    const local = selectStore(self);
     if (!self.getState<string>('uid'))
       self.setState('uid', uniqueId('bq-select'));
+
     const syncOptions = () => {
       const markup = buildOptionsMarkup(
         self,
@@ -173,24 +196,28 @@ const definition: ComponentDefinition<BqSelectProps, BqSelectState> = {
       if (self.getState<string>('optionsMarkup') !== markup) {
         self.setState('optionsMarkup', markup);
       }
-      requestAnimationFrame(() => syncSelectValue(self));
+      // The shadow `<select>` only exists after the render that markup
+      // triggers, so the value has to be reapplied a frame later.
+      scope.frame(() => syncSelectValue(self));
+    };
+    local.syncOptions = syncOptions;
+
+    const readValue = () => {
+      const select = self.shadowRoot?.querySelector(
+        'select'
+      ) as HTMLSelectElement | null;
+      return select ? select.value : (self.getAttribute('value') ?? '');
     };
 
     // Form proxy for native <form> participation
-    const name = self.getAttribute('name') ?? '';
-    const value = self.getAttribute('value') ?? '';
-    const disabled = self.hasAttribute('disabled');
-    const proxy = createFormProxy(self, name, value, disabled, {
-      getLiveValue: () => {
-        const select = self.shadowRoot?.querySelector(
-          'select'
-        ) as HTMLSelectElement | null;
-        return select ? select.value : (self.getAttribute('value') ?? '');
-      },
-    });
-    (self as unknown as Record<string, unknown>)['_formProxy'] = proxy;
+    const proxy = bindFormProxy(self, scope, { value: readValue });
+    local.proxy = proxy;
 
-    const handler = (e: Event) => {
+    // The hidden proxy input is barred from constraint validation, so a
+    // `required` select would otherwise submit with nothing chosen.
+    bindValidation(self, scope, { value: readValue });
+
+    scope.on(self.shadowRoot, 'change', (e) => {
       const select = e.target as HTMLSelectElement | null;
       if (select?.tagName === 'SELECT') {
         self.setAttribute('value', select.value);
@@ -203,10 +230,11 @@ const definition: ComponentDefinition<BqSelectProps, BqSelectState> = {
           })
         );
       }
-    };
-    const observer = new MutationObserver(() => {
-      syncOptions();
     });
+
+    // Light-DOM <option>/<optgroup> children are the source of truth, so the
+    // shadow <select> is rebuilt whenever they change.
+    const observer = new MutationObserver(() => syncOptions());
     observer.observe(self, {
       childList: true,
       subtree: true,
@@ -214,30 +242,16 @@ const definition: ComponentDefinition<BqSelectProps, BqSelectState> = {
       attributes: true,
       attributeFilter: ['disabled', 'label', 'selected', 'value'],
     });
+    scope.add(() => observer.disconnect());
 
-    (self as unknown as Record<string, unknown>)['_handler'] = handler;
-    (self as unknown as Record<string, unknown>)['_syncOptions'] = syncOptions;
-    (self as unknown as Record<string, unknown>)['_observer'] = observer;
-    self.shadowRoot?.addEventListener('change', handler);
     syncOptions();
   },
   disconnected() {
-    const s = this as unknown as Record<string, unknown>;
-    const h = s['_handler'] as EventListener | undefined;
-    if (h) this.shadowRoot?.removeEventListener('change', h);
-    const observer = s['_observer'] as MutationObserver | undefined;
-    observer?.disconnect();
-    (s['_formProxy'] as FormProxy | undefined)?.cleanup();
+    release(this);
   },
   updated() {
-    const s = this as unknown as Record<string, unknown>;
-    const proxy = s['_formProxy'] as FormProxy | undefined;
-    if (proxy) {
-      proxy.setName(this.getAttribute('name') ?? '');
-      proxy.setValue(this.getAttribute('value') ?? '');
-      proxy.setDisabled(this.hasAttribute('disabled'));
-    }
-    (s['_syncOptions'] as (() => void) | undefined)?.();
+    syncFormProxy(this);
+    selectStore(this).syncOptions?.();
   },
   render({ props, state }) {
     const hasError = Boolean(props.error);
@@ -267,7 +281,7 @@ const definition: ComponentDefinition<BqSelectProps, BqSelectState> = {
           >
             ${optionsMarkup}
           </select>
-          <span class="arrow" aria-hidden="true">&#9660;</span>
+          <span class="arrow icon" data-icon="chevron-down" part="arrow" aria-hidden="true"></span>
         </div>
         ${hasHint
           ? `<span class="hint" id="${uid}-hint" part="hint">${escapeHtml(props.hint)}</span>`

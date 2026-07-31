@@ -9,9 +9,9 @@
  * @slot - Custom content
  */
 import type { ComponentDefinition } from '@bquery/bquery/component';
-import { component, html } from '@bquery/bquery/component';
+import { component, css, html } from '@bquery/bquery/component';
 import { escapeHtml } from '@bquery/bquery/security';
-import { getBaseStyles } from '../../utils/styles.js';
+import { baseStyles, reset } from '../../utils/styles.js';
 
 type BqAvatarProps = {
   src: string;
@@ -77,12 +77,13 @@ const definition: ComponentDefinition<BqAvatarProps> = {
     shape: { type: String, default: 'circle' },
     status: { type: String, default: '' },
   },
-  styles: `
-    ${getBaseStyles()}
+  styles: css`
+    ${baseStyles}
+    ${reset}
     :host { display: inline-block; position: relative; }
     .avatar {
       overflow: hidden; display: flex; align-items: center; justify-content: center;
-      background: var(--bq-color-primary-100,#dbeafe); color: var(--bq-color-primary-700,#1d4ed8);
+      background: var(--bq-intent-primary-bg,#dbeafe); color: var(--bq-intent-primary-fg,#1d4ed8);
       font-weight: var(--bq-font-weight-semibold,600); font-family: var(--bq-font-family-sans);
       user-select: none; flex-shrink: 0;
     }

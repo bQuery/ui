@@ -98,20 +98,46 @@ describe('BqSegmentedControl', () => {
     expect(detailValue).toBe('board');
   });
 
-  it('should not register a host keydown listener', async () => {
-    let hostKeydownRegistrations = 0;
-    createControl(({ el: control }) => {
-      const originalHostAddEventListener =
-        control.addEventListener.bind(control);
-      control.addEventListener = ((type, listener, options) => {
-        if (type === 'keydown') hostKeydownRegistrations += 1;
-        return originalHostAddEventListener(type, listener, options);
-      }) as HTMLElement['addEventListener'];
+  // Keyboard handling used to be bound to every individual segment button,
+  // which meant a button removed from the light DOM kept its listener. The
+  // handler resolves its button from the event target anyway, so one
+  // delegated listener on the host does the same job without the leak. What
+  // must hold either way is that a keypress is handled exactly once — see
+  // the ArrowRight test below, which is the regression guard for the
+  // double-handling bug that the two-path implementation originally caused.
+  it('should not bind keydown listeners to individual segment buttons', async () => {
+    const perButtonRegistrations: string[] = [];
+    const { overview, board } = createControl(({ overview: a, board: b }) => {
+      for (const button of [a, b]) {
+        const original = button.addEventListener.bind(button);
+        button.addEventListener = ((type, listener, options) => {
+          if (type === 'keydown') perButtonRegistrations.push(type);
+          return original(type, listener, options);
+        }) as HTMLElement['addEventListener'];
+      }
     });
 
     await waitForFrame();
 
-    expect(hostKeydownRegistrations).toBe(0);
+    expect(perButtonRegistrations).toEqual([]);
+
+    // Delegation still has to reach a button that was never present when the
+    // component connected.
+    const extra = doc.createElement('button');
+    extra.setAttribute('value', 'timeline');
+    extra.textContent = 'Timeline';
+    board.after(extra);
+    await waitForFrame();
+
+    extra.dispatchEvent(
+      new win.KeyboardEvent('keydown', {
+        key: 'Home',
+        bubbles: true,
+        cancelable: true,
+      })
+    );
+
+    expect(overview.getAttribute('data-selected')).toBe('true');
   });
 
   it('should still move selection when a segment receives ArrowRight', async () => {

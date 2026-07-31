@@ -19,7 +19,8 @@ It is designed to give teams the kind of component coverage, polish, accessibili
 - **Reusable UI components** spanning actions, forms, navigation, data display, overlays, and feedback
 - **Framework-agnostic** usage in plain HTML, React, Vue, Angular, Svelte, and other Custom Element-capable runtimes
 - **Accessible by default** with keyboard support, ARIA roles, focus management, and screen reader announcements
-- **Themeable via design tokens** and CSS custom properties
+- **Themeable via design tokens** and CSS custom properties, switchable from the document in every browser
+- **A built-in icon set** rendered as CSS masks, so glyphs inherit text colour and stay crisp at any size
 - **Tree-shakeable ESM exports** with per-component imports
 - **Browser-ready UMD and IIFE bundles** for direct CDN delivery
 - **Built-in dark mode, i18n, and event-driven APIs**
@@ -28,14 +29,14 @@ It is designed to give teams the kind of component coverage, polish, accessibili
 
 The current library covers the core component categories developers expect from modern UI libraries:
 
-| Category         | Components                                                     |
-| ---------------- | -------------------------------------------------------------- |
-| **Actions**      | Button, Icon Button                                            |
-| **Forms**        | Input, Textarea, Select, Checkbox, Radio, Switch, Slider, Chip |
-| **Navigation**   | Tabs, Accordion, Breadcrumbs, Pagination                       |
-| **Data Display** | Card, Badge, Avatar, Table, Divider, Empty State, Stat Card    |
-| **Feedback**     | Alert, Progress, Spinner, Skeleton, Tooltip, Toast             |
-| **Overlays**     | Dialog, Drawer, Dropdown Menu                                  |
+| Category         | Components                                                                                                            |
+| ---------------- | --------------------------------------------------------------------------------------------------------------------- |
+| **Actions**      | Button, Icon Button, Button Group, Copy Button                                                                                              |
+| **Forms**        | Input, Number Input, Textarea, Select, Combobox, Tag Input, Pin Input, Date Picker, Segmented Control, Checkbox, Radio, Switch, Slider, Chip, Rating, File Upload |
+| **Navigation**   | Tabs, Accordion, Breadcrumbs, Pagination, Stepper, Tree                                                                                     |
+| **Data Display** | Card, Badge, Avatar, Avatar Group, Table, Divider, Empty State, Stat Card, Timeline, Kbd, Icon, Meter                                       |
+| **Feedback**     | Alert, Banner, Progress, Spinner, Skeleton, Tooltip, Toast                                                                                  |
+| **Overlays**     | Dialog, Drawer, Dropdown Menu, Popover                                                                                                      |
 
 For the full catalog and feature coverage, see [`docs/components/index.md`](./docs/components/index.md).
 
@@ -69,10 +70,10 @@ import '@bquery/ui';
 
 ```html
 <!-- UMD -->
-<script src="https://cdn.jsdelivr.net/npm/@bquery/ui@1.10.0/dist/index.umd.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@bquery/ui@1.15.0/dist/index.umd.js"></script>
 
 <!-- IIFE -->
-<script src="https://cdn.jsdelivr.net/npm/@bquery/ui@1.10.0/dist/index.iife.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@bquery/ui@1.15.0/dist/index.iife.js"></script>
 ```
 
 The UMD and IIFE bundles register all components on load and expose the library on `window.BQueryUI`.
@@ -80,13 +81,14 @@ For ESM-based app builds, prefer importing `@bquery/ui` from your bundler or oth
 
 ## Current release snapshot
 
-The current release (`1.10.0`) emphasizes:
+The current release (`1.15.0`) emphasizes:
 
-- **Import-based registration as the canonical integration path.** Import `@bquery/ui` once to register all components, or import `@bquery/ui/components/<name>` to register only the wrappers you need.
-- **A clearer shared package surface.** `@bquery/ui/tokens`, `@bquery/ui/theme`, `@bquery/ui/i18n`, `@bquery/ui/utils`, and `@bquery/ui/register` are all explicit entry points.
-- **Broader accessibility and localization coverage.** Recent releases improved accordion semantics, live form-field counters, localized table states, chip keyboard behavior, and reduced-motion-aware overlay transitions.
-- **A larger production-ready catalog.** The package now spans 31 web components across actions, forms, navigation, data display, feedback, and overlays, including `bq-dropdown-menu`, `bq-stat-card`, and the imperative toast API.
-- **Aligned docs and browser bundles.** Version-pinned CDN snippets, migration guidance, and Storybook/VitePress references now target `1.10.0`.
+- **A built-in icon set.** Interface glyphs are rendered as CSS masks rather than text characters, so they inherit `currentColor`, scale with `font-size`, and look the same on every platform. Available as `<bq-icon>` and to your own components through `iconCss()`.
+- **Dark mode that works in every browser.** The scheme now travels through an inherited custom-property channel instead of `:host-context()`, which exists only in Chromium — and which, sitting in a selector list, previously took the whole dark theme down with it in Firefox and Safari. `data-theme` also works on any subtree, not just the root.
+- **A deeper token layer.** Semantic surfaces (`--bq-surface-raised`, `--bq-surface-overlay`), translucent interaction states, per-intent focus rings, a shared control-height scale, and dark-mode elevation.
+- **Focus that survives a re-render.** Rendering replaces the shadow tree; text fields, calendars and tree views now keep focus and the caret across the renders their own interactions cause.
+- **A larger production-ready catalog.** The package spans 49 web components across actions, forms, navigation, data display, feedback, and overlays — including `bq-date-picker`, `bq-tree`, `bq-pin-input`, `bq-meter`, `bq-copy-button`, and `bq-icon`.
+- **Aligned docs and browser bundles.** Version-pinned CDN snippets, migration guidance, and Storybook/VitePress references target `1.15.0`.
 
 ## Tree-Shakeable Usage
 
@@ -153,8 +155,15 @@ For migration guidance from older registration patterns, see [`docs/guide/migrat
 ### Theming
 
 - CSS custom properties for colors, spacing, typography, radius, shadows, motion, and z-index
-- Light and dark themes
+- Semantic surface, interaction, and focus-ring tokens on top of the raw palette
+- Light and dark themes, switchable per document *or* per subtree with `data-theme`
 - `::part()` support for targeted customization
+
+### Icons
+
+- A built-in set of interface glyphs, available as `<bq-icon name="…">`
+- Rendered through CSS masks, so an icon inherits `currentColor` and scales with `font-size`
+- `iconCss()` lets your own components pull in only the glyphs they draw
 
 ### Internationalization
 

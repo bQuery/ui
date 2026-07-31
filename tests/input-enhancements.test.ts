@@ -49,9 +49,11 @@ describe('BqInput — password toggle', () => {
     const el = doc.createElement('bq-input');
     el.setAttribute('type', 'password');
     doc.body.appendChild(el);
-    const icon = el.shadowRoot?.querySelector('.password-toggle .pw-icon');
+    const icon = el.shadowRoot?.querySelector('.password-toggle .icon');
     expect(icon).not.toBeNull();
     expect(icon?.getAttribute('aria-hidden')).toBe('true');
+    // Hidden by default, so the eye offers "show".
+    expect(icon?.getAttribute('data-icon')).toBe('eye');
   });
 
   it('should disable the password toggle when the input is disabled', () => {

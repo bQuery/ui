@@ -9,9 +9,11 @@
  * @fires bq-page-change - { page: number }
  */
 import type { ComponentDefinition } from '@bquery/bquery/component';
-import { bool, component, html } from '@bquery/bquery/component';
+import { bool, component, css, html } from '@bquery/bquery/component';
 import { t } from '../../i18n/index.js';
-import { getBaseStyles } from '../../utils/styles.js';
+import { bind, host, release } from '../../utils/component.js';
+import { iconCss } from '../../utils/icons.js';
+import { baseStyles, focusRing, reset } from '../../utils/styles.js';
 
 type BqPaginationProps = {
   page: number;
@@ -50,9 +52,11 @@ const definition: ComponentDefinition<BqPaginationProps> = {
     'show-first-last': { type: Boolean, default: false },
     disabled: { type: Boolean, default: false },
   },
-  styles: `
-    ${getBaseStyles()}
-    *, *::before, *::after { box-sizing: border-box; }
+  styles: css`
+    ${baseStyles}
+    ${reset}
+    ${focusRing}
+    ${iconCss('chevron-left', 'chevron-right', 'chevrons-left', 'chevrons-right', 'more-horizontal')}
     :host { display: block; }
     .pagination { display: flex; align-items: center; gap: 0.25rem; flex-wrap: wrap; font-family: var(--bq-font-family-sans); }
     :host([disabled]) .pagination { opacity: 0.5; pointer-events: none; }
@@ -64,19 +68,25 @@ const definition: ComponentDefinition<BqPaginationProps> = {
       background: var(--bq-bg-base,#fff); color: var(--bq-text-base,#0f172a);
       font-size: var(--bq-font-size-sm,0.875rem); font-weight: var(--bq-font-weight-medium,500);
       cursor: pointer; font-family: inherit;
-      transition: all var(--bq-duration-fast) var(--bq-easing-standard);
+      transition: color var(--bq-duration-fast) var(--bq-easing-standard),
+                  background-color var(--bq-duration-fast) var(--bq-easing-standard),
+                  border-color var(--bq-duration-fast) var(--bq-easing-standard),
+                  transform var(--bq-duration-instant) var(--bq-easing-standard);
     }
-    .page-btn:hover:not(:disabled):not([data-current="true"]) { background: var(--bq-bg-muted,#f1f5f9); border-color: var(--bq-color-primary-300,#93c5fd); }
-    .page-btn[data-current="true"] { background: var(--bq-color-primary-600,#2563eb); border-color: var(--bq-color-primary-600,#2563eb); color: #fff; }
+    .page-btn:hover:not(:disabled):not([data-current="true"]) { background: var(--bq-bg-muted,#f1f5f9); border-color: var(--bq-border-strong,#94a3b8); }
+    .page-btn:active:not(:disabled) { transform: translateY(1px); }
+    .page-btn[data-current="true"] { background: var(--bq-color-primary-600,#2563eb); border-color: var(--bq-color-primary-600,#2563eb); color: var(--bq-text-on-primary,#fff); }
     .page-btn:disabled { opacity: 0.45; cursor: not-allowed; }
-    .page-btn:focus-visible { outline: 2px solid transparent; box-shadow: var(--bq-focus-ring); }
-    .ellipsis { display: inline-flex; align-items: center; justify-content: center; min-width: 2.25rem; height: 2.25rem; color: var(--bq-text-subtle,#94a3b8); font-size: var(--bq-font-size-sm,0.875rem); }
-    @media (prefers-reduced-motion: reduce) {
-      .page-btn { transition: none; }
+    .page-btn .icon { --bq-icon-size: 1.125rem; }
+    .ellipsis {
+      display: inline-flex; align-items: center; justify-content: center;
+      min-inline-size: 2.25rem; block-size: 2.25rem;
+      color: var(--bq-text-subtle,#94a3b8);
+      --bq-icon-size: 1.125rem;
     }
   `,
   connected() {
-    const self = this;
+    const self = host(this);
     const handler = (e: Event) => {
       const btn = (e.target as Element).closest(
         '.page-btn'
@@ -94,14 +104,10 @@ const definition: ComponentDefinition<BqPaginationProps> = {
         })
       );
     };
-    (self as unknown as Record<string, unknown>)['_handler'] = handler;
-    self.shadowRoot?.addEventListener('click', handler);
+    bind(self).on(self.shadowRoot, 'click', handler);
   },
   disconnected() {
-    const h = (this as unknown as Record<string, unknown>)['_handler'] as
-      | EventListener
-      | undefined;
-    if (h) this.shadowRoot?.removeEventListener('click', h);
+    release(this);
   },
   render({ props }) {
     const page = Math.max(1, Math.min(props.page, props.total || 1));
@@ -114,7 +120,7 @@ const definition: ComponentDefinition<BqPaginationProps> = {
     const pageItems = pages
       .map((p) => {
         if (p === '...')
-          return '<span class="ellipsis" role="separator" aria-hidden="true">&#8230;</span>';
+          return '<span class="ellipsis icon" data-icon="more-horizontal" role="separator" aria-hidden="true"></span>';
         return `<button class="page-btn" data-page="${p}" data-current="${p === page ? 'true' : 'false'}" ${p === page ? 'aria-current="page"' : ''} type="button" aria-label="${t('pagination.page')} ${p}">${p}</button>`;
       })
       .join('');
@@ -128,7 +134,7 @@ const definition: ComponentDefinition<BqPaginationProps> = {
                 ${prevDisabled ? 'disabled' : ''}
                 aria-label="${t('pagination.firstPage')}"
                 type="button"
-              >&#171;</button>`
+              ><span class="icon" data-icon="chevrons-left" aria-hidden="true"></span></button>`
             : ''}
           <button
             class="page-btn"
@@ -137,7 +143,7 @@ const definition: ComponentDefinition<BqPaginationProps> = {
             aria-label="${t('pagination.prev')}"
             type="button"
           >
-            &#8249;
+            <span class="icon" data-icon="chevron-left" aria-hidden="true"></span>
           </button>
           ${pageItems}
           <button
@@ -147,7 +153,7 @@ const definition: ComponentDefinition<BqPaginationProps> = {
             aria-label="${t('pagination.next')}"
             type="button"
           >
-            &#8250;
+            <span class="icon" data-icon="chevron-right" aria-hidden="true"></span>
           </button>
           ${showFirstLast
             ? `<button
@@ -156,7 +162,7 @@ const definition: ComponentDefinition<BqPaginationProps> = {
                 ${nextDisabled ? 'disabled' : ''}
                 aria-label="${t('pagination.lastPage')}"
                 type="button"
-              >&#187;</button>`
+              ><span class="icon" data-icon="chevrons-right" aria-hidden="true"></span></button>`
             : ''}
         </div>
       </nav>

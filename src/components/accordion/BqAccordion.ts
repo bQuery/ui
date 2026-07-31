@@ -9,10 +9,13 @@
  * @fires bq-toggle - { open: boolean }
  */
 import type { ComponentDefinition } from '@bquery/bquery/component';
-import { bool, component, html } from '@bquery/bquery/component';
+import { bool, component, css, html } from '@bquery/bquery/component';
 import { escapeHtml } from '@bquery/bquery/security';
+import type { Disposer } from '../../utils/component.js';
+import { bind, release } from '../../utils/component.js';
 import { getAnimationTimeoutMs, uniqueId } from '../../utils/dom.js';
-import { getBaseStyles } from '../../utils/styles.js';
+import { iconCss } from '../../utils/icons.js';
+import { baseStyles, focusRing, reset } from '../../utils/styles.js';
 
 type BqAccordionProps = {
   label: string;
@@ -34,9 +37,11 @@ const definition: ComponentDefinition<BqAccordionProps, BqAccordionState> = {
   state: {
     uid: '',
   },
-  styles: `
-    ${getBaseStyles()}
-    *, *::before, *::after { box-sizing: border-box; }
+  styles: css`
+    ${baseStyles}
+    ${reset}
+    ${focusRing}
+    ${iconCss('chevron-down')}
     :host { display: block; }
     :host([variant="bordered"]) .accordion { border: 1.5px solid var(--bq-border-base,#e2e8f0); border-radius: var(--bq-radius-lg); }
     :host([variant="flush"]) .accordion { border-bottom: 1px solid var(--bq-border-base,#e2e8f0); }
@@ -46,13 +51,13 @@ const definition: ComponentDefinition<BqAccordionProps, BqAccordionState> = {
       width: 100%; padding: var(--bq-space-4,1rem); background: none; border: none;
       cursor: pointer; color: var(--bq-text-base,#0f172a);
       font-size: var(--bq-font-size-md,1rem); font-weight: var(--bq-font-weight-semibold,600);
-      font-family: inherit; text-align: left;
+      font-family: inherit; text-align: start;
       transition: background var(--bq-duration-fast) var(--bq-easing-standard);
     }
     .trigger:hover:not([disabled]) { background: var(--bq-bg-subtle,#f8fafc); }
     .trigger[disabled] { opacity: 0.5; cursor: not-allowed; }
-    .trigger:focus-visible { outline: 2px solid transparent; box-shadow: var(--bq-focus-ring); }
-    .icon { flex-shrink: 0; font-size: 1rem; color: var(--bq-text-muted,#475569); transition: transform var(--bq-duration-fast) var(--bq-easing-standard); }
+    .trigger:focus-visible { outline: 2px solid transparent; box-shadow: var(--bq-focus-ring); border-radius: var(--bq-radius-md,0.375rem); }
+    .icon { color: var(--bq-text-muted,#475569); --bq-icon-size: 1.25rem; transition: transform var(--bq-duration-normal) var(--bq-easing-standard); }
     :host([open]:not([data-closing])) .icon { transform: rotate(180deg); }
     .panel { display: grid; grid-template-rows: 0fr; overflow: hidden; }
     .panel-inner { overflow: hidden; min-height: 0; padding: 0 var(--bq-space-4,1rem) var(--bq-space-4,1rem); color: var(--bq-text-muted,#475569); font-size: var(--bq-font-size-sm,0.875rem); line-height: var(--bq-line-height-relaxed,1.625); }
@@ -62,8 +67,6 @@ const definition: ComponentDefinition<BqAccordionProps, BqAccordionState> = {
     @keyframes panel-close { from { grid-template-rows: 1fr; } to { grid-template-rows: 0fr; } }
     @media (prefers-reduced-motion: reduce) {
       .panel { animation: none !important; }
-      .icon { transition: none; }
-      .trigger { transition: none; }
     }
   `,
   connected() {
@@ -73,18 +76,17 @@ const definition: ComponentDefinition<BqAccordionProps, BqAccordionState> = {
     };
 
     const self = this as unknown as BQEl;
-    const record = self as unknown as Record<string, unknown>;
+    const scope = bind(self);
 
     if (!self.getState<string>('uid')) self.setState('uid', uniqueId('bq-acc'));
 
+    // The exit-animation fallback timer is scope-owned so an accordion
+    // collapsed and then removed mid-animation cannot fire against a
+    // detached element.
+    let cancelCloseFallback: Disposer | null = null;
     const clearCloseFallback = () => {
-      const timeoutId = record['_closeTimeout'] as
-        | ReturnType<typeof setTimeout>
-        | undefined;
-      if (timeoutId) {
-        clearTimeout(timeoutId);
-        delete record['_closeTimeout'];
-      }
+      cancelCloseFallback?.();
+      cancelCloseFallback = null;
     };
 
     const finishClose = () => {
@@ -137,7 +139,7 @@ const definition: ComponentDefinition<BqAccordionProps, BqAccordionState> = {
         if (timeoutMs <= 0) {
           finishClose();
         } else {
-          record['_closeTimeout'] = setTimeout(
+          cancelCloseFallback = scope.timeout(
             finishClose,
             Math.ceil(timeoutMs) + 20
           );
@@ -183,26 +185,12 @@ const definition: ComponentDefinition<BqAccordionProps, BqAccordionState> = {
       finishClose();
     };
 
-    record['_handler'] = handler;
-    record['_kh'] = kh;
-    record['_ah'] = ah;
-
-    self.shadowRoot?.addEventListener('click', handler);
-    self.shadowRoot?.addEventListener('keydown', kh);
-    self.shadowRoot?.addEventListener('animationend', ah);
+    scope.on(self.shadowRoot, 'click', handler);
+    scope.on(self.shadowRoot, 'keydown', kh);
+    scope.on(self.shadowRoot, 'animationend', ah);
   },
   disconnected() {
-    const self = this as unknown as Record<string, unknown>;
-    const h = self['_handler'] as EventListener | undefined;
-    const kh = self['_kh'] as EventListener | undefined;
-    const ah = self['_ah'] as EventListener | undefined;
-    const closeTimeout = self['_closeTimeout'] as
-      | ReturnType<typeof setTimeout>
-      | undefined;
-    if (h) this.shadowRoot?.removeEventListener('click', h);
-    if (kh) this.shadowRoot?.removeEventListener('keydown', kh);
-    if (ah) this.shadowRoot?.removeEventListener('animationend', ah);
-    if (closeTimeout) clearTimeout(closeTimeout);
+    release(this);
   },
   render({ props, state }) {
     const uid = state.uid || 'bq-acc';
@@ -225,7 +213,7 @@ const definition: ComponentDefinition<BqAccordionProps, BqAccordionState> = {
           ${props.disabled ? 'aria-disabled="true"' : ''}
         >
           <span part="label">${escapeHtml(props.label)}</span>
-          <span class="icon" aria-hidden="true">&#9662;</span>
+          <span class="icon" data-icon="chevron-down" part="icon" aria-hidden="true"></span>
         </button>
         <div
           part="panel"

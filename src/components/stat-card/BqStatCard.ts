@@ -12,11 +12,11 @@
  * @slot icon   - Optional icon or badge for the metric
  */
 import type { ComponentDefinition } from '@bquery/bquery/component';
-import { component, html } from '@bquery/bquery/component';
+import { component, css, html } from '@bquery/bquery/component';
 import { escapeHtml } from '@bquery/bquery/security';
 import { t } from '../../i18n/index.js';
 import { uniqueId } from '../../utils/dom.js';
-import { getBaseStyles, srOnlyStyles } from '../../utils/styles.js';
+import { baseStyles, reset, srOnly } from '../../utils/styles.js';
 
 type BqStatCardProps = {
   label: string;
@@ -51,10 +51,10 @@ const definition: ComponentDefinition<BqStatCardProps, BqStatCardState> = {
   state: {
     uid: '',
   },
-  styles: `
-    ${getBaseStyles()}
-    ${srOnlyStyles}
-    *, *::before, *::after { box-sizing: border-box; }
+  styles: css`
+    ${baseStyles}
+    ${reset}
+    ${srOnly}
     :host { display: block; }
     .card {
       display: grid;
@@ -63,7 +63,7 @@ const definition: ComponentDefinition<BqStatCardProps, BqStatCardState> = {
       padding: var(--bq-space-6,1.5rem);
       border-radius: var(--bq-radius-xl,0.75rem);
       border: 1px solid var(--bq-border-base,#e2e8f0);
-      background: var(--bq-bg-base,#fff);
+      background: var(--bq-surface-raised,#fff);
       box-shadow: var(--bq-shadow-sm);
       color: var(--bq-text-base,#0f172a);
       font-family: var(--bq-font-family-sans);

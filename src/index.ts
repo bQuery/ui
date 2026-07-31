@@ -22,17 +22,33 @@ import { registerAll } from './register.js';
 import { __bqComponentEntry as accordionComponentEntry } from './components/accordion/index.js';
 import { __bqComponentEntry as alertComponentEntry } from './components/alert/index.js';
 import { __bqComponentEntry as avatarComponentEntry } from './components/avatar/index.js';
+import { __bqComponentEntry as avatarGroupComponentEntry } from './components/avatar-group/index.js';
+import { __bqComponentEntry as bannerComponentEntry } from './components/banner/index.js';
+import { __bqComponentEntry as buttonGroupComponentEntry } from './components/button-group/index.js';
+import { __bqComponentEntry as fileUploadComponentEntry } from './components/file-upload/index.js';
+import { __bqComponentEntry as kbdComponentEntry } from './components/kbd/index.js';
+import { __bqComponentEntry as meterComponentEntry } from './components/meter/index.js';
+import { __bqComponentEntry as numberInputComponentEntry } from './components/number-input/index.js';
+import { __bqComponentEntry as pinInputComponentEntry } from './components/pin-input/index.js';
+import { __bqComponentEntry as popoverComponentEntry } from './components/popover/index.js';
+import { __bqComponentEntry as ratingComponentEntry } from './components/rating/index.js';
+import { __bqComponentEntry as stepperComponentEntry } from './components/stepper/index.js';
+import { __bqComponentEntry as timelineComponentEntry } from './components/timeline/index.js';
 import { __bqComponentEntry as badgeComponentEntry } from './components/badge/index.js';
 import { __bqComponentEntry as breadcrumbsComponentEntry } from './components/breadcrumbs/index.js';
 import { __bqComponentEntry as buttonComponentEntry } from './components/button/index.js';
 import { __bqComponentEntry as cardComponentEntry } from './components/card/index.js';
 import { __bqComponentEntry as checkboxComponentEntry } from './components/checkbox/index.js';
 import { __bqComponentEntry as chipComponentEntry } from './components/chip/index.js';
+import { __bqComponentEntry as comboboxComponentEntry } from './components/combobox/index.js';
+import { __bqComponentEntry as copyButtonComponentEntry } from './components/copy-button/index.js';
+import { __bqComponentEntry as datePickerComponentEntry } from './components/date-picker/index.js';
 import { __bqComponentEntry as dialogComponentEntry } from './components/dialog/index.js';
 import { __bqComponentEntry as dividerComponentEntry } from './components/divider/index.js';
 import { __bqComponentEntry as drawerComponentEntry } from './components/drawer/index.js';
 import { __bqComponentEntry as dropdownMenuComponentEntry } from './components/dropdown-menu/index.js';
 import { __bqComponentEntry as emptyStateComponentEntry } from './components/empty-state/index.js';
+import { __bqComponentEntry as iconComponentEntry } from './components/icon/index.js';
 import { __bqComponentEntry as iconButtonComponentEntry } from './components/icon-button/index.js';
 import { __bqComponentEntry as inputComponentEntry } from './components/input/index.js';
 import { __bqComponentEntry as paginationComponentEntry } from './components/pagination/index.js';
@@ -46,9 +62,11 @@ import { __bqComponentEntry as spinnerComponentEntry } from './components/spinne
 import { __bqComponentEntry as statCardComponentEntry } from './components/stat-card/index.js';
 import { __bqComponentEntry as switchComponentEntry } from './components/switch/index.js';
 import { __bqComponentEntry as tableComponentEntry } from './components/table/index.js';
+import { __bqComponentEntry as tagInputComponentEntry } from './components/tag-input/index.js';
 import { __bqComponentEntry as tabsComponentEntry } from './components/tabs/index.js';
 import { __bqComponentEntry as textareaComponentEntry } from './components/textarea/index.js';
 import { __bqComponentEntry as tooltipComponentEntry } from './components/tooltip/index.js';
+import { __bqComponentEntry as treeComponentEntry } from './components/tree/index.js';
 // Toast is imported directly because its wrapper both registers the component and re-exports showToast().
 import './components/toast/index.js';
 
@@ -61,17 +79,33 @@ Object.defineProperty(registerAll, COMPONENT_ENTRY_MAP_KEY, {
     'accordion': accordionComponentEntry,
     'alert': alertComponentEntry,
     'avatar': avatarComponentEntry,
+    'avatar-group': avatarGroupComponentEntry,
+    'banner': bannerComponentEntry,
+    'button-group': buttonGroupComponentEntry,
+    'file-upload': fileUploadComponentEntry,
+    'kbd': kbdComponentEntry,
+    'meter': meterComponentEntry,
+    'number-input': numberInputComponentEntry,
+    'pin-input': pinInputComponentEntry,
+    'popover': popoverComponentEntry,
+    'rating': ratingComponentEntry,
+    'stepper': stepperComponentEntry,
+    'timeline': timelineComponentEntry,
     'badge': badgeComponentEntry,
     'breadcrumbs': breadcrumbsComponentEntry,
     'button': buttonComponentEntry,
     'card': cardComponentEntry,
     'checkbox': checkboxComponentEntry,
     'chip': chipComponentEntry,
+    'combobox': comboboxComponentEntry,
+    'copy-button': copyButtonComponentEntry,
+    'date-picker': datePickerComponentEntry,
     'dialog': dialogComponentEntry,
     'divider': dividerComponentEntry,
     'drawer': drawerComponentEntry,
     'dropdown-menu': dropdownMenuComponentEntry,
     'empty-state': emptyStateComponentEntry,
+    'icon': iconComponentEntry,
     'icon-button': iconButtonComponentEntry,
     'input': inputComponentEntry,
     'pagination': paginationComponentEntry,
@@ -85,9 +119,11 @@ Object.defineProperty(registerAll, COMPONENT_ENTRY_MAP_KEY, {
     'stat-card': statCardComponentEntry,
     'switch': switchComponentEntry,
     'table': tableComponentEntry,
+    'tag-input': tagInputComponentEntry,
     'tabs': tabsComponentEntry,
     'textarea': textareaComponentEntry,
     'tooltip': tooltipComponentEntry,
+    'tree': treeComponentEntry,
   },
   writable: false,
   enumerable: false,

@@ -71,6 +71,9 @@ export const en = {
   tabs: {
     listLabel: 'Tabs',
   },
+  switch: {
+    defaultLabel: 'Toggle',
+  },
   slider: {
     ariaLabel: 'Slider',
     valueText: 'Value: {value}',
@@ -94,6 +97,90 @@ export const en = {
   },
   segmentedControl: {
     defaultLabel: 'Options',
+  },
+  popover: {
+    close: 'Close popover',
+  },
+  banner: {
+    dismiss: 'Dismiss announcement',
+  },
+  avatarGroup: {
+    overflow: '{count} more',
+    label: 'Group of people',
+  },
+  buttonGroup: {
+    defaultLabel: 'Button group',
+  },
+  stepper: {
+    nav: 'Progress',
+    stepOf: 'Step {current} of {total}',
+    completed: 'Completed',
+    current: 'Current step',
+    upcoming: 'Upcoming step',
+  },
+  timeline: {
+    nav: 'Timeline',
+  },
+  rating: {
+    label: 'Rating',
+    valueText: '{value} of {max} stars',
+    clear: 'Clear rating',
+  },
+  numberInput: {
+    increment: 'Increase value',
+    decrement: 'Decrease value',
+  },
+  fileUpload: {
+    hint: 'Drag files here or browse',
+    browse: 'Browse files',
+    remove: 'Remove file',
+    selected: '{count} selected',
+  },
+  combobox: {
+    placeholder: 'Search…',
+    noResults: 'No matches found',
+    clear: 'Clear selection',
+    toggle: 'Toggle options',
+    removeOption: 'Remove {label}',
+    resultCount: '{count} options available',
+    selected: '{count} selected',
+  },
+  datePicker: {
+    placeholder: 'Select a date',
+    open: 'Open calendar',
+    clear: 'Clear date',
+    prevMonth: 'Previous month',
+    nextMonth: 'Next month',
+    today: 'Today',
+  },
+  copyButton: {
+    copy: 'Copy to clipboard',
+    copied: 'Copied',
+  },
+  pinInput: {
+    cell: 'Digit {index} of {total}',
+    progress: '{count} of {total} characters entered',
+  },
+  tagInput: {
+    placeholder: 'Add a tag…',
+    remove: 'Remove {tag}',
+    listLabel: 'Tags',
+    help: 'Press Enter to add a tag, Backspace to remove the last one.',
+    count: '{count} tags',
+    limitReached: 'Tag limit reached',
+  },
+  validation: {
+    valueMissing: 'Please fill out this field.',
+    typeMismatchEmail: 'Please enter a valid email address.',
+    typeMismatchUrl: 'Please enter a valid URL.',
+    typeMismatchNumber: 'Please enter a number.',
+    patternMismatch: 'Please match the requested format.',
+    tooShort: 'Please use at least {min} characters.',
+    tooLong: 'Please use no more than {max} characters.',
+    rangeUnderflow: 'Value must be {min} or more.',
+    rangeOverflow: 'Value must be {max} or less.',
+    stepMismatch: 'Please enter a valid value.',
+    invalid: 'Please correct this field.',
   },
 } as const;
 

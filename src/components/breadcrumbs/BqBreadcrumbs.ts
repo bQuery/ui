@@ -7,11 +7,19 @@
  * @cssprop --bq-breadcrumb-separator - Override the separator string ("/" by default)
  */
 import type { ComponentDefinition } from '@bquery/bquery/component';
-import { component, html } from '@bquery/bquery/component';
+import { component, css, html } from '@bquery/bquery/component';
 import { t } from '../../i18n/index.js';
-import { getBaseStyles } from '../../utils/styles.js';
+import { bind, host, release, store } from '../../utils/component.js';
+import { baseStyles, reset } from '../../utils/styles.js';
 
 type BqBreadcrumbsProps = { separator: string };
+
+/** Per-instance callbacks `updated()` re-runs after every render. */
+const breadcrumbsStore = (owner: object) =>
+  store<{ applyAttrs?: () => void; applySeparatorVar?: () => void }>(
+    owner,
+    () => ({})
+  );
 
 /**
  * Escape a string for safe use as a CSS `content` value.
@@ -24,21 +32,21 @@ const definition: ComponentDefinition<BqBreadcrumbsProps> = {
   props: {
     separator: { type: String, default: '/' },
   },
-  styles: `
-    ${getBaseStyles()}
-    *, *::before, *::after { box-sizing: border-box; }
+  styles: css`
+    ${baseStyles}
+    ${reset}
     :host { display: block; }
     .breadcrumbs { display: flex; align-items: center; flex-wrap: wrap; list-style: none; margin: 0; padding: 0; font-family: var(--bq-font-family-sans); font-size: var(--bq-font-size-sm,0.875rem); gap: 0; }
     ::slotted(*) { display: inline-flex; align-items: center; }
     ::slotted(*:not(:first-child))::before {
       content: var(--bq-breadcrumb-separator, "/");
       color: var(--bq-text-subtle,#94a3b8);
-      margin: 0 var(--bq-space-2,0.5rem);
+      margin-inline: var(--bq-space-2,0.5rem);
       user-select: none;
       pointer-events: none;
       speak: never;
     }
-    ::slotted(a) { color: var(--bq-text-muted,#475569); text-decoration: none; transition: color var(--bq-duration-fast); }
+    ::slotted(a) { color: var(--bq-text-muted,#475569); text-decoration: none; border-radius: var(--bq-radius-sm,0.25rem); transition: color var(--bq-duration-fast); }
     ::slotted(a:hover) { color: var(--bq-color-primary-600,#2563eb); text-decoration: underline; }
     ::slotted([aria-current="page"]) { color: var(--bq-text-base,#0f172a); font-weight: var(--bq-font-weight-medium,500); pointer-events: none; }
     @media (prefers-reduced-motion: reduce) {
@@ -46,7 +54,8 @@ const definition: ComponentDefinition<BqBreadcrumbsProps> = {
     }
   `,
   connected() {
-    const self = this;
+    const self = host(this);
+    const scope = bind(self);
     const applyAttrs = () => {
       const slot = self.shadowRoot?.querySelector(
         'slot'
@@ -69,30 +78,31 @@ const definition: ComponentDefinition<BqBreadcrumbsProps> = {
       }
       self.style.setProperty('--bq-breadcrumb-separator', cssQuote(attr));
     };
-    (self as unknown as Record<string, unknown>)['_applyAttrs'] = applyAttrs;
-    (self as unknown as Record<string, unknown>)['_applySeparatorVar'] =
-      applySeparatorVar;
+    const local = breadcrumbsStore(self);
+    local.applyAttrs = applyAttrs;
+    local.applySeparatorVar = applySeparatorVar;
     applySeparatorVar();
+
+    // The slot only exists once the first render has run. Registering the
+    // listener on the scope means an element disconnected before this
+    // microtask settles still unwinds cleanly.
     queueMicrotask(() => {
+      if (!self.isConnected) return;
       const slot = self.shadowRoot?.querySelector(
         'slot'
       ) as HTMLSlotElement | null;
       if (!slot) return;
-      slot.addEventListener('slotchange', applyAttrs);
-      (self as unknown as Record<string, unknown>)['_slot'] = slot;
+      scope.on(slot, 'slotchange', applyAttrs);
       applyAttrs();
     });
   },
   disconnected() {
-    const self = this as unknown as Record<string, unknown>;
-    const applyAttrs = self['_applyAttrs'] as EventListener | undefined;
-    const slot = self['_slot'] as HTMLSlotElement | null | undefined;
-    if (slot && applyAttrs) slot.removeEventListener('slotchange', applyAttrs);
+    release(this);
   },
   updated() {
-    const s = this as unknown as Record<string, unknown>;
-    (s['_applySeparatorVar'] as (() => void) | undefined)?.();
-    (s['_applyAttrs'] as (() => void) | undefined)?.();
+    const local = breadcrumbsStore(this);
+    local.applySeparatorVar?.();
+    local.applyAttrs?.();
   },
   render() {
     return html`

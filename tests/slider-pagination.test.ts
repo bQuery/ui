@@ -1,13 +1,41 @@
 import { beforeAll, describe, expect, it } from 'bun:test';
+import { sliderFill } from '../src/components/slider/BqSlider.js';
 
 const win = (globalThis as unknown as Record<string, unknown>)[
   'window'
 ] as Window & typeof globalThis;
 const doc = win.document as unknown as Document;
 
+describe('sliderFill', () => {
+  it('reports how much of the track is behind the thumb', () => {
+    expect(sliderFill(50, 0, 100)).toBe(50);
+    expect(sliderFill(5, 0, 20)).toBe(25);
+  });
+
+  it('clamps a value outside the range', () => {
+    expect(sliderFill(-10, 0, 100)).toBe(0);
+    expect(sliderFill(999, 0, 100)).toBe(100);
+  });
+
+  it('returns zero for a degenerate range rather than dividing by it', () => {
+    expect(sliderFill(5, 10, 10)).toBe(0);
+    expect(sliderFill(Number.NaN, 0, 100)).toBe(0);
+  });
+});
+
 describe('BqSlider', () => {
   beforeAll(async () => {
     await import('../src/components/slider/index.js');
+  });
+
+  // The filled portion is a gradient stop driven by an inline custom property,
+  // which the sanitizer drops unless the component opts in.
+  it('paints the filled portion of the track', () => {
+    const el = doc.createElement('bq-slider');
+    el.setAttribute('value', '25');
+    doc.body.appendChild(el);
+    const input = el.shadowRoot?.querySelector('input[type="range"]');
+    expect(input?.getAttribute('style')).toContain('--bq-slider-fill: 25%');
   });
 
   it('should define bq-slider as a custom element', () => {

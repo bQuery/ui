@@ -13,10 +13,12 @@
  * @fires bq-sort - { key: string, dir: string }
  */
 import type { ComponentDefinition } from '@bquery/bquery/component';
-import { component, html } from '@bquery/bquery/component';
+import { component, css, html } from '@bquery/bquery/component';
 import { escapeHtml } from '@bquery/bquery/security';
 import { t } from '../../i18n/index.js';
-import { getBaseStyles } from '../../utils/styles.js';
+import { bind, host, release } from '../../utils/component.js';
+import { iconCss } from '../../utils/icons.js';
+import { baseStyles, focusRing, reset } from '../../utils/styles.js';
 
 type ColDef = { key: string; label: string; sortable?: boolean };
 type BqTableProps = {
@@ -43,28 +45,59 @@ const definition: ComponentDefinition<BqTableProps> = {
     hover: { type: Boolean, default: false },
     loading: { type: Boolean, default: false },
   },
-  styles: `
-    ${getBaseStyles()}
-    *, *::before, *::after { box-sizing: border-box; }
+  sanitize: { allowAttributes: ['scope', 'colspan'] },
+  styles: css`
+    ${baseStyles}
+    ${reset}
+    ${focusRing}
+    ${iconCss('chevron-up', 'chevron-down', 'chevrons-up-down')}
     :host { display: block; overflow-x: auto; }
-    table { width: 100%; border-collapse: collapse; font-family: var(--bq-font-family-sans); font-size: var(--bq-font-size-sm,0.875rem); }
-    :host([bordered]) table { border: 1px solid var(--bq-border-base,#e2e8f0); }
-    th, td { padding: 0.75rem 1rem; text-align: left; border-bottom: 1px solid var(--bq-border-base,#e2e8f0); }
-    caption { caption-side: top; text-align: left; font-size: var(--bq-font-size-sm,0.875rem); color: var(--bq-text-muted,#475569); padding: 0.5rem 1rem; font-family: var(--bq-font-family-sans); }
+    table {
+      inline-size: 100%; border-collapse: collapse;
+      font-family: var(--bq-font-family-sans);
+      font-size: var(--bq-font-size-sm,0.875rem);
+      background: var(--bq-bg-base,#fff);
+    }
+    :host([bordered]) table { border: 1px solid var(--bq-border-base,#e2e8f0); border-radius: var(--bq-radius-lg,0.5rem); }
+    th, td {
+      padding: 0.75rem 1rem; text-align: start;
+      border-block-end: 1px solid var(--bq-border-base,#e2e8f0);
+    }
+    caption {
+      caption-side: top; text-align: start;
+      font-size: var(--bq-font-size-sm,0.875rem);
+      color: var(--bq-text-muted,#475569);
+      padding: 0.5rem 1rem; font-family: var(--bq-font-family-sans);
+    }
     :host([bordered]) th, :host([bordered]) td { border: 1px solid var(--bq-border-base,#e2e8f0); }
-    th { background: var(--bq-bg-subtle,#f8fafc); font-weight: var(--bq-font-weight-semibold,600); color: var(--bq-text-base,#0f172a); white-space: nowrap; }
+    th {
+      background: var(--bq-bg-subtle,#f8fafc);
+      font-weight: var(--bq-font-weight-semibold,600);
+      color: var(--bq-text-base,#0f172a);
+      white-space: nowrap;
+      /* A sticky header is what makes a long table readable, and it costs
+         nothing for a short one. */
+      position: sticky; inset-block-start: 0; z-index: var(--bq-z-raised,10);
+    }
+    tbody tr:last-child td { border-block-end: none; }
     td { color: var(--bq-text-muted,#475569); }
-    .sortable { cursor: pointer; user-select: none; }
+    .sortable { cursor: pointer; user-select: none; -webkit-user-select: none; }
     .sortable:hover { background: var(--bq-bg-emphasis,#e2e8f0); }
-    .sort-icon { display: inline-block; margin-left: 0.375rem; opacity: 0.4; }
-    .sort-icon[data-active="true"] { opacity: 1; }
+    .th-inner { display: inline-flex; align-items: center; gap: 0.375rem; }
+    .sort-icon {
+      --bq-icon-size: 0.875rem;
+      opacity: 0.35;
+      transition: opacity var(--bq-duration-fast) var(--bq-easing-standard);
+    }
+    .sortable:hover .sort-icon { opacity: 0.7; }
+    .sort-icon[data-active="true"] { opacity: 1; color: var(--bq-color-primary-600,#2563eb); }
     :host([striped]) tbody tr:nth-child(even) td { background: var(--bq-bg-subtle,#f8fafc); }
     :host([hover]) tbody tr:hover td { background: var(--bq-bg-muted,#f1f5f9); }
     .empty-row td { text-align: center; color: var(--bq-text-subtle,#94a3b8); padding: 2rem; }
     .loading-overlay { text-align: center; padding: 2rem; color: var(--bq-text-muted,#475569); }
   `,
   connected() {
-    const self = this;
+    const self = host(this);
     const sortHandler = (th: HTMLElement) => {
       const key = th.getAttribute('data-sort-key') ?? '';
       const curDir = self.getAttribute('sort-dir') ?? 'asc';
@@ -105,19 +138,13 @@ const definition: ComponentDefinition<BqTableProps> = {
       e.preventDefault();
       sortHandler(th);
     };
-    (self as unknown as Record<string, unknown>)['_handler'] = handler;
-    (self as unknown as Record<string, unknown>)['_keyHandler'] = keyHandler;
-    self.shadowRoot?.addEventListener('click', handler);
-    self.shadowRoot?.addEventListener('keydown', keyHandler);
-    self.shadowRoot?.addEventListener('keyup', keyHandler);
+    const scope = bind(self);
+    scope.on(self.shadowRoot, 'click', handler);
+    scope.on(self.shadowRoot, 'keydown', keyHandler);
+    scope.on(self.shadowRoot, 'keyup', keyHandler);
   },
   disconnected() {
-    const s = this as unknown as Record<string, unknown>;
-    const h = s['_handler'] as EventListener | undefined;
-    const kh = s['_keyHandler'] as EventListener | undefined;
-    if (h) this.shadowRoot?.removeEventListener('click', h);
-    if (kh) this.shadowRoot?.removeEventListener('keydown', kh);
-    if (kh) this.shadowRoot?.removeEventListener('keyup', kh);
+    release(this);
   },
   render({ props }) {
     let cols: ColDef[] = [];
@@ -137,8 +164,15 @@ const definition: ComponentDefinition<BqTableProps> = {
     const theads = cols
       .map((col) => {
         const isSorted = col.key === sortKey;
+        // Unsorted columns show a neutral up/down pair, so a sortable column
+        // advertises itself without claiming a direction it does not have.
+        const sortIconName = !isSorted
+          ? 'chevrons-up-down'
+          : sortDir === 'desc'
+            ? 'chevron-down'
+            : 'chevron-up';
         const sortIcon = col.sortable
-          ? `<span class="sort-icon" data-active="${isSorted ? 'true' : 'false'}" aria-hidden="true">${isSorted && sortDir === 'desc' ? '&#9650;' : '&#9660;'}</span>`
+          ? `<span class="icon sort-icon" data-icon="${sortIconName}" data-active="${isSorted ? 'true' : 'false'}" aria-hidden="true"></span>`
           : '';
         const sortLabel = col.sortable
           ? isSorted
@@ -150,7 +184,7 @@ const definition: ComponentDefinition<BqTableProps> = {
         const sortableAttrs = col.sortable
           ? `class="sortable" data-sort-key="${escapeHtml(col.key)}" tabindex="0" aria-sort="${isSorted ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'}" title="${escapeHtml(sortLabel)}"`
           : '';
-        return `<th part="th" scope="col" role="columnheader" ${sortableAttrs}>${escapeHtml(col.label)}${sortIcon}</th>`;
+        return `<th part="th" scope="col" role="columnheader" ${sortableAttrs}><span class="th-inner">${escapeHtml(col.label)}${sortIcon}</span></th>`;
       })
       .join('');
     const tbodies = props.loading

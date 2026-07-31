@@ -7,10 +7,11 @@
  * @fires bq-tab-change - { tabId: string }
  */
 import type { ComponentDefinition } from '@bquery/bquery/component';
-import { component, html } from '@bquery/bquery/component';
+import { component, css, html } from '@bquery/bquery/component';
 import { escapeHtml } from '@bquery/bquery/security';
 import { t } from '../../i18n/index.js';
-import { getBaseStyles } from '../../utils/styles.js';
+import { bind, release, store } from '../../utils/component.js';
+import { baseStyles, reset } from '../../utils/styles.js';
 
 type BqTabsProps = { 'active-tab': string; variant: string };
 
@@ -29,37 +30,62 @@ function getPanelId(tabId: string): string | null {
   return ariaIdPart ? `panel-${ariaIdPart}` : null;
 }
 
+/**
+ * Writes an attribute only when the value would actually change.
+ *
+ * `setAttribute` produces a mutation record even when the value is identical,
+ * and this component writes `id` onto its light-DOM panels from `updated()`
+ * while a MutationObserver watches the subtree for `id` — so an unconditional
+ * write re-entered its own observer, re-rendered, wrote again, and hung the
+ * main thread outright. Any page using the documented panel markup froze on
+ * load.
+ */
+function setAttr(el: Element, name: string, value: string): void {
+  if (el.getAttribute(name) !== value) el.setAttribute(name, value);
+}
+
+function removeAttr(el: Element, name: string): void {
+  if (el.hasAttribute(name)) el.removeAttribute(name);
+}
+
+/** The subtree observer, so `updated()` can pause its own writes. */
+const tabsStore = (owner: object) =>
+  store<{ observer?: MutationObserver | null }>(owner, () => ({}));
+
 const definition: ComponentDefinition<BqTabsProps> = {
   props: {
     'active-tab': { type: String, default: '' },
     variant: { type: String, default: 'default' },
   },
-  styles: `
-    ${getBaseStyles()}
-    *, *::before, *::after { box-sizing: border-box; }
+  styles: css`
+    ${baseStyles}
+    ${reset}
     :host { display: block; }
     .tabs { display: flex; flex-direction: column; }
     .tablist { display: flex; gap: 0.25rem; }
     .tablist[data-variant="default"] { background: var(--bq-bg-subtle,#f8fafc); border-radius: var(--bq-radius-lg); padding: 0.25rem; }
-    .tablist[data-variant="underline"] { border-bottom: 2px solid var(--bq-border-base,#e2e8f0); }
+    .tablist[data-variant="underline"] { border-block-end: 2px solid var(--bq-border-base,#e2e8f0); }
     .tab {
       display: inline-flex; align-items: center; justify-content: center; gap: 0.375rem;
       font-size: var(--bq-font-size-sm,0.875rem); font-weight: var(--bq-font-weight-medium,500);
       font-family: var(--bq-font-family-sans); cursor: pointer; background: none; border: none;
       color: var(--bq-text-muted,#475569); white-space: nowrap;
-      transition: all var(--bq-duration-fast) var(--bq-easing-standard);
+      transition: color var(--bq-duration-fast) var(--bq-easing-standard),
+                  background-color var(--bq-duration-fast) var(--bq-easing-standard),
+                  border-color var(--bq-duration-fast) var(--bq-easing-standard),
+                  box-shadow var(--bq-duration-fast) var(--bq-easing-standard);
     }
     .tab[data-variant="default"]  { padding: 0.375rem 0.875rem; border-radius: var(--bq-radius-md,0.375rem); }
-    .tab[data-variant="underline"] { padding: 0.625rem 1rem; border-bottom: 2px solid transparent; margin-bottom: -2px; border-radius: 0; }
+    .tab[data-variant="underline"] { padding: 0.625rem 1rem; border-block-end: 2px solid transparent; margin-block-end: -2px; border-radius: 0; }
     .tab[data-variant="pills"]    { padding: 0.375rem 0.875rem; border-radius: var(--bq-radius-full,9999px); }
     .tab:hover:not([disabled]):not([aria-selected="true"]) { color: var(--bq-text-base,#0f172a); }
     .tab[data-variant="default"]:hover:not([disabled]):not([aria-selected="true"]) { background: var(--bq-bg-emphasis,#e2e8f0); }
-    .tab[aria-selected="true"][data-variant="default"]   { background: var(--bq-bg-base,#fff); box-shadow: var(--bq-shadow-sm); color: var(--bq-color-primary-600,#2563eb); }
+    .tab[aria-selected="true"][data-variant="default"]   { background: var(--bq-surface-raised,#fff); box-shadow: var(--bq-shadow-sm); color: var(--bq-color-primary-600,#2563eb); }
     .tab[aria-selected="true"][data-variant="underline"] { border-bottom-color: var(--bq-color-primary-600,#2563eb); color: var(--bq-color-primary-600,#2563eb); }
-    .tab[aria-selected="true"][data-variant="pills"]     { background: var(--bq-color-primary-600,#2563eb); color: #fff; }
+    .tab[aria-selected="true"][data-variant="pills"]     { background: var(--bq-color-primary-600,#2563eb); color: var(--bq-text-on-primary,#fff); }
     .tab[disabled] { opacity: 0.45; cursor: not-allowed; }
     .tab:focus-visible { outline: 2px solid transparent; box-shadow: var(--bq-focus-ring); }
-    .panels { padding-top: var(--bq-space-4,1rem); }
+    .panels { padding-block-start: var(--bq-space-4,1rem); }
     @media (prefers-reduced-motion: reduce) {
       .tab { transition: none; }
     }
@@ -72,6 +98,7 @@ const definition: ComponentDefinition<BqTabsProps> = {
     const self = this as unknown as BQEl &
       HTMLElement &
       Record<string, unknown>;
+    const scope = bind(self);
 
     const readTabs = () => {
       const items = Array.from(
@@ -87,6 +114,9 @@ const definition: ComponentDefinition<BqTabsProps> = {
 
     // MutationObserver to re-render when child items change
     const obs = new MutationObserver(() => {
+      // Records queued before `updated()` paused the observer still arrive
+      // here; ignore them rather than re-entering the render.
+      if (!tabsStore(self).observer) return;
       readTabs();
       // Trigger re-render by touching an attribute
       const cur = (self as HTMLElement).getAttribute('active-tab') ?? '';
@@ -98,7 +128,11 @@ const definition: ComponentDefinition<BqTabsProps> = {
       attributes: true,
       attributeFilter: ['label', 'disabled', 'id'],
     });
-    self['_obs'] = obs;
+    tabsStore(self).observer = obs;
+    scope.add(() => {
+      tabsStore(self).observer = null;
+      obs.disconnect();
+    });
 
     const clickH = (e: Event) => {
       const btn = (e.target as Element).closest(
@@ -145,52 +179,57 @@ const definition: ComponentDefinition<BqTabsProps> = {
           panel.hidden = panel.getAttribute('data-tab') !== activeId;
         });
     };
-    self['_clickH'] = clickH;
-    self['_keyH'] = keyH;
-    (self as HTMLElement).shadowRoot?.addEventListener('click', clickH);
-    (self as HTMLElement).shadowRoot?.addEventListener('keydown', keyH);
+    scope.on((self as HTMLElement).shadowRoot, 'click', clickH);
+    scope.on((self as HTMLElement).shadowRoot, 'keydown', keyH);
   },
   disconnected() {
-    const s = this as unknown as Record<string, unknown>;
-    const obs = s['_obs'] as MutationObserver | undefined;
-    if (obs) obs.disconnect();
-    const ch = s['_clickH'] as EventListener | undefined;
-    if (ch) this.shadowRoot?.removeEventListener('click', ch);
-    const kh = s['_keyH'] as EventListener | undefined;
-    if (kh) this.shadowRoot?.removeEventListener('keydown', kh);
+    release(this);
   },
   updated() {
-    // Sync panel visibility after each render
-    const active = this.getAttribute('active-tab') ?? '';
-    this.querySelectorAll<HTMLElement>('[data-tab]').forEach((panel) => {
-      const tabId = panel.getAttribute('data-tab') ?? '';
-      const isActive = tabId === active;
-      const panelId = panel.id || getPanelId(tabId);
-      const button = Array.from(
-        this.shadowRoot?.querySelectorAll<HTMLElement>('.tab[data-tab-id]') ?? []
-      ).find((candidate) => candidate.getAttribute('data-tab-id') === tabId);
-      const labelledBy = button?.id || (button ? getTabButtonId(tabId) : null);
+    // The panels live in the light DOM, so wiring them up means writing to the
+    // very subtree this component observes. Pause the observer for the pass and
+    // write only what changes: either guard alone is enough to break the loop,
+    // and both together mean a future edit here cannot reintroduce it.
+    const local = tabsStore(this);
+    const observer = local.observer;
+    local.observer = null;
+    observer?.disconnect();
 
-      if (panelId) {
-        panel.id = panelId;
-      }
-      panel.hidden = !isActive;
-      panel.setAttribute('role', 'tabpanel');
-      panel.setAttribute('tabindex', isActive ? '0' : '-1');
-      if (labelledBy) {
-        panel.setAttribute('aria-labelledby', labelledBy);
-      } else {
-        panel.removeAttribute('aria-labelledby');
-      }
-      panel.setAttribute('aria-hidden', isActive ? 'false' : 'true');
-      if (button) {
-        if (panelId) {
-          button.setAttribute('aria-controls', panelId);
-        } else {
-          button.removeAttribute('aria-controls');
+    try {
+      const active = this.getAttribute('active-tab') ?? '';
+      this.querySelectorAll<HTMLElement>('[data-tab]').forEach((panel) => {
+        const tabId = panel.getAttribute('data-tab') ?? '';
+        const isActive = tabId === active;
+        const panelId = panel.id || getPanelId(tabId);
+        const button = Array.from(
+          this.shadowRoot?.querySelectorAll<HTMLElement>('.tab[data-tab-id]') ??
+            []
+        ).find((candidate) => candidate.getAttribute('data-tab-id') === tabId);
+        const labelledBy = button?.id || (button ? getTabButtonId(tabId) : null);
+
+        if (panelId) setAttr(panel, 'id', panelId);
+        if (panel.hidden !== !isActive) panel.hidden = !isActive;
+        setAttr(panel, 'role', 'tabpanel');
+        setAttr(panel, 'tabindex', isActive ? '0' : '-1');
+        if (labelledBy) setAttr(panel, 'aria-labelledby', labelledBy);
+        else removeAttr(panel, 'aria-labelledby');
+        setAttr(panel, 'aria-hidden', isActive ? 'false' : 'true');
+        if (button) {
+          if (panelId) setAttr(button, 'aria-controls', panelId);
+          else removeAttr(button, 'aria-controls');
         }
+      });
+    } finally {
+      if (observer && this.isConnected) {
+        observer.observe(this, {
+          childList: true,
+          subtree: true,
+          attributes: true,
+          attributeFilter: ['label', 'disabled', 'id'],
+        });
+        local.observer = observer;
       }
-    });
+    }
   },
   render({ props, state }) {
     const items =

@@ -106,6 +106,7 @@ The counter:
 | `hint` | `string` | — | Hint / helper text |
 | `maxlength` | `string` | — | Maximum character count |
 | `show-counter` | `boolean` | `false` | Show character counter (requires `maxlength`) |
+| `clearable` | `boolean` | `false` | Show a button that clears the value |
 
 ## Events
 

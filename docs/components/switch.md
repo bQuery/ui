@@ -33,11 +33,14 @@ The `bq-switch` component is a toggle switch form control.
 
 | Property   | Type      | Default | Description              |
 | ---------- | --------- | ------- | ------------------------ |
-| `label`    | `string`  | —       | Visible label text       |
-| `name`     | `string`  | —       | Form field name          |
-| `checked`  | `boolean` | `false` | Whether the switch is on |
-| `disabled` | `boolean` | `false` | Disables the switch      |
-| `size`     | `string`  | `'md'`  | `sm` \| `md` \| `lg`     |
+| `label`    | `string`  | —       | Visible label text                     |
+| `name`     | `string`  | —       | Form field name                        |
+| `value`    | `string`  | `'on'`  | Value submitted when the switch is on  |
+| `checked`  | `boolean` | `false` | Whether the switch is on               |
+| `disabled` | `boolean` | `false` | Disables the switch                    |
+| `required` | `boolean` | `false` | Must be on for the form to submit      |
+| `hint`     | `string`  | —       | Helper text below the switch           |
+| `size`     | `string`  | `'md'`  | `sm` \| `md` \| `lg`                   |
 
 ## Events
 

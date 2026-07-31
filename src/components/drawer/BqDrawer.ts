@@ -10,17 +10,19 @@
  * @fires bq-close
  */
 import type { ComponentDefinition } from '@bquery/bquery/component';
-import { component, html } from '@bquery/bquery/component';
+import { component, css, html } from '@bquery/bquery/component';
 import { escapeHtml } from '@bquery/bquery/security';
 import { t } from '../../i18n/index.js';
+import { bind, host, release } from '../../utils/component.js';
 import type { OverlayFocusState } from '../../utils/dom.js';
 import {
   cleanupOverlayFocus,
-  getAnimationTimeoutMs,
+  createAnimatedClose,
   uniqueId,
   updateOverlayFocus,
 } from '../../utils/dom.js';
-import { getBaseStyles } from '../../utils/styles.js';
+import { iconCss } from '../../utils/icons.js';
+import { baseStyles, focusRing, reset } from '../../utils/styles.js';
 
 type BqDrawerProps = {
   open: boolean;
@@ -41,20 +43,22 @@ const definition: ComponentDefinition<BqDrawerProps, BqDrawerState> = {
   state: {
     titleId: '',
   },
-  styles: `
-    ${getBaseStyles()}
-    *, *::before, *::after { box-sizing: border-box; }
+  styles: css`
+    ${baseStyles}
+    ${reset}
+    ${focusRing}
+    ${iconCss('x')}
     :host { display: block; }
     :host(:not([open])) .backdrop { display: none; }
     .backdrop {
       position: fixed; inset: 0; z-index: var(--bq-z-overlay,300);
-      background: rgba(0,0,0,0.5);
+      background: var(--bq-overlay-backdrop,rgba(15,23,42,0.5));
       animation: fadeIn var(--bq-duration-normal) var(--bq-easing-decelerate);
     }
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     .drawer {
       position: fixed; z-index: calc(var(--bq-z-overlay,300) + 1);
-      background: var(--bq-bg-base,#fff); box-shadow: var(--bq-shadow-xl);
+      background: var(--bq-surface-overlay,#fff); box-shadow: var(--bq-shadow-xl);
       display: flex; flex-direction: column;
       font-family: var(--bq-font-family-sans);
     }
@@ -86,7 +90,8 @@ const definition: ComponentDefinition<BqDrawerProps, BqDrawerState> = {
     .header { display: flex; align-items: center; justify-content: space-between; padding: var(--bq-space-5,1.25rem) var(--bq-space-6,1.5rem); border-bottom: 1px solid var(--bq-border-base,#e2e8f0); flex-shrink: 0; }
     .title { font-size: var(--bq-font-size-lg,1.125rem); font-weight: var(--bq-font-weight-semibold,600); color: var(--bq-text-base,#0f172a); margin: 0; flex: 1; }
     .close-btn { display: inline-flex; align-items: center; justify-content: center; width: 2rem; height: 2rem; background: none; border: none; cursor: pointer; color: var(--bq-text-muted,#475569); border-radius: var(--bq-radius-md,0.375rem); font-size: 1rem; transition: background var(--bq-duration-fast); }
-    .close-btn:hover { background: var(--bq-bg-muted,#f1f5f9); }
+    .close-btn:hover { background: var(--bq-bg-muted,#f1f5f9); color: var(--bq-text-base,#0f172a); }
+    .close-btn { --bq-icon-size: 1.125rem; }
     .close-btn:focus-visible { outline: 2px solid transparent; box-shadow: var(--bq-focus-ring); }
     .body { padding: var(--bq-space-6,1.5rem); overflow-y: auto; flex: 1; }
     .footer { padding: var(--bq-space-4,1rem) var(--bq-space-6,1.5rem); border-top: 1px solid var(--bq-border-base,#e2e8f0); display: flex; gap: var(--bq-space-3,0.75rem); justify-content: flex-end; flex-shrink: 0; background: var(--bq-bg-subtle,#f8fafc); }
@@ -96,85 +101,32 @@ const definition: ComponentDefinition<BqDrawerProps, BqDrawerState> = {
     }
   `,
   connected() {
-    type BQEl = HTMLElement & {
-      setState(k: 'titleId', v: string): void;
-      getState<T>(k: string): T;
-    };
-    const self = this as unknown as BQEl;
-    const record = self as unknown as Record<string, unknown>;
+    const self = host<BqDrawerState>(this);
+    const scope = bind(self);
     if (!self.getState<string>('titleId'))
       self.setState('titleId', uniqueId('bq-drawer-title'));
-    const close = () => {
-      if (self.hasAttribute('data-closing')) return;
-      const clearCloseTimer = () => {
-        const closeTimer = record['_closeTimer'] as
-          | ReturnType<typeof setTimeout>
-          | undefined;
-        if (closeTimer) {
-          clearTimeout(closeTimer);
-          delete record['_closeTimer'];
-        }
-      };
-      const reducedMotion = self.ownerDocument.defaultView?.matchMedia?.(
-        '(prefers-reduced-motion: reduce)'
-      )?.matches;
-      const finalize = () => {
-        clearCloseTimer();
-        self.removeAttribute('data-closing');
-        self.removeAttribute('open');
-        self.dispatchEvent(
-          new CustomEvent('bq-close', { bubbles: true, composed: true })
-        );
-      };
-      if (reducedMotion) {
-        finalize();
-      } else {
-        self.setAttribute('data-closing', '');
-        const drawer = self.shadowRoot?.querySelector('.drawer');
-        const timeoutMs = drawer
-          ? getAnimationTimeoutMs(drawer, NORMAL_DURATION)
-          : 0;
-        if (timeoutMs <= 0) {
-          finalize();
-        } else {
-          record['_closeTimer'] = setTimeout(finalize, Math.ceil(timeoutMs) + 20);
-        }
-      }
-    };
-    const kh = (e: Event) => {
+
+    const close = createAnimatedClose({
+      host: self,
+      scope,
+      panelSelector: '.drawer',
+      fallbackDuration: NORMAL_DURATION,
+    });
+
+    scope.on(document, 'keydown', (e) => {
       if ((e as KeyboardEvent).key === 'Escape' && self.hasAttribute('open'))
         close();
-    };
-    const bh = (e: Event) => {
+    });
+    scope.on(self.shadowRoot, 'click', (e) => {
       if ((e.target as Element).classList.contains('backdrop')) close();
-    };
-    const ch = (e: Event) => {
+    });
+    scope.on(self.shadowRoot, 'click', (e) => {
       if ((e.target as Element).closest('.close-btn')) close();
-    };
-    const s = self as unknown as Record<string, unknown>;
-    s['_kh'] = kh;
-    s['_bh'] = bh;
-    s['_ch'] = ch;
-    document.addEventListener('keydown', kh);
-    self.shadowRoot?.addEventListener('click', bh);
-    self.shadowRoot?.addEventListener('click', ch);
+    });
   },
   disconnected() {
-    const s = this as unknown as Record<string, unknown>;
-    cleanupOverlayFocus(s as unknown as OverlayFocusState);
-    const kh = s['_kh'] as EventListener | undefined;
-    if (kh) document.removeEventListener('keydown', kh);
-    const bh = s['_bh'] as EventListener | undefined;
-    if (bh) this.shadowRoot?.removeEventListener('click', bh);
-    const ch = s['_ch'] as EventListener | undefined;
-    if (ch) this.shadowRoot?.removeEventListener('click', ch);
-    const closeTimer = s['_closeTimer'] as ReturnType<typeof setTimeout> | undefined;
-    if (closeTimer) {
-      clearTimeout(closeTimer);
-      delete s['_closeTimer'];
-      this.removeAttribute('data-closing');
-      this.removeAttribute('open');
-    }
+    cleanupOverlayFocus(this as unknown as OverlayFocusState);
+    release(this);
   },
   updated() {
     updateOverlayFocus(this, this as unknown as OverlayFocusState, '.drawer');
@@ -203,7 +155,7 @@ const definition: ComponentDefinition<BqDrawerProps, BqDrawerState> = {
               aria-label="${t('drawer.close')}"
               part="close"
             >
-              &#10005;
+              <span class="icon" data-icon="x" aria-hidden="true"></span>
             </button>
           </div>
           <div class="body" part="body"><slot></slot></div>
