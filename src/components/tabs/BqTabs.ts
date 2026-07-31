@@ -7,10 +7,10 @@
  * @fires bq-tab-change - { tabId: string }
  */
 import type { ComponentDefinition } from '@bquery/bquery/component';
-import { component, html } from '@bquery/bquery/component';
+import { component, css, html } from '@bquery/bquery/component';
 import { escapeHtml } from '@bquery/bquery/security';
 import { t } from '../../i18n/index.js';
-import { getBaseStyles } from '../../utils/styles.js';
+import { baseStyles } from '../../utils/styles.js';
 
 type BqTabsProps = { 'active-tab': string; variant: string };
 
@@ -34,8 +34,8 @@ const definition: ComponentDefinition<BqTabsProps> = {
     'active-tab': { type: String, default: '' },
     variant: { type: String, default: 'default' },
   },
-  styles: `
-    ${getBaseStyles()}
+  styles: css`
+    ${baseStyles}
     *, *::before, *::after { box-sizing: border-box; }
     :host { display: block; }
     .tabs { display: flex; flex-direction: column; }

@@ -12,11 +12,12 @@
  * @fires bq-change - { value: number }
  */
 import type { ComponentDefinition } from '@bquery/bquery/component';
-import { bool, component, html } from '@bquery/bquery/component';
+import { bool, component, css, html } from '@bquery/bquery/component';
 import { escapeHtml } from '@bquery/bquery/security';
 import { t } from '../../i18n/index.js';
 import { createFormProxy, type FormProxy } from '../../utils/form.js';
-import { getBaseStyles } from '../../utils/styles.js';
+import { host } from '../../utils/component.js';
+import { baseStyles } from '../../utils/styles.js';
 
 type BqSliderProps = {
   value: number;
@@ -43,8 +44,8 @@ const definition: ComponentDefinition<BqSliderProps> = {
     disabled: { type: Boolean, default: false },
     'show-value': { type: Boolean, default: false },
   },
-  styles: `
-    ${getBaseStyles()}
+  styles: css`
+    ${baseStyles}
     *, *::before, *::after { box-sizing: border-box; }
     :host { display: block; }
     .wrapper { display: flex; flex-direction: column; gap: 0.375rem; font-family: var(--bq-font-family-sans); }
@@ -59,7 +60,7 @@ const definition: ComponentDefinition<BqSliderProps> = {
     input[type="range"]:focus-visible { outline: 2px solid transparent; box-shadow: var(--bq-focus-ring); }
   `,
   connected() {
-    const self = this;
+    const self = host(this);
 
     // Form proxy for native <form> participation
     const name = self.getAttribute('name') ?? '';

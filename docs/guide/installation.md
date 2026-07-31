@@ -29,11 +29,11 @@ bun add @bquery/ui
 ::: code-group
 
 ```html [UMD]
-<script src="https://cdn.jsdelivr.net/npm/@bquery/ui@1.10.0/dist/index.umd.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@bquery/ui@1.15.0/dist/index.umd.js"></script>
 ```
 
 ```html [IIFE]
-<script src="https://cdn.jsdelivr.net/npm/@bquery/ui@1.10.0/dist/index.iife.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@bquery/ui@1.15.0/dist/index.iife.js"></script>
 ```
 
 :::

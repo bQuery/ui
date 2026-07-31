@@ -9,10 +9,10 @@
  * @fires bq-toggle - { open: boolean }
  */
 import type { ComponentDefinition } from '@bquery/bquery/component';
-import { bool, component, html } from '@bquery/bquery/component';
+import { bool, component, css, html } from '@bquery/bquery/component';
 import { escapeHtml } from '@bquery/bquery/security';
 import { getAnimationTimeoutMs, uniqueId } from '../../utils/dom.js';
-import { getBaseStyles } from '../../utils/styles.js';
+import { baseStyles } from '../../utils/styles.js';
 
 type BqAccordionProps = {
   label: string;
@@ -34,8 +34,8 @@ const definition: ComponentDefinition<BqAccordionProps, BqAccordionState> = {
   state: {
     uid: '',
   },
-  styles: `
-    ${getBaseStyles()}
+  styles: css`
+    ${baseStyles}
     *, *::before, *::after { box-sizing: border-box; }
     :host { display: block; }
     :host([variant="bordered"]) .accordion { border: 1.5px solid var(--bq-border-base,#e2e8f0); border-radius: var(--bq-radius-lg); }

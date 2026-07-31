@@ -7,10 +7,11 @@
  * @slot - Alert body content
  * @fires bq-close
  */
-import { component, html } from '@bquery/bquery/component';
+import { component, css, html } from '@bquery/bquery/component';
 import type { ComponentDefinition } from '@bquery/bquery/component';
 import { escapeHtml } from '@bquery/bquery/security';
-import { getBaseStyles } from '../../utils/styles.js';
+import { host } from '../../utils/component.js';
+import { baseStyles } from '../../utils/styles.js';
 import { t } from '../../i18n/index.js';
 
 type BqAlertProps = { variant: string; title: string; dismissible: boolean };
@@ -21,8 +22,8 @@ const definition: ComponentDefinition<BqAlertProps> = {
     title:      { type: String, default: '' },
     dismissible:{ type: Boolean, default: false },
   },
-  styles: `
-    ${getBaseStyles()}
+  styles: css`
+    ${baseStyles}
     *, *::before, *::after { box-sizing: border-box; }
     :host { display: block; }
     :host([hidden]) { display: none; }
@@ -44,7 +45,7 @@ const definition: ComponentDefinition<BqAlertProps> = {
     .close:focus-visible { outline: 2px solid transparent; box-shadow: var(--bq-focus-ring); }
   `,
   connected() {
-    const self = this;
+    const self = host(this);
     const handler = (e: Event) => {
       if ((e.target as Element).closest('.close')) {
         self.setAttribute('hidden', '');

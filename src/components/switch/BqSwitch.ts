@@ -9,10 +9,11 @@
  * @fires bq-change - { value: string, checked: boolean }
  */
 import type { ComponentDefinition } from '@bquery/bquery/component';
-import { bool, component, html } from '@bquery/bquery/component';
+import { bool, component, css, html } from '@bquery/bquery/component';
 import { escapeHtml } from '@bquery/bquery/security';
 import { createFormProxy, type FormProxy } from '../../utils/form.js';
-import { getBaseStyles } from '../../utils/styles.js';
+import { host } from '../../utils/component.js';
+import { baseStyles } from '../../utils/styles.js';
 
 type BqSwitchProps = {
   label: string;
@@ -30,8 +31,8 @@ const definition: ComponentDefinition<BqSwitchProps> = {
     disabled: { type: Boolean, default: false },
     size: { type: String, default: 'md' },
   },
-  styles: `
-    ${getBaseStyles()}
+  styles: css`
+    ${baseStyles}
     *, *::before, *::after { box-sizing: border-box; }
     :host { display: inline-flex; }
     .control { display: inline-flex; align-items: center; gap: 0.625rem; cursor: pointer; font-family: var(--bq-font-family-sans); }
@@ -65,7 +66,7 @@ const definition: ComponentDefinition<BqSwitchProps> = {
     }
   `,
   connected() {
-    const self = this;
+    const self = host(this);
 
     // Form proxy for native <form> participation
     const name = self.getAttribute('name') ?? '';

@@ -13,10 +13,11 @@
  * @fires bq-sort - { key: string, dir: string }
  */
 import type { ComponentDefinition } from '@bquery/bquery/component';
-import { component, html } from '@bquery/bquery/component';
+import { component, css, html } from '@bquery/bquery/component';
 import { escapeHtml } from '@bquery/bquery/security';
 import { t } from '../../i18n/index.js';
-import { getBaseStyles } from '../../utils/styles.js';
+import { host } from '../../utils/component.js';
+import { baseStyles } from '../../utils/styles.js';
 
 type ColDef = { key: string; label: string; sortable?: boolean };
 type BqTableProps = {
@@ -43,8 +44,8 @@ const definition: ComponentDefinition<BqTableProps> = {
     hover: { type: Boolean, default: false },
     loading: { type: Boolean, default: false },
   },
-  styles: `
-    ${getBaseStyles()}
+  styles: css`
+    ${baseStyles}
     *, *::before, *::after { box-sizing: border-box; }
     :host { display: block; overflow-x: auto; }
     table { width: 100%; border-collapse: collapse; font-family: var(--bq-font-family-sans); font-size: var(--bq-font-size-sm,0.875rem); }
@@ -64,7 +65,7 @@ const definition: ComponentDefinition<BqTableProps> = {
     .loading-overlay { text-align: center; padding: 2rem; color: var(--bq-text-muted,#475569); }
   `,
   connected() {
-    const self = this;
+    const self = host(this);
     const sortHandler = (th: HTMLElement) => {
       const key = th.getAttribute('data-sort-key') ?? '';
       const curDir = self.getAttribute('sort-dir') ?? 'asc';

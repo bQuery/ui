@@ -9,9 +9,9 @@
  * @slot footer  - Card footer
  */
 import type { ComponentDefinition } from '@bquery/bquery/component';
-import { component, html } from '@bquery/bquery/component';
+import { component, css, html } from '@bquery/bquery/component';
 import { escapeHtml } from '@bquery/bquery/security';
-import { getBaseStyles } from '../../utils/styles.js';
+import { baseStyles } from '../../utils/styles.js';
 
 type BqCardProps = { title: string; elevated: boolean; padding: string };
 
@@ -21,8 +21,8 @@ const definition: ComponentDefinition<BqCardProps> = {
     elevated: { type: Boolean, default: true },
     padding: { type: String, default: 'md' },
   },
-  styles: `
-    ${getBaseStyles()}
+  styles: css`
+    ${baseStyles}
     *, *::before, *::after { box-sizing: border-box; }
     :host { display: block; }
     .card {

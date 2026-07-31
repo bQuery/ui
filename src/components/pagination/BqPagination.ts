@@ -9,9 +9,10 @@
  * @fires bq-page-change - { page: number }
  */
 import type { ComponentDefinition } from '@bquery/bquery/component';
-import { bool, component, html } from '@bquery/bquery/component';
+import { bool, component, css, html } from '@bquery/bquery/component';
 import { t } from '../../i18n/index.js';
-import { getBaseStyles } from '../../utils/styles.js';
+import { host } from '../../utils/component.js';
+import { baseStyles } from '../../utils/styles.js';
 
 type BqPaginationProps = {
   page: number;
@@ -50,8 +51,8 @@ const definition: ComponentDefinition<BqPaginationProps> = {
     'show-first-last': { type: Boolean, default: false },
     disabled: { type: Boolean, default: false },
   },
-  styles: `
-    ${getBaseStyles()}
+  styles: css`
+    ${baseStyles}
     *, *::before, *::after { box-sizing: border-box; }
     :host { display: block; }
     .pagination { display: flex; align-items: center; gap: 0.25rem; flex-wrap: wrap; font-family: var(--bq-font-family-sans); }
@@ -76,7 +77,7 @@ const definition: ComponentDefinition<BqPaginationProps> = {
     }
   `,
   connected() {
-    const self = this;
+    const self = host(this);
     const handler = (e: Event) => {
       const btn = (e.target as Element).closest(
         '.page-btn'

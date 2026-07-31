@@ -22,12 +22,12 @@
  * @fires bq-blur
  */
 import type { ComponentDefinition } from '@bquery/bquery/component';
-import { bool, component, html } from '@bquery/bquery/component';
+import { bool, component, css, html } from '@bquery/bquery/component';
 import { escapeHtml } from '@bquery/bquery/security';
 import { t } from '../../i18n/index.js';
 import { uniqueId } from '../../utils/dom.js';
 import { createFormProxy, type FormProxy } from '../../utils/form.js';
-import { getBaseStyles } from '../../utils/styles.js';
+import { baseStyles } from '../../utils/styles.js';
 
 type BqInputProps = {
   label: string;
@@ -70,8 +70,8 @@ const definition: ComponentDefinition<BqInputProps, BqInputState> = {
     uid: '',
     passwordVisible: false,
   },
-  styles: `
-    ${getBaseStyles()}
+  styles: css`
+    ${baseStyles}
     *, *::before, *::after { box-sizing: border-box; }
     :host { display: block; }
     .field { display: flex; flex-direction: column; gap: 0.375rem; }

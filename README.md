@@ -28,14 +28,14 @@ It is designed to give teams the kind of component coverage, polish, accessibili
 
 The current library covers the core component categories developers expect from modern UI libraries:
 
-| Category         | Components                                                     |
-| ---------------- | -------------------------------------------------------------- |
-| **Actions**      | Button, Icon Button                                            |
-| **Forms**        | Input, Textarea, Select, Checkbox, Radio, Switch, Slider, Chip |
-| **Navigation**   | Tabs, Accordion, Breadcrumbs, Pagination                       |
-| **Data Display** | Card, Badge, Avatar, Table, Divider, Empty State, Stat Card    |
-| **Feedback**     | Alert, Progress, Spinner, Skeleton, Tooltip, Toast             |
-| **Overlays**     | Dialog, Drawer, Dropdown Menu                                  |
+| Category         | Components                                                                                                            |
+| ---------------- | --------------------------------------------------------------------------------------------------------------------- |
+| **Actions**      | Button, Icon Button, Button Group                                                                                     |
+| **Forms**        | Input, Number Input, Textarea, Select, Segmented Control, Checkbox, Radio, Switch, Slider, Chip, Rating, File Upload   |
+| **Navigation**   | Tabs, Accordion, Breadcrumbs, Pagination, Stepper                                                                     |
+| **Data Display** | Card, Badge, Avatar, Avatar Group, Table, Divider, Empty State, Stat Card, Timeline, Kbd                               |
+| **Feedback**     | Alert, Banner, Progress, Spinner, Skeleton, Tooltip, Toast                                                            |
+| **Overlays**     | Dialog, Drawer, Dropdown Menu, Popover                                                                                |
 
 For the full catalog and feature coverage, see [`docs/components/index.md`](./docs/components/index.md).
 
@@ -69,10 +69,10 @@ import '@bquery/ui';
 
 ```html
 <!-- UMD -->
-<script src="https://cdn.jsdelivr.net/npm/@bquery/ui@1.10.0/dist/index.umd.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@bquery/ui@1.15.0/dist/index.umd.js"></script>
 
 <!-- IIFE -->
-<script src="https://cdn.jsdelivr.net/npm/@bquery/ui@1.10.0/dist/index.iife.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@bquery/ui@1.15.0/dist/index.iife.js"></script>
 ```
 
 The UMD and IIFE bundles register all components on load and expose the library on `window.BQueryUI`.

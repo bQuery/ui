@@ -6,11 +6,11 @@
  * @prop {string} icon        - Icon character/emoji
  * @slot - Additional content (e.g. action button)
  */
-import { component, html } from '@bquery/bquery/component';
+import { component, css, html } from '@bquery/bquery/component';
 import type { ComponentDefinition } from '@bquery/bquery/component';
 import { escapeHtml } from '@bquery/bquery/security';
 import { t } from '../../i18n/index.js';
-import { getBaseStyles } from '../../utils/styles.js';
+import { baseStyles } from '../../utils/styles.js';
 
 type BqEmptyStateProps = { title: string; description: string; icon: string };
 
@@ -20,8 +20,8 @@ const definition: ComponentDefinition<BqEmptyStateProps> = {
     description: { type: String, default: '' },
     icon:        { type: String, default: '' },
   },
-  styles: `
-    ${getBaseStyles()}
+  styles: css`
+    ${baseStyles}
     *, *::before, *::after { box-sizing: border-box; }
     :host { display: block; }
     .empty {

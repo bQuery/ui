@@ -10,17 +10,18 @@
  * @fires bq-close
  */
 import type { ComponentDefinition } from '@bquery/bquery/component';
-import { component, html } from '@bquery/bquery/component';
+import { component, css, html } from '@bquery/bquery/component';
 import { escapeHtml } from '@bquery/bquery/security';
 import { t } from '../../i18n/index.js';
+import { bind, host, release } from '../../utils/component.js';
 import type { OverlayFocusState } from '../../utils/dom.js';
 import {
   cleanupOverlayFocus,
-  getAnimationTimeoutMs,
+  createAnimatedClose,
   uniqueId,
   updateOverlayFocus,
 } from '../../utils/dom.js';
-import { getBaseStyles } from '../../utils/styles.js';
+import { baseStyles } from '../../utils/styles.js';
 
 type BqDialogProps = {
   open: boolean;
@@ -41,8 +42,8 @@ const definition: ComponentDefinition<BqDialogProps, BqDialogState> = {
   state: {
     titleId: '',
   },
-  styles: `
-    ${getBaseStyles()}
+  styles: css`
+    ${baseStyles}
     *, *::before, *::after { box-sizing: border-box; }
     :host { display: block; }
     :host(:not([open])) .overlay { display: none; }
@@ -84,86 +85,32 @@ const definition: ComponentDefinition<BqDialogProps, BqDialogState> = {
     }
   `,
   connected() {
-    type BQEl = HTMLElement & {
-      setState(k: 'titleId', v: string): void;
-      getState<T>(k: string): T;
-    };
-    const self = this as unknown as BQEl;
-    const record = self as unknown as Record<string, unknown>;
+    const self = host<BqDialogState>(this);
+    const scope = bind(self);
     if (!self.getState<string>('titleId'))
       self.setState('titleId', uniqueId('bq-dlg-title'));
-    // Escape key handler
-    const kh = (e: Event) => {
+
+    const close = createAnimatedClose({
+      host: self,
+      scope,
+      panelSelector: '.overlay',
+      fallbackDuration: NORMAL_DURATION,
+    });
+
+    scope.on(document, 'keydown', (e) => {
       if ((e as KeyboardEvent).key === 'Escape' && self.hasAttribute('open'))
         close();
-    };
-    // Click-outside handler
-    const oh = (e: Event) => {
+    });
+    scope.on(self.shadowRoot, 'click', (e) => {
       if ((e.target as Element).classList.contains('overlay')) close();
-    };
-    const close = () => {
-      if (self.hasAttribute('data-closing')) return;
-      const clearCloseTimer = () => {
-        const closeTimer = record['_closeTimer'] as
-          | ReturnType<typeof setTimeout>
-          | undefined;
-        if (closeTimer) {
-          clearTimeout(closeTimer);
-          delete record['_closeTimer'];
-        }
-      };
-      const reducedMotion = self.ownerDocument.defaultView?.matchMedia?.(
-        '(prefers-reduced-motion: reduce)'
-      )?.matches;
-      const finalize = () => {
-        clearCloseTimer();
-        self.removeAttribute('data-closing');
-        self.removeAttribute('open');
-        self.dispatchEvent(
-          new CustomEvent('bq-close', { bubbles: true, composed: true })
-        );
-      };
-      if (reducedMotion) {
-        finalize();
-      } else {
-        self.setAttribute('data-closing', '');
-        const overlay = self.shadowRoot?.querySelector('.overlay');
-        const timeoutMs = overlay
-          ? getAnimationTimeoutMs(overlay, NORMAL_DURATION)
-          : 0;
-        if (timeoutMs <= 0) {
-          finalize();
-        } else {
-          record['_closeTimer'] = setTimeout(finalize, Math.ceil(timeoutMs) + 20);
-        }
-      }
-    };
-    const ch = (e: Event) => {
+    });
+    scope.on(self.shadowRoot, 'click', (e) => {
       if ((e.target as Element).closest('.close-btn')) close();
-    };
-    (self as unknown as Record<string, unknown>)['_kh'] = kh;
-    (self as unknown as Record<string, unknown>)['_oh'] = oh;
-    (self as unknown as Record<string, unknown>)['_ch'] = ch;
-    document.addEventListener('keydown', kh);
-    self.shadowRoot?.addEventListener('click', oh);
-    self.shadowRoot?.addEventListener('click', ch);
+    });
   },
   disconnected() {
-    const s = this as unknown as Record<string, unknown>;
-    cleanupOverlayFocus(s as unknown as OverlayFocusState);
-    const kh = s['_kh'] as EventListener | undefined;
-    if (kh) document.removeEventListener('keydown', kh);
-    const oh = s['_oh'] as EventListener | undefined;
-    if (oh) this.shadowRoot?.removeEventListener('click', oh);
-    const ch = s['_ch'] as EventListener | undefined;
-    if (ch) this.shadowRoot?.removeEventListener('click', ch);
-    const closeTimer = s['_closeTimer'] as ReturnType<typeof setTimeout> | undefined;
-    if (closeTimer) {
-      clearTimeout(closeTimer);
-      delete s['_closeTimer'];
-      this.removeAttribute('data-closing');
-      this.removeAttribute('open');
-    }
+    cleanupOverlayFocus(this as unknown as OverlayFocusState);
+    release(this);
   },
   updated() {
     updateOverlayFocus(this, this as unknown as OverlayFocusState, '.dialog');

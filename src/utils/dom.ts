@@ -1,6 +1,7 @@
 /**
  * DOM utility helpers for @bquery/ui components.
  */
+import type { ComponentScope, Disposer } from './component.js';
 
 /** Dispatch a custom event from a host element with bubbles + composed. */
 export function dispatch<T = unknown>(
@@ -129,6 +130,79 @@ export function getAnimationTimeoutMs(
 
   if (!hasRealAnimationName) return fallbackMs;
   return longest;
+}
+
+/**
+ * Builds the animated-close routine shared by the overlay components
+ * (Dialog, Drawer).
+ *
+ * Closing sets `data-closing` so the exit animation can run, then drops
+ * `open` once the animation reports done. Users who prefer reduced motion skip
+ * straight to the final state. The pending timer is owned by the component
+ * scope, so a disconnect mid-animation cannot strand the overlay in its
+ * half-closed state.
+ */
+export function createAnimatedClose(options: {
+  /** The component host element. */
+  host: HTMLElement;
+  /** Component scope owning the pending close timer. */
+  scope: ComponentScope;
+  /** Selector for the animated element inside the shadow root. */
+  panelSelector: string;
+  /** Duration assumed when the animated element reports none. */
+  fallbackDuration: string;
+  /** Event emitted once the overlay has fully closed. */
+  eventName?: string;
+}): () => void {
+  const {
+    host: el,
+    scope,
+    panelSelector,
+    fallbackDuration,
+    eventName = 'bq-close',
+  } = options;
+
+  let cancelPending: Disposer | null = null;
+
+  scope.add(() => {
+    if (!cancelPending) return;
+    cancelPending = null;
+    el.removeAttribute('data-closing');
+    el.removeAttribute('open');
+  });
+
+  return function close(): void {
+    if (el.hasAttribute('data-closing')) return;
+
+    const finalize = () => {
+      cancelPending?.();
+      cancelPending = null;
+      el.removeAttribute('data-closing');
+      el.removeAttribute('open');
+      el.dispatchEvent(
+        new CustomEvent(eventName, { bubbles: true, composed: true })
+      );
+    };
+
+    const reducedMotion = el.ownerDocument.defaultView?.matchMedia?.(
+      '(prefers-reduced-motion: reduce)'
+    )?.matches;
+    if (reducedMotion) {
+      finalize();
+      return;
+    }
+
+    el.setAttribute('data-closing', '');
+    const panel = el.shadowRoot?.querySelector(panelSelector);
+    const timeoutMs = panel
+      ? getAnimationTimeoutMs(panel, fallbackDuration)
+      : 0;
+    if (timeoutMs <= 0) {
+      finalize();
+    } else {
+      cancelPending = scope.timeout(finalize, Math.ceil(timeoutMs) + 20);
+    }
+  };
 }
 
 /**

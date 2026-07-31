@@ -7,13 +7,22 @@
  * @slot - The trigger element
  */
 import type { ComponentDefinition } from '@bquery/bquery/component';
-import { component, html } from '@bquery/bquery/component';
+import { component, css, html } from '@bquery/bquery/component';
 import { escapeHtml } from '@bquery/bquery/security';
+import type { Disposer } from '../../utils/component.js';
+import { bind, host, release, store } from '../../utils/component.js';
 import { uniqueId } from '../../utils/dom.js';
-import { getBaseStyles } from '../../utils/styles.js';
+import { baseStyles } from '../../utils/styles.js';
 
 type BqTooltipProps = { content: string; placement: string; delay: number };
 type BqTooltipState = { visible: boolean; uid: string };
+
+/** Per-instance handles shared between `connected()` and `updated()`. */
+const tooltipStore = (owner: object) =>
+  store<{ syncTrigger?: () => void; triggerElements: HTMLElement[] }>(
+    owner,
+    () => ({ triggerElements: [] })
+  );
 
 function addDescribedBy(element: HTMLElement, tooltipId: string): void {
   const current = element.getAttribute('aria-describedby');
@@ -42,8 +51,8 @@ const definition: ComponentDefinition<BqTooltipProps, BqTooltipState> = {
     delay: { type: Number, default: 200 },
   },
   state: { visible: false, uid: '' },
-  styles: `
-    ${getBaseStyles()}
+  styles: css`
+    ${baseStyles}
     :host { display: inline-block; position: relative; }
     .tip {
       position: absolute; z-index: var(--bq-z-tooltip,700);
@@ -63,30 +72,22 @@ const definition: ComponentDefinition<BqTooltipProps, BqTooltipState> = {
     }
   `,
   connected() {
-    type BQEl = HTMLElement & {
-      setState(k: 'visible' | 'uid', v: unknown): void;
-      getState<T>(k: string): T;
-    };
-    const self = this as unknown as BQEl;
-    const internalState = self as unknown as Record<string, unknown>;
+    const self = host<BqTooltipState>(this);
+    const scope = bind(self);
+    const local = tooltipStore(self);
     if (!self.getState<string>('uid')) {
       self.setState('uid', uniqueId('bq-tooltip'));
     }
+    let cancelShow: Disposer | null = null;
     const clearShowTimer = () => {
-      const timer = internalState['_showTimer'] as
-        | ReturnType<typeof setTimeout>
-        | null
-        | undefined;
-      if (timer) {
-        clearTimeout(timer);
-      }
-      internalState['_showTimer'] = null;
+      cancelShow?.();
+      cancelShow = null;
     };
     const show = () => {
       clearShowTimer();
       const d = parseInt(self.getAttribute('delay') ?? '200', 10);
-      internalState['_showTimer'] = setTimeout(() => {
-        internalState['_showTimer'] = null;
+      cancelShow = scope.timeout(() => {
+        cancelShow = null;
         self.setState('visible', true);
       }, d);
     };
@@ -98,17 +99,16 @@ const definition: ComponentDefinition<BqTooltipProps, BqTooltipState> = {
       if ((e as KeyboardEvent).key === 'Escape') hide();
     };
     const syncTrigger = () => {
-      const state = self as unknown as Record<string, unknown>;
       const tooltipId = self.getState<string>('uid');
-      const previous =
-        (state['_triggerElements'] as HTMLElement[] | undefined) ?? [];
-      previous.forEach((element) => removeDescribedBy(element, tooltipId));
+      local.triggerElements.forEach((element) =>
+        removeDescribedBy(element, tooltipId)
+      );
 
       const slot = self.shadowRoot?.querySelector(
         'slot'
       ) as HTMLSlotElement | null;
       if (!slot) {
-        state['_triggerElements'] = [];
+        local.triggerElements = [];
         return;
       }
 
@@ -122,58 +122,42 @@ const definition: ComponentDefinition<BqTooltipProps, BqTooltipState> = {
       if (content) {
         next.forEach((element) => addDescribedBy(element, tooltipId));
       }
-      state['_triggerElements'] = next;
+      local.triggerElements = next;
     };
-    internalState['_show'] = show;
-    internalState['_hide'] = hide;
-    internalState['_kh'] = kh;
-    internalState['_syncTrigger'] = syncTrigger;
-    internalState['_clearShowTimer'] = clearShowTimer;
-    self.addEventListener('mouseenter', show);
-    self.addEventListener('mouseleave', hide);
-    self.addEventListener('focusin', show);
-    self.addEventListener('focusout', hide);
-    document.addEventListener('keydown', kh);
+    // `updated()` re-syncs the trigger wiring after every render.
+    local.syncTrigger = syncTrigger;
+
+    // The tooltip writes aria-describedby onto slotted light-DOM elements that
+    // outlive it, so those references must be withdrawn on teardown.
+    scope.add(() => {
+      const tooltipId = self.getState<string>('uid') ?? self.id;
+      local.triggerElements.forEach((element) =>
+        removeDescribedBy(element, tooltipId)
+      );
+      local.triggerElements = [];
+    });
+
+    scope.on(self, 'mouseenter', show);
+    scope.on(self, 'mouseleave', hide);
+    scope.on(self, 'focusin', show);
+    scope.on(self, 'focusout', hide);
+    scope.on(document, 'keydown', kh);
+
     queueMicrotask(() => {
       if (!self.isConnected) return;
       const slot = self.shadowRoot?.querySelector(
         'slot'
       ) as HTMLSlotElement | null;
       if (!slot) return;
-      slot.addEventListener('slotchange', syncTrigger);
-      internalState['_slot'] = slot;
+      scope.on(slot, 'slotchange', syncTrigger);
       syncTrigger();
     });
   },
   disconnected() {
-    const self = this as unknown as Record<string, unknown>;
-    const show = self['_show'] as EventListener;
-    const hide = self['_hide'] as EventListener;
-    const kh = self['_kh'] as EventListener;
-    const slot = self['_slot'] as HTMLSlotElement | undefined;
-    const syncTrigger = self['_syncTrigger'] as EventListener | undefined;
-    const clearShowTimer = self['_clearShowTimer'] as (() => void) | undefined;
-    const triggerElements =
-      (self['_triggerElements'] as HTMLElement[] | undefined) ?? [];
-    const tooltipId =
-      (this as unknown as { getState?<T>(key: string): T }).getState?.<string>(
-        'uid'
-      ) ?? this.id;
-    clearShowTimer?.();
-    this.removeEventListener('mouseenter', show);
-    this.removeEventListener('mouseleave', hide);
-    this.removeEventListener('focusin', show);
-    this.removeEventListener('focusout', hide);
-    document.removeEventListener('keydown', kh);
-    if (slot && syncTrigger)
-      slot.removeEventListener('slotchange', syncTrigger);
-    triggerElements.forEach((element) => removeDescribedBy(element, tooltipId));
+    release(this);
   },
   updated() {
-    const syncTrigger = (this as unknown as Record<string, unknown>)[
-      '_syncTrigger'
-    ] as (() => void) | undefined;
-    syncTrigger?.();
+    tooltipStore(this).syncTrigger?.();
   },
   render({ props, state }) {
     const visible = Boolean(state['visible']);

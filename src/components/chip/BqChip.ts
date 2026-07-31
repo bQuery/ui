@@ -11,10 +11,11 @@
  * @fires bq-click
  */
 import type { ComponentDefinition } from '@bquery/bquery/component';
-import { component, html } from '@bquery/bquery/component';
+import { component, css, html } from '@bquery/bquery/component';
 import { escapeHtml } from '@bquery/bquery/security';
 import { t } from '../../i18n/index.js';
-import { getBaseStyles } from '../../utils/styles.js';
+import { host } from '../../utils/component.js';
+import { baseStyles } from '../../utils/styles.js';
 
 type BqChipProps = {
   variant: string;
@@ -32,8 +33,8 @@ const definition: ComponentDefinition<BqChipProps> = {
     selected: { type: Boolean, default: false },
     disabled: { type: Boolean, default: false },
   },
-  styles: `
-    ${getBaseStyles()}
+  styles: css`
+    ${baseStyles}
     *, *::before, *::after { box-sizing: border-box; }
     :host { display: inline-flex; }
     .chip {
@@ -66,7 +67,7 @@ const definition: ComponentDefinition<BqChipProps> = {
     }
   `,
   connected() {
-    const self = this;
+    const self = host(this);
     const handler = (e: Event) => {
       if (self.hasAttribute('disabled')) return;
       const target = e.target as Element;

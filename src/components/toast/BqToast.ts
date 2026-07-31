@@ -8,10 +8,11 @@
  * @fires bq-close
  */
 import type { ComponentDefinition } from '@bquery/bquery/component';
-import { component, html } from '@bquery/bquery/component';
+import { component, css, html } from '@bquery/bquery/component';
 import { escapeHtml } from '@bquery/bquery/security';
 import { t } from '../../i18n/index.js';
-import { getBaseStyles } from '../../utils/styles.js';
+import { host } from '../../utils/component.js';
+import { baseStyles } from '../../utils/styles.js';
 
 type BqToastProps = {
   variant: string;
@@ -27,8 +28,8 @@ const definition: ComponentDefinition<BqToastProps> = {
     duration: { type: Number, default: 4000 },
     dismissible: { type: Boolean, default: true },
   },
-  styles: `
-    ${getBaseStyles()}
+  styles: css`
+    ${baseStyles}
     *, *::before, *::after { box-sizing: border-box; }
     :host { display: block; }
     .toast {
@@ -53,7 +54,7 @@ const definition: ComponentDefinition<BqToastProps> = {
     }
   `,
   connected() {
-    const self = this;
+    const self = host(this);
     const close = () => {
       self.dispatchEvent(
         new CustomEvent('bq-close', { bubbles: true, composed: true })

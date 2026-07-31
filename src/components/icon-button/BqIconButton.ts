@@ -11,12 +11,12 @@
  * @slot - Icon content
  * @fires bq-click
  */
-import { bool, component, html } from '@bquery/bquery/component';
+import { bool, component, css, html } from '@bquery/bquery/component';
 import type { ComponentDefinition } from '@bquery/bquery/component';
 import { escapeHtml } from '@bquery/bquery/security';
 import { t } from '../../i18n/index.js';
 import { uniqueId } from '../../utils/dom.js';
-import { getBaseStyles } from '../../utils/styles.js';
+import { baseStyles } from '../../utils/styles.js';
 
 type BqIconButtonProps = {
   variant: string; size: string; disabled: boolean; loading: boolean;
@@ -37,8 +37,8 @@ const definition: ComponentDefinition<BqIconButtonProps, BqIconButtonState> = {
   state: {
     statusId: '',
   },
-  styles: `
-    ${getBaseStyles()}
+  styles: css`
+    ${baseStyles}
     *, *::before, *::after { box-sizing: border-box; }
     :host { display: inline-block; }
     .btn {

@@ -22,6 +22,16 @@ import { registerAll } from './register.js';
 import { __bqComponentEntry as accordionComponentEntry } from './components/accordion/index.js';
 import { __bqComponentEntry as alertComponentEntry } from './components/alert/index.js';
 import { __bqComponentEntry as avatarComponentEntry } from './components/avatar/index.js';
+import { __bqComponentEntry as avatarGroupComponentEntry } from './components/avatar-group/index.js';
+import { __bqComponentEntry as bannerComponentEntry } from './components/banner/index.js';
+import { __bqComponentEntry as buttonGroupComponentEntry } from './components/button-group/index.js';
+import { __bqComponentEntry as fileUploadComponentEntry } from './components/file-upload/index.js';
+import { __bqComponentEntry as kbdComponentEntry } from './components/kbd/index.js';
+import { __bqComponentEntry as numberInputComponentEntry } from './components/number-input/index.js';
+import { __bqComponentEntry as popoverComponentEntry } from './components/popover/index.js';
+import { __bqComponentEntry as ratingComponentEntry } from './components/rating/index.js';
+import { __bqComponentEntry as stepperComponentEntry } from './components/stepper/index.js';
+import { __bqComponentEntry as timelineComponentEntry } from './components/timeline/index.js';
 import { __bqComponentEntry as badgeComponentEntry } from './components/badge/index.js';
 import { __bqComponentEntry as breadcrumbsComponentEntry } from './components/breadcrumbs/index.js';
 import { __bqComponentEntry as buttonComponentEntry } from './components/button/index.js';
@@ -61,6 +71,16 @@ Object.defineProperty(registerAll, COMPONENT_ENTRY_MAP_KEY, {
     'accordion': accordionComponentEntry,
     'alert': alertComponentEntry,
     'avatar': avatarComponentEntry,
+    'avatar-group': avatarGroupComponentEntry,
+    'banner': bannerComponentEntry,
+    'button-group': buttonGroupComponentEntry,
+    'file-upload': fileUploadComponentEntry,
+    'kbd': kbdComponentEntry,
+    'number-input': numberInputComponentEntry,
+    'popover': popoverComponentEntry,
+    'rating': ratingComponentEntry,
+    'stepper': stepperComponentEntry,
+    'timeline': timelineComponentEntry,
     'badge': badgeComponentEntry,
     'breadcrumbs': breadcrumbsComponentEntry,
     'button': buttonComponentEntry,

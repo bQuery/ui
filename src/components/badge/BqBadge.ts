@@ -6,10 +6,10 @@
  * @prop {boolean} pill    - fully-rounded
  * @slot - Badge content
  */
-import { component, html } from '@bquery/bquery/component';
+import { component, css, html } from '@bquery/bquery/component';
 import type { ComponentDefinition } from '@bquery/bquery/component';
 import { escapeHtml } from '@bquery/bquery/security';
-import { getBaseStyles } from '../../utils/styles.js';
+import { baseStyles } from '../../utils/styles.js';
 
 type BqBadgeProps = { variant: string; size: string; pill: boolean };
 
@@ -19,8 +19,8 @@ const definition: ComponentDefinition<BqBadgeProps> = {
     size:    { type: String, default: 'md' },
     pill:    { type: Boolean, default: false },
   },
-  styles: `
-    ${getBaseStyles()}
+  styles: css`
+    ${baseStyles}
     :host { display: inline-flex; }
     .badge {
       display: inline-flex; align-items: center; gap: 0.25rem;

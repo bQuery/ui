@@ -11,10 +11,11 @@
  * @fires bq-change - { value: string, checked: boolean }
  */
 import type { ComponentDefinition } from '@bquery/bquery/component';
-import { bool, component, html } from '@bquery/bquery/component';
+import { bool, component, css, html } from '@bquery/bquery/component';
 import { escapeHtml } from '@bquery/bquery/security';
 import { createFormProxy, type FormProxy } from '../../utils/form.js';
-import { getBaseStyles } from '../../utils/styles.js';
+import { host } from '../../utils/component.js';
+import { baseStyles } from '../../utils/styles.js';
 
 type BqRadioProps = {
   label: string;
@@ -36,8 +37,8 @@ const definition: ComponentDefinition<BqRadioProps> = {
     required: { type: Boolean, default: false },
     hint: { type: String, default: '' },
   },
-  styles: `
-    ${getBaseStyles()}
+  styles: css`
+    ${baseStyles}
     *, *::before, *::after { box-sizing: border-box; }
     :host { display: block; }
     .wrapper { display: flex; flex-direction: column; gap: 0.25rem; }
@@ -55,7 +56,7 @@ const definition: ComponentDefinition<BqRadioProps> = {
     .hint { font-size: var(--bq-font-size-sm,0.875rem); color: var(--bq-text-muted,#475569); font-family: var(--bq-font-family-sans); padding-inline-start: 1.75rem; }
   `,
   connected() {
-    const self = this;
+    const self = host(this);
 
     // Form proxy for native <form> participation
     const name = self.getAttribute('name') ?? '';

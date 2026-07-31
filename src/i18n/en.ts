@@ -95,6 +95,44 @@ export const en = {
   segmentedControl: {
     defaultLabel: 'Options',
   },
+  popover: {
+    close: 'Close popover',
+  },
+  banner: {
+    dismiss: 'Dismiss announcement',
+  },
+  avatarGroup: {
+    overflow: '{count} more',
+    label: 'Group of people',
+  },
+  buttonGroup: {
+    defaultLabel: 'Button group',
+  },
+  stepper: {
+    nav: 'Progress',
+    stepOf: 'Step {current} of {total}',
+    completed: 'Completed',
+    current: 'Current step',
+    upcoming: 'Upcoming step',
+  },
+  timeline: {
+    nav: 'Timeline',
+  },
+  rating: {
+    label: 'Rating',
+    valueText: '{value} of {max} stars',
+    clear: 'Clear rating',
+  },
+  numberInput: {
+    increment: 'Increase value',
+    decrement: 'Decrease value',
+  },
+  fileUpload: {
+    hint: 'Drag files here or browse',
+    browse: 'Browse files',
+    remove: 'Remove file',
+    selected: '{count} selected',
+  },
 } as const;
 
 export type EnLocale = typeof en;

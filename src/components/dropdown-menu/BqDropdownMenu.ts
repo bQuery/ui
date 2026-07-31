@@ -12,10 +12,12 @@
  * @fires bq-select - { value: string } — emitted when a menu item is activated
  */
 import type { ComponentDefinition } from '@bquery/bquery/component';
-import { component, html } from '@bquery/bquery/component';
+import { component, css, html } from '@bquery/bquery/component';
 import { escapeHtml } from '@bquery/bquery/security';
+import type { Disposer } from '../../utils/component.js';
+import { bind, host, release, store } from '../../utils/component.js';
 import { getAnimationTimeoutMs, uniqueId } from '../../utils/dom.js';
-import { getBaseStyles } from '../../utils/styles.js';
+import { baseStyles } from '../../utils/styles.js';
 
 type BqDropdownMenuProps = {
   label: string;
@@ -25,6 +27,10 @@ type BqDropdownMenuProps = {
 };
 type BqDropdownMenuState = { uid: string };
 const FAST_DURATION = '150ms';
+
+/** Per-instance handles that `updated()` needs after `connected()` set them up. */
+const menuStore = (owner: object) =>
+  store<{ syncOutsideListener?: () => void }>(owner, () => ({}));
 
 const definition: ComponentDefinition<
   BqDropdownMenuProps,
@@ -39,8 +45,8 @@ const definition: ComponentDefinition<
   state: {
     uid: '',
   },
-  styles: `
-    ${getBaseStyles()}
+  styles: css`
+    ${baseStyles}
     *, *::before, *::after { box-sizing: border-box; }
     :host { display: inline-block; position: relative; }
     .trigger-wrap { display: inline-flex; }
@@ -85,13 +91,11 @@ const definition: ComponentDefinition<
     }
   `,
   connected() {
-    type BQEl = HTMLElement & {
-      setState(k: 'uid', v: string): void;
-      getState<T>(k: string): T;
-    };
-    const self = this as unknown as BQEl;
-    const record = self as unknown as Record<string, unknown>;
+    const self = host<BqDropdownMenuState>(this);
+    const scope = bind(self);
     if (!self.getState<string>('uid')) self.setState('uid', uniqueId('bq-dm'));
+
+    let cancelClose: Disposer | null = null;
 
     const getTrigger = (): HTMLElement | null =>
       self.querySelector('[slot="trigger"]') as HTMLElement | null;
@@ -174,20 +178,12 @@ const definition: ComponentDefinition<
       if (!self.hasAttribute('open') || self.hasAttribute('data-closing'))
         return;
       clearTypeaheadBuffer();
-      const clearCloseTimer = () => {
-        const closeTimer = record['_closeTimer'] as
-          | ReturnType<typeof setTimeout>
-          | undefined;
-        if (closeTimer) {
-          clearTimeout(closeTimer);
-          delete record['_closeTimer'];
-        }
-      };
       const reducedMotion = self.ownerDocument.defaultView?.matchMedia?.(
         '(prefers-reduced-motion: reduce)'
       )?.matches;
       const finalize = () => {
-        clearCloseTimer();
+        cancelClose?.();
+        cancelClose = null;
         self.removeAttribute('data-closing');
         self.removeAttribute('open');
         syncTriggerA11y();
@@ -205,10 +201,7 @@ const definition: ComponentDefinition<
         if (timeoutMs <= 0) {
           finalize();
         } else {
-          record['_closeTimer'] = setTimeout(
-            finalize,
-            Math.ceil(timeoutMs) + 20
-          );
+          cancelClose = scope.timeout(finalize, Math.ceil(timeoutMs) + 20);
         }
       }
     };
@@ -218,15 +211,14 @@ const definition: ComponentDefinition<
     };
 
     let typeaheadBuffer = '';
-    let typeaheadTimeout = 0;
+    let cancelTypeahead: Disposer | null = null;
 
     const clearTypeaheadBuffer = () => {
       typeaheadBuffer = '';
-      if (typeaheadTimeout) {
-        clearTimeout(typeaheadTimeout);
-        typeaheadTimeout = 0;
-      }
+      cancelTypeahead?.();
+      cancelTypeahead = null;
     };
+    scope.add(clearTypeaheadBuffer);
 
     const focusTypeaheadMatch = (search: string, currentIndex: number) => {
       const items = getMenuItems();
@@ -380,10 +372,10 @@ const definition: ComponentDefinition<
           if (ke.isComposing || ke.keyCode === 229) break;
           if (ke.key.length === 1 && !ke.altKey && !ke.ctrlKey && !ke.metaKey) {
             typeaheadBuffer = `${typeaheadBuffer}${ke.key.toLowerCase()}`;
-            if (typeaheadTimeout) clearTimeout(typeaheadTimeout);
-            typeaheadTimeout = window.setTimeout(() => {
+            cancelTypeahead?.();
+            cancelTypeahead = scope.timeout(() => {
               typeaheadBuffer = '';
-              typeaheadTimeout = 0;
+              cancelTypeahead = null;
             }, 500);
             focusTypeaheadMatch(typeaheadBuffer, currentIndex);
           }
@@ -396,19 +388,16 @@ const definition: ComponentDefinition<
       if (!self.hasAttribute('open')) return;
       if (!self.contains(e.target as Node)) close({ restoreFocus: true });
     };
-    let outsideListening = false;
+    // The document listener only exists while the menu is open, but the scope
+    // owns its removal so a disconnect while open cannot strand it.
+    let stopListeningOutside: Disposer | null = null;
     const syncOutsideListener = () => {
       if (self.hasAttribute('open')) {
-        if (!outsideListening) {
-          document.addEventListener('click', outsideHandler);
-          outsideListening = true;
-        }
+        stopListeningOutside ??= scope.on(document, 'click', outsideHandler);
         return;
       }
-      if (outsideListening) {
-        document.removeEventListener('click', outsideHandler);
-        outsideListening = false;
-      }
+      stopListeningOutside?.();
+      stopListeningOutside = null;
     };
 
     const slotChangeHandler = () => {
@@ -416,74 +405,42 @@ const definition: ComponentDefinition<
       syncMenuItemRoles();
     };
 
-    const s = self as unknown as Record<string, unknown>;
-    s['_triggerHandler'] = triggerHandler;
-    s['_menuClickHandler'] = menuClickHandler;
-    s['_keyHandler'] = keyHandler;
-    s['_outsideHandler'] = outsideHandler;
-    s['_syncOutsideListener'] = syncOutsideListener;
-    s['_slotChangeHandler'] = slotChangeHandler;
-    s['_clearTypeaheadBuffer'] = clearTypeaheadBuffer;
+    // `updated()` has to re-evaluate the outside listener after every render.
+    menuStore(self).syncOutsideListener = syncOutsideListener;
 
-    self.addEventListener('click', triggerHandler);
-    self.addEventListener('click', menuClickHandler);
-    self.addEventListener('keydown', keyHandler);
-    self.shadowRoot
-      ?.querySelector('slot[name="trigger"]')
-      ?.addEventListener('slotchange', slotChangeHandler);
-    self.shadowRoot
-      ?.querySelector('slot:not([name])')
-      ?.addEventListener('slotchange', slotChangeHandler);
+    // An interrupted close animation must not strand the menu half-closed.
+    scope.add(() => {
+      if (!cancelClose) return;
+      cancelClose = null;
+      self.removeAttribute('data-closing');
+      self.removeAttribute('open');
+    });
 
-    requestAnimationFrame(() => {
+    scope.on(self, 'click', triggerHandler);
+    scope.on(self, 'click', menuClickHandler);
+    scope.on(self, 'keydown', keyHandler);
+    scope.on(
+      self.shadowRoot?.querySelector('slot[name="trigger"]'),
+      'slotchange',
+      slotChangeHandler
+    );
+    scope.on(
+      self.shadowRoot?.querySelector('slot:not([name])'),
+      'slotchange',
+      slotChangeHandler
+    );
+
+    scope.frame(() => {
       syncTriggerA11y();
       syncMenuItemRoles();
       syncOutsideListener();
     });
   },
   disconnected() {
-    const s = this as unknown as Record<string, unknown>;
-    const triggerHandler = s['_triggerHandler'] as EventListener | undefined;
-    const menuClickHandler = s['_menuClickHandler'] as
-      | EventListener
-      | undefined;
-    const keyHandler = s['_keyHandler'] as EventListener | undefined;
-    const outsideHandler = s['_outsideHandler'] as EventListener | undefined;
-    const slotChangeHandler = s['_slotChangeHandler'] as
-      | EventListener
-      | undefined;
-    const clearTypeaheadBuffer = s['_clearTypeaheadBuffer'] as
-      | (() => void)
-      | undefined;
-    const closeTimer = s['_closeTimer'] as
-      | ReturnType<typeof setTimeout>
-      | undefined;
-    if (triggerHandler) this.removeEventListener('click', triggerHandler);
-    if (menuClickHandler) this.removeEventListener('click', menuClickHandler);
-    if (keyHandler) this.removeEventListener('keydown', keyHandler);
-    if (outsideHandler) document.removeEventListener('click', outsideHandler);
-    clearTypeaheadBuffer?.();
-    if (closeTimer) {
-      clearTimeout(closeTimer);
-      delete s['_closeTimer'];
-      this.removeAttribute('data-closing');
-      this.removeAttribute('open');
-    }
-    if (slotChangeHandler) {
-      this.shadowRoot
-        ?.querySelector('slot[name="trigger"]')
-        ?.removeEventListener('slotchange', slotChangeHandler);
-      this.shadowRoot
-        ?.querySelector('slot:not([name])')
-        ?.removeEventListener('slotchange', slotChangeHandler);
-    }
+    release(this);
   },
   updated() {
-    const s = this as unknown as Record<string, unknown>;
-    const syncOutsideListener = s['_syncOutsideListener'] as
-      | (() => void)
-      | undefined;
-    syncOutsideListener?.();
+    menuStore(this).syncOutsideListener?.();
     const trigger = this.querySelector(
       '[slot="trigger"]'
     ) as HTMLElement | null;

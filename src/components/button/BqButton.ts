@@ -14,12 +14,13 @@
  * @slot suffix-icon - Icon after content
  * @fires bq-click - { originalEvent: Event }
  */
-import { bool, component, html } from '@bquery/bquery/component';
+import { bool, component, css, html } from '@bquery/bquery/component';
 import type { ComponentDefinition } from '@bquery/bquery/component';
 import { escapeHtml } from '@bquery/bquery/security';
 import { t } from '../../i18n/index.js';
 import { uniqueId } from '../../utils/dom.js';
-import { getBaseStyles } from '../../utils/styles.js';
+import { host } from '../../utils/component.js';
+import { baseStyles } from '../../utils/styles.js';
 
 type BqButtonProps = {
   variant: string;
@@ -47,8 +48,8 @@ const definition: ComponentDefinition<BqButtonProps, BqButtonState> = {
   state: {
     statusId: '',
   },
-  styles: `
-    ${getBaseStyles()}
+  styles: css`
+    ${baseStyles}
     *, *::before, *::after { box-sizing: border-box; }
     :host { display: inline-block; }
     :host([hidden]) { display: none; }
@@ -109,7 +110,7 @@ const definition: ComponentDefinition<BqButtonProps, BqButtonState> = {
     self.shadowRoot?.addEventListener('click', handler);
   },
   disconnected() {
-    const self = this;
+    const self = host(this);
     const handler = (self as unknown as Record<string, unknown>)['_clickHandler'] as EventListener | undefined;
     if (handler) self.shadowRoot?.removeEventListener('click', handler);
   },

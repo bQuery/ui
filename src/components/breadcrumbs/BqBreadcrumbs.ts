@@ -7,9 +7,10 @@
  * @cssprop --bq-breadcrumb-separator - Override the separator string ("/" by default)
  */
 import type { ComponentDefinition } from '@bquery/bquery/component';
-import { component, html } from '@bquery/bquery/component';
+import { component, css, html } from '@bquery/bquery/component';
 import { t } from '../../i18n/index.js';
-import { getBaseStyles } from '../../utils/styles.js';
+import { host } from '../../utils/component.js';
+import { baseStyles } from '../../utils/styles.js';
 
 type BqBreadcrumbsProps = { separator: string };
 
@@ -24,8 +25,8 @@ const definition: ComponentDefinition<BqBreadcrumbsProps> = {
   props: {
     separator: { type: String, default: '/' },
   },
-  styles: `
-    ${getBaseStyles()}
+  styles: css`
+    ${baseStyles}
     *, *::before, *::after { box-sizing: border-box; }
     :host { display: block; }
     .breadcrumbs { display: flex; align-items: center; flex-wrap: wrap; list-style: none; margin: 0; padding: 0; font-family: var(--bq-font-family-sans); font-size: var(--bq-font-size-sm,0.875rem); gap: 0; }
@@ -46,7 +47,7 @@ const definition: ComponentDefinition<BqBreadcrumbsProps> = {
     }
   `,
   connected() {
-    const self = this;
+    const self = host(this);
     const applyAttrs = () => {
       const slot = self.shadowRoot?.querySelector(
         'slot'

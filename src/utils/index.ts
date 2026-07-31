@@ -9,6 +9,8 @@ export {
   unlinkDescribedBy,
 } from './aria.js';
 export { cn } from './cn.js';
+export { bind, host, release, store } from './component.js';
+export type { ComponentScope, Disposer } from './component.js';
 export {
   dispatch,
   getFocusableElements,
@@ -19,4 +21,13 @@ export {
 } from './dom.js';
 export { createFormProxy } from './form.js';
 export type { FormProxy } from './form.js';
-export { focusVisibleStyles, getBaseStyles, srOnlyStyles } from './styles.js';
+export {
+  baseStyles,
+  focusVisible,
+  focusVisibleStyles,
+  getBaseStyles,
+  rawCss,
+  reset,
+  srOnly,
+  srOnlyStyles,
+} from './styles.js';
