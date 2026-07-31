@@ -21,7 +21,8 @@ import {
   uniqueId,
   updateOverlayFocus,
 } from '../../utils/dom.js';
-import { baseStyles } from '../../utils/styles.js';
+import { iconCss } from '../../utils/icons.js';
+import { baseStyles, focusRing, reset } from '../../utils/styles.js';
 
 type BqDialogProps = {
   open: boolean;
@@ -44,19 +45,21 @@ const definition: ComponentDefinition<BqDialogProps, BqDialogState> = {
   },
   styles: css`
     ${baseStyles}
-    *, *::before, *::after { box-sizing: border-box; }
+    ${reset}
+    ${focusRing}
+    ${iconCss('x')}
     :host { display: block; }
     :host(:not([open])) .overlay { display: none; }
     .overlay {
       position: fixed; inset: 0; z-index: var(--bq-z-modal,400);
-      background: rgba(0,0,0,0.5);
+      background: var(--bq-overlay-backdrop,rgba(15,23,42,0.5));
       display: flex; align-items: center; justify-content: center;
       padding: var(--bq-space-4,1rem);
       animation: fadeIn var(--bq-duration-normal,200ms) var(--bq-easing-decelerate);
     }
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     .dialog {
-      background: var(--bq-bg-base,#fff); border-radius: var(--bq-radius-xl,0.75rem);
+      background: var(--bq-surface-overlay,#fff); border-radius: var(--bq-radius-2xl,1rem);
       box-shadow: var(--bq-shadow-xl); width: 100%;
       max-height: calc(100vh - 4rem); display: flex; flex-direction: column;
       animation: scaleIn var(--bq-duration-normal,200ms) var(--bq-easing-spring);
@@ -75,7 +78,8 @@ const definition: ComponentDefinition<BqDialogProps, BqDialogState> = {
     .header { display: flex; align-items: center; justify-content: space-between; padding: var(--bq-space-5,1.25rem) var(--bq-space-6,1.5rem); border-bottom: 1px solid var(--bq-border-base,#e2e8f0); flex-shrink: 0; }
     .header-title { font-size: var(--bq-font-size-lg,1.125rem); font-weight: var(--bq-font-weight-semibold,600); color: var(--bq-text-base,#0f172a); margin: 0; flex: 1; }
     .close-btn { display: inline-flex; align-items: center; justify-content: center; width: 2rem; height: 2rem; background: none; border: none; cursor: pointer; color: var(--bq-text-muted,#475569); border-radius: var(--bq-radius-md,0.375rem); font-size: 1rem; flex-shrink: 0; transition: background var(--bq-duration-fast); }
-    .close-btn:hover { background: var(--bq-bg-muted,#f1f5f9); }
+    .close-btn:hover { background: var(--bq-bg-muted,#f1f5f9); color: var(--bq-text-base,#0f172a); }
+    .close-btn .icon, .close-btn { --bq-icon-size: 1.125rem; }
     .close-btn:focus-visible { outline: 2px solid transparent; box-shadow: var(--bq-focus-ring); }
     .body { padding: var(--bq-space-6,1.5rem); overflow-y: auto; flex: 1; color: var(--bq-text-muted,#475569); font-size: var(--bq-font-size-md,1rem); line-height: var(--bq-line-height-relaxed,1.625); }
     .footer { padding: var(--bq-space-4,1rem) var(--bq-space-6,1.5rem); border-top: 1px solid var(--bq-border-base,#e2e8f0); display: flex; align-items: center; justify-content: flex-end; gap: var(--bq-space-3,0.75rem); flex-shrink: 0; background: var(--bq-bg-subtle,#f8fafc); }
@@ -133,7 +137,7 @@ const definition: ComponentDefinition<BqDialogProps, BqDialogState> = {
               ${escapeHtml(props.title)}
             </h2>
             ${props.dismissible
-              ? `<button class="close-btn" type="button" aria-label="${t('dialog.close')}" part="close">&#10005;</button>`
+              ? `<button class="close-btn" type="button" aria-label="${t('dialog.close')}" part="close"><span class="icon" data-icon="x" aria-hidden="true"></span></button>`
               : ''}
           </div>
           <div class="body" part="body"><slot></slot></div>

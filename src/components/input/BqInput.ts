@@ -27,10 +27,20 @@ import { escapeHtml } from '@bquery/bquery/security';
 import { t } from '../../i18n/index.js';
 import { uniqueId } from '../../utils/dom.js';
 import { bindFormProxy, syncFormProxy } from '../../utils/form.js';
-import { bind, release, store } from '../../utils/component.js';
-import { captureFocus, restoreFocus, type FocusSnapshot } from '../../utils/focus.js';
+import { bind, release } from '../../utils/component.js';
+import {
+  markFocus,
+  restorePreservedFocus,
+  trackFocus,
+} from '../../utils/focus.js';
+import { iconCss } from '../../utils/icons.js';
 import { bindValidation } from '../../utils/validation.js';
-import { baseStyles } from '../../utils/styles.js';
+import {
+  baseStyles,
+  fieldStyles,
+  focusRing,
+  reset,
+} from '../../utils/styles.js';
 
 type BqInputProps = {
   label: string;
@@ -46,20 +56,13 @@ type BqInputProps = {
   hint: string;
   maxlength: string;
   'show-counter': boolean;
+  clearable: boolean;
 };
 type BqInputState = { uid: string; passwordVisible: boolean };
 type BqInputEl = HTMLElement & {
   setState(k: 'uid' | 'passwordVisible', v: string | boolean): void;
   getState<T>(k: string): T;
 };
-
-/**
- * Holds the pre-render focus snapshot. Rendering replaces the whole shadow
- * tree, so without this the field the user is typing in is destroyed on
- * every keystroke that reflects a value to an attribute.
- */
-const inputFocusStore = (owner: object) =>
-  store<{ snapshot?: FocusSnapshot | null }>(owner, () => ({}));
 
 const definition: ComponentDefinition<BqInputProps, BqInputState> = {
   props: {
@@ -76,6 +79,7 @@ const definition: ComponentDefinition<BqInputProps, BqInputState> = {
     hint: { type: String, default: '' },
     maxlength: { type: String, default: '' },
     'show-counter': { type: Boolean, default: false },
+    clearable: { type: Boolean, default: false },
   },
   state: {
     uid: '',
@@ -83,54 +87,70 @@ const definition: ComponentDefinition<BqInputProps, BqInputState> = {
   },
   styles: css`
     ${baseStyles}
-    *, *::before, *::after { box-sizing: border-box; }
+    ${reset}
+    ${fieldStyles}
+    ${focusRing}
+    ${iconCss('eye', 'eye-off', 'x')}
     :host { display: block; }
-    .field { display: flex; flex-direction: column; gap: 0.375rem; }
-    .label { display: flex; align-items: center; gap: 0.25rem; font-size: var(--bq-font-size-sm,0.875rem); font-weight: var(--bq-font-weight-medium,500); color: var(--bq-text-base,#0f172a); font-family: var(--bq-font-family-sans); }
-    .required-mark { color: var(--bq-color-danger-600,#dc2626); }
     .input-wrap {
       display: flex; align-items: center;
-      border: 1.5px solid var(--bq-border-emphasis,#cbd5e1);
+      border: var(--bq-border-width-control,1.5px) solid var(--bq-border-emphasis,#cbd5e1);
       border-radius: var(--bq-radius-lg,0.5rem);
       background: var(--bq-bg-base,#fff);
-      transition: border-color var(--bq-duration-fast) var(--bq-easing-standard), box-shadow var(--bq-duration-fast) var(--bq-easing-standard);
+      transition: border-color var(--bq-duration-fast) var(--bq-easing-standard),
+                  box-shadow var(--bq-duration-fast) var(--bq-easing-standard);
       overflow: hidden;
     }
+    .input-wrap:hover { border-color: var(--bq-border-strong,#94a3b8); }
     .input-wrap:focus-within { border-color: var(--bq-border-focus,#2563eb); box-shadow: var(--bq-focus-ring); }
     :host([error]:not([error=""])) .input-wrap { border-color: var(--bq-color-danger-500,#ef4444); }
     :host([error]:not([error=""])) .input-wrap:focus-within { border-color: var(--bq-color-danger-500,#ef4444); box-shadow: var(--bq-focus-ring-danger); }
-    :host([disabled]) .input-wrap { opacity: 0.5; cursor: not-allowed; background: var(--bq-bg-muted,#f1f5f9); }
-    .slot-wrap { display: flex; align-items: center; padding: 0 0.5rem; color: var(--bq-text-muted,#475569); }
+    :host([disabled]) .input-wrap { opacity: 0.55; cursor: not-allowed; background: var(--bq-bg-muted,#f1f5f9); }
+    :host([disabled]) .input-wrap:hover { border-color: var(--bq-border-emphasis,#cbd5e1); }
+    :host([readonly]) .input-wrap { background: var(--bq-bg-subtle,#f8fafc); }
+
+    /* Spacing lives on the slotted content, not on the wrapper: a wrapper with
+       padding reserves it even when nothing is slotted, which left every field
+       without a prefix looking lopsided next to one that had it. */
+    .slot-wrap { display: flex; align-items: center; color: var(--bq-text-muted,#475569); }
+    .slot-wrap ::slotted(*) { margin-inline: 0.5rem; }
+
     input {
       flex: 1; border: none; outline: none; background: transparent;
-      color: var(--bq-text-base,#0f172a); font-family: var(--bq-font-family-sans); width: 100%;
+      color: var(--bq-text-base,#0f172a);
+      font-family: var(--bq-font-family-sans);
+      inline-size: 100%; min-inline-size: 0;
     }
-    :host([size="sm"]) input { font-size: 0.875rem; padding: 0.375rem 0.75rem; min-height: 2rem; }
-    :host([size="md"]) input, :host(:not([size])) input { font-size: 1rem; padding: 0.5rem 0.875rem; min-height: 2.5rem; }
-    :host([size="lg"]) input { font-size: 1.125rem; padding: 0.625rem 1rem; min-height: 3rem; }
+    :host([size="sm"]) input { font-size: var(--bq-font-size-sm,0.875rem); padding: 0.375rem var(--bq-control-padding-sm,0.75rem); min-block-size: var(--bq-control-height-sm,2rem); }
+    :host([size="md"]) input, :host(:not([size])) input { font-size: var(--bq-font-size-md,1rem); padding: 0.5rem var(--bq-control-padding-md,0.875rem); min-block-size: var(--bq-control-height-md,2.5rem); }
+    :host([size="lg"]) input { font-size: var(--bq-font-size-lg,1.125rem); padding: 0.625rem var(--bq-control-padding-lg,1rem); min-block-size: var(--bq-control-height-lg,3rem); }
     input::placeholder { color: var(--bq-text-subtle,#94a3b8); }
     input:disabled { cursor: not-allowed; }
-    .hint { font-size: var(--bq-font-size-sm,0.875rem); color: var(--bq-text-muted,#475569); font-family: var(--bq-font-family-sans); }
-    .error-msg { font-size: var(--bq-font-size-sm,0.875rem); color: var(--bq-color-danger-600,#dc2626); font-family: var(--bq-font-family-sans); }
+    /* The browser's own search affordance duplicates the clear button. */
+    input[type="search"]::-webkit-search-cancel-button { -webkit-appearance: none; appearance: none; }
+
     .footer { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; }
-    .counter { font-size: var(--bq-font-size-sm,0.875rem); color: var(--bq-text-muted,#475569); font-family: var(--bq-font-family-sans); margin-left: auto; }
+    .counter {
+      font-size: var(--bq-font-size-sm,0.875rem);
+      color: var(--bq-text-muted,#475569);
+      font-family: var(--bq-font-family-sans);
+      margin-inline-start: auto;
+      font-variant-numeric: tabular-nums;
+    }
     .counter[data-over="true"] { color: var(--bq-color-danger-600,#dc2626); }
-    .password-toggle {
+
+    .affix-btn {
       display: inline-flex; align-items: center; justify-content: center;
       background: none; border: none; cursor: pointer;
-      padding: 0 0.5rem; margin-inline-start: 0.25rem;
-      border-inline-start: 1px solid var(--bq-border-base,#e2e8f0);
-      color: var(--bq-text-muted,#475569); font-size: 0.875rem; line-height: 1;
-      align-self: stretch;
-      transition: color var(--bq-duration-fast) var(--bq-easing-standard), background var(--bq-duration-fast) var(--bq-easing-standard);
+      padding-inline: 0.5rem; align-self: stretch;
+      color: var(--bq-text-muted,#475569);
+      --bq-icon-size: 1.125rem;
+      transition: color var(--bq-duration-fast) var(--bq-easing-standard),
+                  background-color var(--bq-duration-fast) var(--bq-easing-standard);
     }
-    .password-toggle:hover { color: var(--bq-text-base,#0f172a); background: var(--bq-bg-subtle,#f8fafc); }
-    .password-toggle:disabled { cursor: not-allowed; opacity: 0.5; }
-    .password-toggle:focus-visible { outline: 2px solid transparent; box-shadow: var(--bq-focus-ring); border-radius: var(--bq-radius-sm,0.25rem); }
-    .pw-icon { font-size: 1.125rem; line-height: 1; }
-    @media (prefers-reduced-motion: reduce) {
-      input, .input-wrap, .password-toggle { transition: none; }
-    }
+    .affix-btn:hover { color: var(--bq-text-base,#0f172a); background: var(--bq-bg-hover,rgba(15,23,42,0.04)); }
+    .affix-btn:disabled { cursor: not-allowed; opacity: 0.5; }
+    .password-toggle { border-inline-start: 1px solid var(--bq-border-base,#e2e8f0); }
   `,
   connected() {
     const self = this as unknown as BqInputEl;
@@ -200,22 +220,52 @@ const definition: ComponentDefinition<BqInputProps, BqInputState> = {
         self.setState('passwordVisible', !current);
       }
     };
+    // Toggling the password eye or clearing the field writes state, which
+    // re-renders and would otherwise drop the caret on the floor.
+    trackFocus(self, scope);
+
+    const clear = (e: Event) => {
+      if (self.hasAttribute('disabled') || self.hasAttribute('readonly')) return;
+      if (!(e.target as Element)?.closest('.clear-btn')) return;
+      self.setAttribute('value', '');
+      proxy.setValue('');
+      const field = self.shadowRoot?.querySelector(
+        'input'
+      ) as HTMLInputElement | null;
+      if (field) field.value = '';
+      field?.focus();
+      self.dispatchEvent(
+        new CustomEvent('bq-input', {
+          detail: { value: '' },
+          bubbles: true,
+          composed: true,
+        })
+      );
+      self.dispatchEvent(
+        new CustomEvent('bq-change', {
+          detail: { value: '' },
+          bubbles: true,
+          composed: true,
+        })
+      );
+    };
+
     const shadow = self.shadowRoot;
     scope.on(shadow, 'input', ih);
     scope.on(shadow, 'change', ch);
     scope.on(shadow, 'focusin', fh);
     scope.on(shadow, 'focusout', bh);
     scope.on(shadow, 'click', pwToggle);
+    scope.on(shadow, 'click', clear);
   },
   disconnected() {
     release(this);
   },
   beforeUpdate() {
-    inputFocusStore(this).snapshot = captureFocus(this.shadowRoot);
+    markFocus(this);
   },
   updated() {
-    restoreFocus(this.shadowRoot, inputFocusStore(this).snapshot);
-    inputFocusStore(this).snapshot = null;
+    restorePreservedFocus(this);
     const self = this as unknown as BqInputEl;
     if (
       this.getAttribute('type') !== 'password' &&
@@ -236,6 +286,11 @@ const definition: ComponentDefinition<BqInputProps, BqInputState> = {
     const charCount = props.value.length;
     const isOver = showCounter && charCount > maxLen;
     const hasFooter = hasError || Boolean(props.hint) || showCounter;
+    const showClear =
+      props.clearable &&
+      props.value.length > 0 &&
+      !props.disabled &&
+      !props.readonly;
     const describedByParts: string[] = [];
     if (hasError) describedByParts.push(`${uid}-err`);
     else if (props.hint) describedByParts.push(`${uid}-hint`);
@@ -268,9 +323,14 @@ const definition: ComponentDefinition<BqInputProps, BqInputState> = {
             ${describedBy ? `aria-describedby="${describedBy}"` : ''}
             ${hasError ? `aria-errormessage="${uid}-err"` : ''}
           />
+          ${
+            showClear
+              ? `<button type="button" class="affix-btn clear-btn" part="clear" aria-label="${escapeHtml(t('input.clearValue'))}" tabindex="-1"><span class="icon" data-icon="x" aria-hidden="true"></span></button>`
+              : ''
+          }
           ${isPassword
-            ? `<button type="button" class="password-toggle" part="password-toggle" aria-label="${escapeHtml(state.passwordVisible ? t('input.hidePassword') : t('input.showPassword'))}" aria-pressed="${state.passwordVisible ? 'true' : 'false'}" ${props.disabled || props.readonly ? 'disabled aria-disabled="true"' : ''}>
-                <span class="pw-icon" aria-hidden="true">${state.passwordVisible ? '&#9673;' : '&#9678;'}</span>
+            ? `<button type="button" class="affix-btn password-toggle" part="password-toggle" aria-label="${escapeHtml(state.passwordVisible ? t('input.hidePassword') : t('input.showPassword'))}" aria-pressed="${state.passwordVisible ? 'true' : 'false'}" ${props.disabled || props.readonly ? 'disabled aria-disabled="true"' : ''}>
+                <span class="icon" data-icon="${state.passwordVisible ? 'eye-off' : 'eye'}" aria-hidden="true"></span>
               </button>`
             : ''}
           <span class="slot-wrap" part="suffix"

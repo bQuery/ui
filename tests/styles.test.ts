@@ -68,7 +68,33 @@ describe('style payloads', () => {
   it('emits the token block and both color schemes exactly once', () => {
     const text = baseStyles.text;
     expect(text).toContain('--bq-color-primary-600');
-    expect(text).toContain('--bq-bg-base: #ffffff');
     expect(text).toContain('[data-theme="dark"]');
+  });
+
+  // A component defines the semantic tokens on its own `:host`, and a value set
+  // on the element always beats one inherited from an ancestor. Routing them
+  // through `--bq-scheme-*` — which is never defined on the host — is what lets
+  // a page re-theme components from the document.
+  it('resolves semantic tokens through the scheme channel', () => {
+    expect(baseStyles.text).toContain(
+      '--bq-bg-base: var(--bq-scheme-bg-base, #ffffff)'
+    );
+    expect(baseStyles.text).toContain(
+      'color-scheme: var(--bq-scheme-color-scheme, light)'
+    );
+  });
+
+  // `:host-context()` only exists in Chromium, and one unknown selector
+  // invalidates the whole list it sits in — pairing the two in `a, b { … }`
+  // dropped the entire dark theme in Firefox and Safari.
+  it('keeps :host-context out of the selector list that carries dark mode', () => {
+    const rules = baseStyles.text
+      .split('}')
+      .map((chunk) => chunk.split('{')[0] ?? '');
+    for (const selector of rules) {
+      if (!selector.includes(':host-context')) continue;
+      expect(selector).not.toContain(',');
+    }
+    expect(baseStyles.text).toContain(':host([data-theme="dark"]) {');
   });
 });

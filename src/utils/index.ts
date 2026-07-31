@@ -9,8 +9,25 @@ export {
   unlinkDescribedBy,
 } from './aria.js';
 export { cn } from './cn.js';
-export { captureFocus, restoreFocus } from './focus.js';
+export {
+  captureFocus,
+  markFocus,
+  restoreFocus,
+  restorePreservedFocus,
+  trackFocus,
+} from './focus.js';
 export type { FocusSnapshot } from './focus.js';
+export {
+  allIconCss,
+  iconBase,
+  iconCss,
+  iconMask,
+  iconMaskText,
+  iconNames,
+  iconUrl,
+  isIconName,
+} from './icons.js';
+export type { IconName } from './icons.js';
 export { bind, host, release, store } from './component.js';
 export type { ComponentScope, Disposer } from './component.js';
 export {
@@ -58,6 +75,10 @@ export type {
 } from './position.js';
 export {
   baseStyles,
+  fieldStyles,
+  fieldStylesText,
+  focusRing,
+  focusRingStyles,
   focusVisible,
   focusVisibleStyles,
   getBaseStyles,

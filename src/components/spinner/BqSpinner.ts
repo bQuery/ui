@@ -9,7 +9,7 @@ import type { ComponentDefinition } from '@bquery/bquery/component';
 import { component, css, html } from '@bquery/bquery/component';
 import { escapeHtml } from '@bquery/bquery/security';
 import { t } from '../../i18n/index.js';
-import { baseStyles } from '../../utils/styles.js';
+import { baseStyles, reset } from '../../utils/styles.js';
 
 type BqSpinnerProps = { size: string; variant: string; label: string };
 
@@ -21,6 +21,7 @@ const definition: ComponentDefinition<BqSpinnerProps> = {
   },
   styles: css`
     ${baseStyles}
+    ${reset}
     :host { display: inline-flex; align-items: center; justify-content: center; }
     .spinner {
       border-radius: 50%; border-style: solid; border-width: 2.5px; border-color: transparent;

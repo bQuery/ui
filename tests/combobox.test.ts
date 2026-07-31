@@ -451,6 +451,44 @@ describe('bq-combobox', () => {
     expect(el.checkValidity()).toBe(true);
   });
 
+  // Focusing the field opens the list, and opening re-renders — so the very
+  // first interaction already destroys the node the user just focused.
+  it('keeps focus in the field when focusing opens the list', async () => {
+    const el = create();
+    await waitForFrame();
+
+    input(el).focus();
+    await waitForFrame();
+
+    expect(el.hasAttribute('data-open')).toBe(true);
+    expect(el.shadowRoot?.activeElement).toBe(input(el));
+  });
+
+  // Typing drives `setState`, which re-renders without running
+  // `beforeUpdate()` — so the focus position is recorded from the event
+  // instead. Without that the user loses the field after one character.
+  it('keeps focus and caret in the field while typing', async () => {
+    const el = create();
+    await waitForFrame();
+
+    input(el).focus();
+    await waitForFrame();
+
+    // Re-query: focusing already replaced the shadow tree.
+    const field = input(el);
+    field.value = 'ap';
+    field.setSelectionRange(2, 2);
+    field.dispatchEvent(
+      new win.Event('input', { bubbles: true, composed: true })
+    );
+    await waitForFrame();
+
+    const next = input(el);
+    expect(next.value).toBe('ap');
+    expect(el.shadowRoot?.activeElement).toBe(next);
+    expect(next.selectionStart).toBe(2);
+  });
+
   it('leaves no document listeners behind after removal', async () => {
     const el = create();
     await waitForFrame();

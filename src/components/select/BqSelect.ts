@@ -24,7 +24,13 @@ import {
 } from '../../utils/form.js';
 import { bind, host, release, store } from '../../utils/component.js';
 import { bindValidation } from '../../utils/validation.js';
-import { baseStyles } from '../../utils/styles.js';
+import { iconCss } from '../../utils/icons.js';
+import {
+  baseStyles,
+  fieldStyles,
+  focusRing,
+  reset,
+} from '../../utils/styles.js';
 
 type BqSelectProps = {
   label: string;
@@ -138,33 +144,42 @@ const definition: ComponentDefinition<BqSelectProps, BqSelectState> = {
   },
   styles: css`
     ${baseStyles}
-    *, *::before, *::after { box-sizing: border-box; }
+    ${reset}
+    ${fieldStyles}
+    ${focusRing}
+    ${iconCss('chevron-down')}
     :host { display: block; }
-    .field { display: flex; flex-direction: column; gap: 0.375rem; }
-    .label { font-size: var(--bq-font-size-sm,0.875rem); font-weight: var(--bq-font-weight-medium,500); color: var(--bq-text-base,#0f172a); font-family: var(--bq-font-family-sans); }
-    .required-mark { color: var(--bq-color-danger-600,#dc2626); }
-    .select-wrap { position: relative; }
+    .select-wrap { position: relative; display: flex; }
     select {
-      display: block; width: 100%;
-      border: 1.5px solid var(--bq-border-emphasis,#cbd5e1);
+      display: block; inline-size: 100%;
+      border: var(--bq-border-width-control,1.5px) solid var(--bq-border-emphasis,#cbd5e1);
       border-radius: var(--bq-radius-lg,0.5rem); background: var(--bq-bg-base,#fff);
       color: var(--bq-text-base,#0f172a); font-family: var(--bq-font-family-sans);
       appearance: none; -webkit-appearance: none;
-      padding-right: 2rem; outline: none; cursor: pointer;
-      transition: border-color var(--bq-duration-fast) var(--bq-easing-standard), box-shadow var(--bq-duration-fast) var(--bq-easing-standard);
+      padding-inline-end: 2.25rem; outline: none; cursor: pointer;
+      transition: border-color var(--bq-duration-fast) var(--bq-easing-standard),
+                  background-color var(--bq-duration-fast) var(--bq-easing-standard),
+                  box-shadow var(--bq-duration-fast) var(--bq-easing-standard);
     }
-    :host([size="sm"]) select { font-size: 0.875rem; padding: 0.375rem 2rem 0.375rem 0.75rem; min-height: 2rem; }
-    :host([size="md"]) select, :host(:not([size])) select { font-size: 1rem; padding: 0.5rem 2rem 0.5rem 0.875rem; min-height: 2.5rem; }
-    :host([size="lg"]) select { font-size: 1.125rem; padding: 0.625rem 2rem 0.625rem 1rem; min-height: 3rem; }
+    :host([size="sm"]) select { font-size: var(--bq-font-size-sm,0.875rem); padding-block: 0.375rem; padding-inline-start: var(--bq-control-padding-sm,0.75rem); min-block-size: var(--bq-control-height-sm,2rem); }
+    :host([size="md"]) select, :host(:not([size])) select { font-size: var(--bq-font-size-md,1rem); padding-block: 0.5rem; padding-inline-start: var(--bq-control-padding-md,0.875rem); min-block-size: var(--bq-control-height-md,2.5rem); }
+    :host([size="lg"]) select { font-size: var(--bq-font-size-lg,1.125rem); padding-block: 0.625rem; padding-inline-start: var(--bq-control-padding-lg,1rem); min-block-size: var(--bq-control-height-lg,3rem); }
+    select:hover:not(:disabled) { border-color: var(--bq-border-strong,#94a3b8); }
+    select:focus-visible { border-color: var(--bq-border-focus,#2563eb); box-shadow: var(--bq-focus-ring); }
+    /* Opening a native select fires no focus-visible in every browser, so the
+       ring is also drawn for plain :focus — a select is never focused by a
+       pointer without the list opening. */
     select:focus { border-color: var(--bq-border-focus,#2563eb); box-shadow: var(--bq-focus-ring); }
     :host([error]:not([error=""])) select { border-color: var(--bq-color-danger-500,#ef4444); }
-    :host([disabled]) select { opacity: 0.5; cursor: not-allowed; background: var(--bq-bg-muted,#f1f5f9); }
-    .arrow { position: absolute; right: 0.75rem; top: 50%; transform: translateY(-50%); pointer-events: none; color: var(--bq-text-muted,#475569); font-size: 0.75rem; }
-    .hint { font-size: var(--bq-font-size-sm,0.875rem); color: var(--bq-text-muted,#475569); font-family: var(--bq-font-family-sans); }
-    .error-msg { font-size: var(--bq-font-size-sm,0.875rem); color: var(--bq-color-danger-600,#dc2626); font-family: var(--bq-font-family-sans); }
-    @media (prefers-reduced-motion: reduce) {
-      select { transition: none; }
+    :host([error]:not([error=""])) select:focus { box-shadow: var(--bq-focus-ring-danger); }
+    :host([disabled]) select { opacity: 0.55; cursor: not-allowed; background: var(--bq-bg-muted,#f1f5f9); }
+    .arrow {
+      position: absolute; inset-inline-end: 0.75rem; inset-block-start: 50%;
+      transform: translateY(-50%); pointer-events: none;
+      color: var(--bq-text-muted,#475569);
+      --bq-icon-size: 1.125rem;
     }
+    :host([disabled]) .arrow { opacity: 0.55; }
   `,
   connected() {
     const self = host<BqSelectState>(this);
@@ -266,7 +281,7 @@ const definition: ComponentDefinition<BqSelectProps, BqSelectState> = {
           >
             ${optionsMarkup}
           </select>
-          <span class="arrow" aria-hidden="true">&#9660;</span>
+          <span class="arrow icon" data-icon="chevron-down" part="arrow" aria-hidden="true"></span>
         </div>
         ${hasHint
           ? `<span class="hint" id="${uid}-hint" part="hint">${escapeHtml(props.hint)}</span>`

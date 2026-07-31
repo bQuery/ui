@@ -21,7 +21,8 @@ import {
   uniqueId,
   updateOverlayFocus,
 } from '../../utils/dom.js';
-import { baseStyles } from '../../utils/styles.js';
+import { iconCss } from '../../utils/icons.js';
+import { baseStyles, focusRing, reset } from '../../utils/styles.js';
 
 type BqDrawerProps = {
   open: boolean;
@@ -44,18 +45,20 @@ const definition: ComponentDefinition<BqDrawerProps, BqDrawerState> = {
   },
   styles: css`
     ${baseStyles}
-    *, *::before, *::after { box-sizing: border-box; }
+    ${reset}
+    ${focusRing}
+    ${iconCss('x')}
     :host { display: block; }
     :host(:not([open])) .backdrop { display: none; }
     .backdrop {
       position: fixed; inset: 0; z-index: var(--bq-z-overlay,300);
-      background: rgba(0,0,0,0.5);
+      background: var(--bq-overlay-backdrop,rgba(15,23,42,0.5));
       animation: fadeIn var(--bq-duration-normal) var(--bq-easing-decelerate);
     }
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     .drawer {
       position: fixed; z-index: calc(var(--bq-z-overlay,300) + 1);
-      background: var(--bq-bg-base,#fff); box-shadow: var(--bq-shadow-xl);
+      background: var(--bq-surface-overlay,#fff); box-shadow: var(--bq-shadow-xl);
       display: flex; flex-direction: column;
       font-family: var(--bq-font-family-sans);
     }
@@ -87,7 +90,8 @@ const definition: ComponentDefinition<BqDrawerProps, BqDrawerState> = {
     .header { display: flex; align-items: center; justify-content: space-between; padding: var(--bq-space-5,1.25rem) var(--bq-space-6,1.5rem); border-bottom: 1px solid var(--bq-border-base,#e2e8f0); flex-shrink: 0; }
     .title { font-size: var(--bq-font-size-lg,1.125rem); font-weight: var(--bq-font-weight-semibold,600); color: var(--bq-text-base,#0f172a); margin: 0; flex: 1; }
     .close-btn { display: inline-flex; align-items: center; justify-content: center; width: 2rem; height: 2rem; background: none; border: none; cursor: pointer; color: var(--bq-text-muted,#475569); border-radius: var(--bq-radius-md,0.375rem); font-size: 1rem; transition: background var(--bq-duration-fast); }
-    .close-btn:hover { background: var(--bq-bg-muted,#f1f5f9); }
+    .close-btn:hover { background: var(--bq-bg-muted,#f1f5f9); color: var(--bq-text-base,#0f172a); }
+    .close-btn { --bq-icon-size: 1.125rem; }
     .close-btn:focus-visible { outline: 2px solid transparent; box-shadow: var(--bq-focus-ring); }
     .body { padding: var(--bq-space-6,1.5rem); overflow-y: auto; flex: 1; }
     .footer { padding: var(--bq-space-4,1rem) var(--bq-space-6,1.5rem); border-top: 1px solid var(--bq-border-base,#e2e8f0); display: flex; gap: var(--bq-space-3,0.75rem); justify-content: flex-end; flex-shrink: 0; background: var(--bq-bg-subtle,#f8fafc); }
@@ -151,7 +155,7 @@ const definition: ComponentDefinition<BqDrawerProps, BqDrawerState> = {
               aria-label="${t('drawer.close')}"
               part="close"
             >
-              &#10005;
+              <span class="icon" data-icon="x" aria-hidden="true"></span>
             </button>
           </div>
           <div class="body" part="body"><slot></slot></div>

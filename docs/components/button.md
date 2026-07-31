@@ -79,6 +79,8 @@ If you need an icon-only action, prefer [`bq-icon-button`](/components/icon-butt
 | `href` | `string` | — | Renders as `<a>` when set |
 | `target` | `string` | — | Link target (used with `href`) |
 | `label` | `string` | — | Optional accessible label override, especially useful for icon-only usage |
+| `full-width` | `boolean` | `false` | Stretch to the width of the container |
+| `pill` | `boolean` | `false` | Fully rounded ends |
 
 ## Events
 

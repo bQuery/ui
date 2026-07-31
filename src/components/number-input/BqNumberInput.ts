@@ -28,7 +28,8 @@ import { bind, host, release, store } from '../../utils/component.js';
 import { uniqueId } from '../../utils/dom.js';
 import { createFormProxy, type FormProxy } from '../../utils/form.js';
 import { bindValidation } from '../../utils/validation.js';
-import { baseStyles, reset, srOnly } from '../../utils/styles.js';
+import { iconCss } from '../../utils/icons.js';
+import { baseStyles, focusRing, reset, srOnly } from '../../utils/styles.js';
 
 type BqNumberInputProps = {
   value: number;
@@ -106,6 +107,8 @@ const definition: ComponentDefinition<BqNumberInputProps, BqNumberInputState> = 
     ${baseStyles}
     ${reset}
     ${srOnly}
+    ${focusRing}
+    ${iconCss('plus', 'minus')}
     :host { display: block; }
     .field { font-family: var(--bq-font-family-sans); }
     .label {
@@ -115,7 +118,7 @@ const definition: ComponentDefinition<BqNumberInputProps, BqNumberInputState> = 
       color: var(--bq-text-base,#0f172a);
       margin-bottom: 0.375rem;
     }
-    .required { color: var(--bq-color-danger-600,#dc2626); margin-left: 0.125rem; }
+    .required { color: var(--bq-color-danger-600,#dc2626); margin-inline-start: 0.125rem; }
     .control {
       display: flex; align-items: stretch;
       border: 1.5px solid var(--bq-border-emphasis,#cbd5e1);
@@ -134,7 +137,7 @@ const definition: ComponentDefinition<BqNumberInputProps, BqNumberInputState> = 
       flex: 1 1 auto; min-width: 0; width: 100%;
       border: none; outline: none; background: transparent;
       font-family: inherit; color: var(--bq-text-base,#0f172a);
-      text-align: var(--bq-number-input-align, left);
+      text-align: var(--bq-number-input-align, start);
       /* The custom stepper replaces the native one. */
       -moz-appearance: textfield; appearance: textfield;
     }
@@ -156,8 +159,9 @@ const definition: ComponentDefinition<BqNumberInputProps, BqNumberInputState> = 
     .step:hover:not(:disabled) { background: var(--bq-bg-emphasis,#e2e8f0); color: var(--bq-text-base,#0f172a); }
     .step:disabled { opacity: 0.4; cursor: not-allowed; }
     .step:focus-visible { outline: 2px solid transparent; box-shadow: var(--bq-focus-ring); z-index: 1; }
-    .step[data-action="decrement"] { border-right: 1px solid var(--bq-border-base,#e2e8f0); }
-    .step[data-action="increment"] { border-left: 1px solid var(--bq-border-base,#e2e8f0); }
+    .step { --bq-icon-size: 1rem; }
+    .step[data-action="decrement"] { border-inline-end: 1px solid var(--bq-border-base,#e2e8f0); }
+    .step[data-action="increment"] { border-inline-start: 1px solid var(--bq-border-base,#e2e8f0); }
 
     .affix { display: inline-flex; align-items: center; padding: 0 0.5rem; color: var(--bq-text-subtle,#94a3b8); }
     .message { font-size: var(--bq-font-size-xs,0.75rem); margin-top: 0.375rem; }
@@ -307,7 +311,7 @@ const definition: ComponentDefinition<BqNumberInputProps, BqNumberInputState> = 
             aria-label="${escapeHtml(t('numberInput.decrement'))}"
             ${bool('disabled', locked || atMin)}
             tabindex="-1"
-          >&minus;</button>
+          ><span class="icon" data-icon="minus" aria-hidden="true"></span></button>
           <span class="affix"><slot name="prefix"></slot></span>
           <input
             id="${escapeHtml(inputId)}"
@@ -334,7 +338,7 @@ const definition: ComponentDefinition<BqNumberInputProps, BqNumberInputState> = 
             aria-label="${escapeHtml(t('numberInput.increment'))}"
             ${bool('disabled', locked || atMax)}
             tabindex="-1"
-          >&plus;</button>
+          ><span class="icon" data-icon="plus" aria-hidden="true"></span></button>
         </div>
         ${
           props.error

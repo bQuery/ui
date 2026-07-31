@@ -177,7 +177,9 @@ describe('BqStepper', () => {
     const steps = Array.from(el.shadowRoot?.querySelectorAll('.step') ?? []);
     expect(steps).toHaveLength(3);
     expect(steps[0]?.getAttribute('data-status')).toBe('complete');
-    expect(steps[0]?.querySelector('.marker')?.textContent).toBe('✓');
+    expect(
+      steps[0]?.querySelector('.marker .icon')?.getAttribute('data-icon')
+    ).toBe('check');
     expect(steps[1]?.getAttribute('data-status')).toBe('current');
     expect(steps[1]?.getAttribute('aria-current')).toBe('step');
     expect(steps[2]?.getAttribute('data-status')).toBe('upcoming');

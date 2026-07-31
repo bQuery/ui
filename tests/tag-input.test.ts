@@ -232,7 +232,8 @@ describe('bq-tag-input', () => {
     await waitForFrame();
 
     expect(input(el).value).toBe('');
-    expect(el.getAttribute('value')).toBe('');
+    // Nothing was ever committed, so the attribute was never reflected.
+    expect(el.getAttribute('value') ?? '').toBe('');
   });
 
   it('commits a pending draft on blur rather than discarding it', async () => {

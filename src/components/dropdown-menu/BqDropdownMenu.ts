@@ -18,7 +18,7 @@ import type { Disposer } from '../../utils/component.js';
 import { bind, host, release, store } from '../../utils/component.js';
 import { getAnimationTimeoutMs, uniqueId } from '../../utils/dom.js';
 import { autoPosition } from '../../utils/position.js';
-import { baseStyles } from '../../utils/styles.js';
+import { baseStyles, reset } from '../../utils/styles.js';
 
 type BqDropdownMenuProps = {
   label: string;
@@ -51,14 +51,14 @@ const definition: ComponentDefinition<
   },
   styles: css`
     ${baseStyles}
-    *, *::before, *::after { box-sizing: border-box; }
+    ${reset}
     :host { display: inline-block; position: relative; }
     .trigger-wrap { display: inline-flex; }
     .menu {
       display: none; position: absolute; z-index: var(--bq-z-dropdown,100);
       min-width: 10rem; max-height: 20rem; overflow-y: auto;
-      background: var(--bq-bg-base,#fff); border: 1px solid var(--bq-border-base,#e2e8f0);
-      border-radius: var(--bq-radius-lg,0.5rem); box-shadow: var(--bq-shadow-lg);
+      background: var(--bq-surface-overlay,#fff); border: 1px solid var(--bq-border-base,#e2e8f0);
+      border-radius: var(--bq-radius-xl,0.75rem); box-shadow: var(--bq-shadow-lg);
       padding: var(--bq-space-1,0.25rem) 0; font-family: var(--bq-font-family-sans);
       animation: menuFadeIn var(--bq-duration-fast,150ms) var(--bq-easing-decelerate);
     }
@@ -76,7 +76,7 @@ const definition: ComponentDefinition<
       display: flex; align-items: center; gap: 0.5rem; width: 100%;
       padding: 0.5rem 0.875rem; border: none; background: none;
       color: var(--bq-text-base,#0f172a); font-size: var(--bq-font-size-sm,0.875rem);
-      font-family: var(--bq-font-family-sans); text-align: left; cursor: pointer;
+      font-family: var(--bq-font-family-sans); text-align: start; cursor: pointer;
       text-decoration: none; white-space: nowrap;
       transition: background var(--bq-duration-fast) var(--bq-easing-standard);
     }

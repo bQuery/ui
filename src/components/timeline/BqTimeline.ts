@@ -89,7 +89,7 @@ const itemDefinition: ComponentDefinition<BqTimelineItemProps> = {
       border-radius: var(--bq-radius-full,9999px);
       background: var(--bq-color-primary-600,#2563eb);
       box-shadow: 0 0 0 3px var(--bq-color-primary-100,#dbeafe);
-      color: #fff; font-size: 0.5rem; line-height: 1;
+      color: var(--bq-text-on-primary,#fff); font-size: 0.5rem; line-height: 1;
     }
     .item[data-variant="success"] .marker { background: var(--bq-color-success-600,#16a34a); box-shadow: 0 0 0 3px var(--bq-color-success-100,#dcfce7); }
     .item[data-variant="danger"]  .marker { background: var(--bq-color-danger-600,#dc2626);  box-shadow: 0 0 0 3px var(--bq-color-danger-100,#fee2e2); }

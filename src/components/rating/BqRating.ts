@@ -17,6 +17,7 @@ import { escapeHtml } from '@bquery/bquery/security';
 import { t } from '../../i18n/index.js';
 import { bind, host, release, store } from '../../utils/component.js';
 import { createFormProxy, type FormProxy } from '../../utils/form.js';
+import { iconCss } from '../../utils/icons.js';
 import { baseStyles, reset, srOnly } from '../../utils/styles.js';
 
 type BqRatingProps = {
@@ -54,6 +55,7 @@ const definition: ComponentDefinition<BqRatingProps> = {
     ${baseStyles}
     ${reset}
     ${srOnly}
+    ${iconCss('star', 'star-filled')}
     :host { display: inline-flex; }
     .rating {
       display: inline-flex; align-items: center; gap: 0.125rem;
@@ -68,9 +70,9 @@ const definition: ComponentDefinition<BqRatingProps> = {
                   transform var(--bq-duration-fast) var(--bq-easing-standard);
     }
     .star[data-filled="true"] { color: var(--bq-color-warning-500,#f59e0b); }
-    .rating[data-size="sm"] .star { font-size: 1rem; }
-    .rating[data-size="md"] .star { font-size: 1.375rem; }
-    .rating[data-size="lg"] .star { font-size: 1.75rem; }
+    .rating[data-size="sm"] .star { --bq-icon-size: 1rem; }
+    .rating[data-size="md"] .star { --bq-icon-size: 1.375rem; }
+    .rating[data-size="lg"] .star { --bq-icon-size: 1.75rem; }
     .star:focus-visible { outline: 2px solid transparent; box-shadow: var(--bq-focus-ring); border-radius: var(--bq-radius-sm,0.25rem); }
     :host(:not([readonly]):not([disabled])) .star:hover { transform: scale(1.12); }
     :host([readonly]) .star, :host([disabled]) .star { cursor: default; }
@@ -188,7 +190,7 @@ const definition: ComponentDefinition<BqRatingProps> = {
           aria-label="${escapeHtml(t('rating.valueText', { value: index, max }))}"
           tabindex="${interactive && (index === Math.max(1, Math.ceil(value)) || (value === 0 && index === 1)) ? '0' : '-1'}"
           ${interactive ? '' : 'disabled'}
-        >${filled ? '★' : '☆'}</button>
+        ><span class="icon" data-icon="${filled ? 'star-filled' : 'star'}" aria-hidden="true"></span></button>
       `;
     }).join('');
 

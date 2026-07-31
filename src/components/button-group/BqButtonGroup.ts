@@ -50,7 +50,7 @@ const definition: ComponentDefinition<BqButtonGroupProps> = {
     :host([attached]) .group[data-orientation="vertical"] ::slotted(*:last-child) {
       --bq-radius-lg: 0 0 0.5rem 0.5rem; --bq-radius-md: 0 0 0.375rem 0.375rem;
     }
-    :host([attached]) .group[data-orientation="horizontal"] ::slotted(*:not(:first-child)) { margin-left: -1.5px; }
+    :host([attached]) .group[data-orientation="horizontal"] ::slotted(*:not(:first-child)) { margin-inline-start: -1.5px; }
     :host([attached]) .group[data-orientation="vertical"] ::slotted(*:not(:first-child)) { margin-top: -1.5px; }
     /* Keep the focused button's ring above its neighbours' borders. */
     ::slotted(*:focus-within) { position: relative; z-index: 1; }

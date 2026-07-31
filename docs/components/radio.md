@@ -74,5 +74,9 @@ The component creates a hidden input proxy for native `<form>` submission. The p
 ## Accessibility
 
 - Each radio renders a native `<input type="radio">` inside the shadow DOM for full keyboard support.
+- Radios sharing a `name` behave as one group. Because each radio lives in its
+  own shadow root, the platform's "one checked per name" rule cannot see the
+  siblings, so the component clears them itself — scoped to the nearest `<form>`
+  so two unrelated groups on one page do not interfere.
 - The label is associated with the input via a wrapping `<label>` element.
 - Use the `required` prop to mark mandatory radio fields; the required indicator is rendered visually and conveyed through the native `required` attribute on the internal radio input.

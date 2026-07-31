@@ -9,7 +9,7 @@
 import type { ComponentDefinition } from '@bquery/bquery/component';
 import { component, css, html } from '@bquery/bquery/component';
 import { escapeHtml } from '@bquery/bquery/security';
-import { baseStyles } from '../../utils/styles.js';
+import { baseStyles, reset } from '../../utils/styles.js';
 
 type BqSkeletonProps = {
   variant: string;
@@ -57,6 +57,7 @@ const definition: ComponentDefinition<BqSkeletonProps> = {
   },
   styles: css`
     ${baseStyles}
+    ${reset}
     :host { display: block; }
     .skeleton {
       background: var(--bq-bg-emphasis,#e2e8f0);

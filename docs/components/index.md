@@ -8,10 +8,10 @@ This catalog gives you a complete overview of the currently available building b
 
 | Category | Components |
 | --- | --- |
-| **Actions** | `bq-button`, `bq-icon-button`, `bq-button-group` |
-| **Forms** | `bq-input`, `bq-number-input`, `bq-textarea`, `bq-select`, `bq-segmented-control`, `bq-checkbox`, `bq-radio`, `bq-switch`, `bq-slider`, `bq-chip`, `bq-rating`, `bq-file-upload` |
-| **Navigation & Disclosure** | `bq-tabs`, `bq-accordion`, `bq-breadcrumbs`, `bq-pagination`, `bq-stepper` |
-| **Data Display** | `bq-card`, `bq-badge`, `bq-avatar`, `bq-avatar-group`, `bq-table`, `bq-divider`, `bq-empty-state`, `bq-stat-card`, `bq-timeline`, `bq-kbd` |
+| **Actions** | `bq-button`, `bq-icon-button`, `bq-button-group`, `bq-copy-button` |
+| **Forms** | `bq-input`, `bq-number-input`, `bq-textarea`, `bq-select`, `bq-combobox`, `bq-tag-input`, `bq-pin-input`, `bq-date-picker`, `bq-segmented-control`, `bq-checkbox`, `bq-radio`, `bq-switch`, `bq-slider`, `bq-chip`, `bq-rating`, `bq-file-upload` |
+| **Navigation & Disclosure** | `bq-tabs`, `bq-accordion`, `bq-breadcrumbs`, `bq-pagination`, `bq-stepper`, `bq-tree` |
+| **Data Display** | `bq-card`, `bq-badge`, `bq-avatar`, `bq-avatar-group`, `bq-table`, `bq-divider`, `bq-empty-state`, `bq-stat-card`, `bq-timeline`, `bq-kbd`, `bq-icon`, `bq-meter` |
 | **Feedback & Loading** | `bq-alert`, `bq-banner`, `bq-progress`, `bq-spinner`, `bq-skeleton`, `bq-tooltip`, `bq-toast` |
 | **Overlays** | `bq-dialog`, `bq-drawer`, `bq-dropdown-menu`, `bq-popover` |
 
@@ -33,6 +33,7 @@ Across the component library you will find the same professional capabilities th
 | `bq-button` | Primary and secondary actions | Variants, sizes, loading state, link rendering, icon slots, accessible label override |
 | `bq-icon-button` | Compact icon-only actions | Accessible label or title fallback, multiple variants, loading state, link rendering |
 | `bq-button-group` | Joining related actions into one control | Attached mode with shared borders, orientation, shared size forwarding, group semantics |
+| `bq-copy-button` | Copying a snippet or token to the clipboard | Confirmed state with icon swap, copy-from-selector, legacy clipboard fallback |
 
 ## Forms
 
@@ -50,6 +51,10 @@ Across the component library you will find the same professional capabilities th
 | `bq-chip` | Compact selectable tags | Selection state, removable chips, contextual variants |
 | `bq-rating` | Star ratings and scores | Radio-group semantics, keyboard support, read-only and clearable modes, form participation |
 | `bq-file-upload` | File selection and drag-and-drop | Type and size filtering, selected-file list, rejection events, keyboard-reachable drop zone |
+| `bq-combobox` | Filtering a long list of options | ARIA 1.2 combobox pattern, single and multiple selection, diacritic-insensitive matching |
+| `bq-tag-input` | Free-form tag and keyword entry | Delimiter splitting, paste handling, per-tag removal, limit enforcement |
+| `bq-pin-input` | One-time codes and PINs | Per-cell entry, paste distribution, `one-time-code` autofill, completion event |
+| `bq-date-picker` | Choosing a calendar date | Locale-aware calendar, UTC date maths, min/max range, full keyboard grid |
 
 ## Navigation & Disclosure
 
@@ -60,6 +65,7 @@ Across the component library you will find the same professional capabilities th
 | `bq-breadcrumbs` | Hierarchical navigation | Automatic separators, semantic navigation markup |
 | `bq-pagination` | Paging through result sets | Previous/next controls, ellipsis logic, sibling page calculation |
 | `bq-stepper` | Multi-step flows and wizards | Horizontal/vertical layouts, clickable steps, per-step status announcements |
+| `bq-tree` | Hierarchical browsing and pickers | ARIA tree pattern, roving tab stop, typeahead, single or multiple selection |
 
 ## Data Display
 
@@ -75,6 +81,8 @@ Across the component library you will find the same professional capabilities th
 | `bq-stat-card` | Dashboard metrics and KPI summaries | Compact metric layout, trend pill, loading skeleton, icon slot |
 | `bq-timeline` | Activity feeds and audit trails | Ordered-list semantics, event variants, machine-readable timestamps, custom markers |
 | `bq-kbd` | Keyboard shortcuts | Combination parsing, symbol substitution, sizes and variants |
+| `bq-icon` | Interface glyphs | Mask-rendered set that inherits text colour and size, decorative by default |
+| `bq-meter` | Levels and gauges that are not progress | Native `<meter>` band semantics, graded colouring, custom value text |
 
 ## Feedback & Loading
 

@@ -1,6 +1,6 @@
 # Migration from 1.1.0
 
-Moving from `1.1.0` to the current `@bquery/ui` line (`1.10.0`) is mostly about aligning with the modern import model, the explicit package entry points, and the expanded accessibility/i18n defaults.
+Moving from `1.1.0` to the current `@bquery/ui` line (`1.15.0`) is mostly about aligning with the modern import model, the explicit package entry points, and the expanded accessibility/i18n defaults.
 
 ## Summary
 

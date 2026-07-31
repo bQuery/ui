@@ -17,7 +17,8 @@ import type { ComponentDefinition } from '@bquery/bquery/component';
 import { escapeHtml } from '@bquery/bquery/security';
 import { t } from '../../i18n/index.js';
 import { bind, host, release } from '../../utils/component.js';
-import { baseStyles, reset, srOnly } from '../../utils/styles.js';
+import { iconCss } from '../../utils/icons.js';
+import { baseStyles, focusRing, reset, srOnly } from '../../utils/styles.js';
 
 type BqStepperProps = {
   current: number;
@@ -66,6 +67,8 @@ const definition: ComponentDefinition<BqStepperProps, BqStepperState> = {
     ${baseStyles}
     ${reset}
     ${srOnly}
+    ${focusRing}
+    ${iconCss('check')}
     :host { display: block; }
     .stepper { display: flex; font-family: var(--bq-font-family-sans); }
     .stepper[data-orientation="horizontal"] { flex-direction: row; align-items: flex-start; }
@@ -92,7 +95,7 @@ const definition: ComponentDefinition<BqStepperProps, BqStepperState> = {
     .step[data-status="complete"] .marker {
       background: var(--bq-color-primary-600,#2563eb);
       border-color: var(--bq-color-primary-600,#2563eb);
-      color: #fff;
+      color: var(--bq-text-on-primary,#fff);
     }
     .step[data-status="current"] .marker {
       border-color: var(--bq-color-primary-600,#2563eb);
@@ -198,7 +201,10 @@ const definition: ComponentDefinition<BqStepperProps, BqStepperState> = {
               ? 'stepper.current'
               : 'stepper.upcoming'
         );
-        const marker = status === 'complete' ? '✓' : String(index + 1);
+        const marker =
+          status === 'complete'
+            ? '<span class="icon" data-icon="check" aria-hidden="true"></span>'
+            : escapeHtml(String(index + 1));
         return `
           <${tag}
             class="step"
@@ -209,7 +215,7 @@ const definition: ComponentDefinition<BqStepperProps, BqStepperState> = {
             ${clickable && step.disabled ? 'disabled' : ''}
             ${status === 'current' ? 'aria-current="step"' : ''}
           >
-            <span class="marker" part="marker" aria-hidden="true">${escapeHtml(marker)}</span>
+            <span class="marker" part="marker" aria-hidden="true">${marker}</span>
             <span class="body">
               <span class="label" part="label">${escapeHtml(step.label)}</span>
               <span class="sr-only">${escapeHtml(` (${statusLabel})`)}</span>

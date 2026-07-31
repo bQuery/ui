@@ -24,7 +24,8 @@ import type { Disposer } from '../../utils/component.js';
 import { bind, host, release, store } from '../../utils/component.js';
 import { uniqueId } from '../../utils/dom.js';
 import { autoPosition } from '../../utils/position.js';
-import { baseStyles, reset } from '../../utils/styles.js';
+import { iconCss } from '../../utils/icons.js';
+import { baseStyles, focusRing, reset } from '../../utils/styles.js';
 
 type BqPopoverProps = {
   open: boolean;
@@ -51,12 +52,14 @@ const definition: ComponentDefinition<BqPopoverProps, BqPopoverState> = {
   },
   styles: css`
     ${baseStyles}
+    ${focusRing}
+    ${iconCss('x')}
     ${reset}
     :host { display: inline-block; position: relative; }
     .panel {
       position: absolute; z-index: var(--bq-z-popover, 1100);
       min-width: 12rem; max-width: min(20rem, 90vw);
-      background: var(--bq-bg-base,#fff);
+      background: var(--bq-surface-overlay,#fff);
       color: var(--bq-text-base,#0f172a);
       border: 1px solid var(--bq-border-base,#e2e8f0);
       border-radius: var(--bq-radius-lg,0.5rem);
@@ -97,6 +100,7 @@ const definition: ComponentDefinition<BqPopoverProps, BqPopoverState> = {
       cursor: pointer; font-size: 1rem; line-height: 1;
     }
     .close:hover { background: var(--bq-bg-muted,#f1f5f9); color: var(--bq-text-base,#0f172a); }
+    .close { --bq-icon-size: 1rem; }
     .close:focus-visible { outline: 2px solid transparent; box-shadow: var(--bq-focus-ring); }
     .content { padding: 0.75rem 0.875rem; color: var(--bq-text-muted,#475569); }
     .header + .content { padding-top: 0.5rem; }
@@ -104,7 +108,7 @@ const definition: ComponentDefinition<BqPopoverProps, BqPopoverState> = {
 
     .arrow {
       position: absolute; width: 0.5rem; height: 0.5rem;
-      background: var(--bq-bg-base,#fff);
+      background: var(--bq-surface-overlay,#fff);
       border: 1px solid var(--bq-border-base,#e2e8f0);
       transform: rotate(45deg);
     }
@@ -269,7 +273,7 @@ const definition: ComponentDefinition<BqPopoverProps, BqPopoverState> = {
           heading || props.dismissible
             ? `<div class="header" part="header">
                  ${heading ? `<h2 class="heading" part="heading" id="${escapeHtml(headingId)}">${escapeHtml(heading)}</h2>` : '<span class="heading"></span>'}
-                 ${props.dismissible ? `<button type="button" class="close" part="close" aria-label="${escapeHtml(t('popover.close'))}">&times;</button>` : ''}
+                 ${props.dismissible ? `<button type="button" class="close" part="close" aria-label="${escapeHtml(t('popover.close'))}"><span class="icon" data-icon="x" aria-hidden="true"></span></button>` : ''}
                </div>`
             : ''
         }

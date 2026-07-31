@@ -11,7 +11,7 @@
 import type { ComponentDefinition } from '@bquery/bquery/component';
 import { component, css, html } from '@bquery/bquery/component';
 import { escapeHtml } from '@bquery/bquery/security';
-import { baseStyles } from '../../utils/styles.js';
+import { baseStyles, reset } from '../../utils/styles.js';
 
 type BqCardProps = { title: string; elevated: boolean; padding: string };
 
@@ -23,10 +23,10 @@ const definition: ComponentDefinition<BqCardProps> = {
   },
   styles: css`
     ${baseStyles}
-    *, *::before, *::after { box-sizing: border-box; }
+    ${reset}
     :host { display: block; }
     .card {
-      background: var(--bq-bg-base,#fff);
+      background: var(--bq-surface-raised,#fff);
       border-radius: var(--bq-radius-xl,0.75rem);
       border: 1px solid var(--bq-border-base,#e2e8f0);
       overflow: hidden; font-family: var(--bq-font-family-sans);

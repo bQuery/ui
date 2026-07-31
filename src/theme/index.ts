@@ -3,68 +3,73 @@
  */
 export { darkTheme, getDarkThemeCSS } from './dark.js';
 export { defaultTheme, getDefaultThemeCSS } from './default.js';
+export { installThemeStyles } from './root.js';
+export {
+  darkTokens,
+  getDarkSchemeCSS,
+  getLightSchemeCSS,
+  getSchemeRootCSS,
+  lightTokens,
+} from './scheme.js';
+export type { SemanticTokenName } from './scheme.js';
+
+import { installThemeStyles } from './root.js';
 
 export type ColorScheme = 'light' | 'dark' | 'auto';
 
-export interface BqTheme {
-  name: string;
-  colorScheme: 'light' | 'dark';
-  tokens: Record<string, string>;
-}
-
-let currentTheme: ColorScheme = 'auto';
-let autoListener: ((e: MediaQueryListEvent) => void) | null = null;
-
-function applyAutoScheme(): void {
-  const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-  const root = document.documentElement;
-  if (prefersDark) {
-    root.setAttribute('data-theme', 'dark');
-  } else {
-    root.removeAttribute('data-theme');
-  }
-}
-
-function cleanupAutoListener(): void {
-  if (autoListener) {
-    window
-      .matchMedia('(prefers-color-scheme: dark)')
-      .removeEventListener('change', autoListener);
-    autoListener = null;
-  }
-}
+let currentScheme: ColorScheme = 'auto';
 
 /**
- * Set the global color scheme. Pass 'auto' to follow the user's OS preference
- * (listens for changes in real time).
+ * Sets the global color scheme.
+ *
+ * All three values are expressed the same way — as `data-theme` on the root
+ * element — because the theme stylesheet resolves `auto` in CSS, with a
+ * `prefers-color-scheme` media query. There is no `matchMedia` listener to
+ * leak, and a system-level switch repaints the page without JavaScript running
+ * at all.
+ *
+ * Scoping a scheme to part of a page needs no API: put `data-theme` on any
+ * element and everything below it follows.
  */
 export function setColorScheme(scheme: ColorScheme): void {
-  cleanupAutoListener();
-  currentTheme = scheme;
-  const root = document.documentElement;
-  if (scheme === 'dark') {
-    root.setAttribute('data-theme', 'dark');
-  } else if (scheme === 'light') {
-    root.removeAttribute('data-theme');
-  } else {
-    applyAutoScheme();
-    autoListener = () => applyAutoScheme();
-    window
-      .matchMedia('(prefers-color-scheme: dark)')
-      .addEventListener('change', autoListener);
-  }
+  currentScheme = scheme;
+  if (typeof document === 'undefined') return;
+  installThemeStyles();
+  document.documentElement.setAttribute('data-theme', scheme);
 }
 
-/** Get the current color scheme setting. */
+/** Gets the current color scheme setting, as requested. */
 export function getColorScheme(): ColorScheme {
-  return currentTheme;
+  return currentScheme;
 }
 
 /**
- * Apply custom CSS variable overrides to the document root.
+ * Gets the scheme actually in effect, resolving `auto` against the operating
+ * system preference.
  */
-export function applyThemeTokens(tokens: Record<string, string>): void {
-  const root = document.documentElement;
+export function getResolvedColorScheme(): 'light' | 'dark' {
+  if (currentScheme !== 'auto') return currentScheme;
+  if (typeof window === 'undefined' || typeof window.matchMedia !== 'function')
+    return 'light';
+  return window.matchMedia('(prefers-color-scheme: dark)').matches
+    ? 'dark'
+    : 'light';
+}
+
+/**
+ * Applies custom CSS variable overrides to the document root.
+ *
+ * Overrides set here outrank the theme, because they land in the element's
+ * inline style. To override only one scheme, write the rule against
+ * `[data-theme="dark"]` in your own stylesheet instead.
+ */
+export function applyThemeTokens(
+  tokens: Record<string, string>,
+  target?: HTMLElement
+): void {
+  const root =
+    target ?? (typeof document === 'undefined' ? null : document.documentElement);
+  if (!root) return;
   for (const [key, value] of Object.entries(tokens)) {
     root.style.setProperty(key, value);
   }

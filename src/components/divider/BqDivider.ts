@@ -8,7 +8,7 @@
 import type { ComponentDefinition } from '@bquery/bquery/component';
 import { component, css, html } from '@bquery/bquery/component';
 import { escapeHtml } from '@bquery/bquery/security';
-import { baseStyles } from '../../utils/styles.js';
+import { baseStyles, reset } from '../../utils/styles.js';
 
 type BqDividerProps = { orientation: string; variant: string; label: string };
 
@@ -20,6 +20,7 @@ const definition: ComponentDefinition<BqDividerProps> = {
   },
   styles: css`
     ${baseStyles}
+    ${reset}
     :host { display: block; }
     .divider {
       display: flex; align-items: center; gap: 0.75rem;

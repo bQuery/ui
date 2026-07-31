@@ -10,7 +10,7 @@ import type { ComponentDefinition } from '@bquery/bquery/component';
 import { component, css, html } from '@bquery/bquery/component';
 import { t } from '../../i18n/index.js';
 import { bind, host, release, store } from '../../utils/component.js';
-import { baseStyles } from '../../utils/styles.js';
+import { baseStyles, reset } from '../../utils/styles.js';
 
 type BqBreadcrumbsProps = { separator: string };
 
@@ -34,19 +34,19 @@ const definition: ComponentDefinition<BqBreadcrumbsProps> = {
   },
   styles: css`
     ${baseStyles}
-    *, *::before, *::after { box-sizing: border-box; }
+    ${reset}
     :host { display: block; }
     .breadcrumbs { display: flex; align-items: center; flex-wrap: wrap; list-style: none; margin: 0; padding: 0; font-family: var(--bq-font-family-sans); font-size: var(--bq-font-size-sm,0.875rem); gap: 0; }
     ::slotted(*) { display: inline-flex; align-items: center; }
     ::slotted(*:not(:first-child))::before {
       content: var(--bq-breadcrumb-separator, "/");
       color: var(--bq-text-subtle,#94a3b8);
-      margin: 0 var(--bq-space-2,0.5rem);
+      margin-inline: var(--bq-space-2,0.5rem);
       user-select: none;
       pointer-events: none;
       speak: never;
     }
-    ::slotted(a) { color: var(--bq-text-muted,#475569); text-decoration: none; transition: color var(--bq-duration-fast); }
+    ::slotted(a) { color: var(--bq-text-muted,#475569); text-decoration: none; border-radius: var(--bq-radius-sm,0.25rem); transition: color var(--bq-duration-fast); }
     ::slotted(a:hover) { color: var(--bq-color-primary-600,#2563eb); text-decoration: underline; }
     ::slotted([aria-current="page"]) { color: var(--bq-text-base,#0f172a); font-weight: var(--bq-font-weight-medium,500); pointer-events: none; }
     @media (prefers-reduced-motion: reduce) {

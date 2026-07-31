@@ -72,9 +72,9 @@ const definition: ComponentDefinition<BqAvatarGroupProps> = {
     ${reset}
     :host { display: inline-flex; }
     .group { display: inline-flex; align-items: center; }
-    .group[data-spacing="tight"]  ::slotted(*:not(:first-child)) { margin-left: -0.75rem; }
-    .group[data-spacing="normal"] ::slotted(*:not(:first-child)) { margin-left: -0.5rem; }
-    .group[data-spacing="loose"]  ::slotted(*:not(:first-child)) { margin-left: -0.25rem; }
+    .group[data-spacing="tight"]  ::slotted(*:not(:first-child)) { margin-inline-start: -0.75rem; }
+    .group[data-spacing="normal"] ::slotted(*:not(:first-child)) { margin-inline-start: -0.5rem; }
+    .group[data-spacing="loose"]  ::slotted(*:not(:first-child)) { margin-inline-start: -0.25rem; }
     ::slotted(*) {
       border-radius: var(--bq-radius-full,9999px);
       box-shadow: 0 0 0 2px var(--bq-bg-base,#fff);
@@ -91,9 +91,9 @@ const definition: ComponentDefinition<BqAvatarGroupProps> = {
       box-shadow: 0 0 0 2px var(--bq-bg-base,#fff);
     }
     .overflow[hidden] { display: none; }
-    .group[data-spacing="tight"]  .overflow { margin-left: -0.75rem; }
-    .group[data-spacing="normal"] .overflow { margin-left: -0.5rem; }
-    .group[data-spacing="loose"]  .overflow { margin-left: -0.25rem; }
+    .group[data-spacing="tight"]  .overflow { margin-inline-start: -0.75rem; }
+    .group[data-spacing="normal"] .overflow { margin-inline-start: -0.5rem; }
+    .group[data-spacing="loose"]  .overflow { margin-inline-start: -0.25rem; }
     .overflow[data-size="xs"] { width: 1.5rem;  height: 1.5rem;  font-size: 0.625rem; }
     .overflow[data-size="sm"] { width: 2rem;    height: 2rem;    font-size: 0.6875rem; }
     .overflow[data-size="md"] { width: 2.5rem;  height: 2.5rem;  font-size: 0.75rem; }

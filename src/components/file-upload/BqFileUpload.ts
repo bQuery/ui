@@ -19,7 +19,8 @@ import { escapeHtml } from '@bquery/bquery/security';
 import { t } from '../../i18n/index.js';
 import { bind, host, release, store } from '../../utils/component.js';
 import { uniqueId } from '../../utils/dom.js';
-import { baseStyles, reset, srOnly } from '../../utils/styles.js';
+import { iconCss } from '../../utils/icons.js';
+import { baseStyles, focusRing, reset, srOnly } from '../../utils/styles.js';
 
 type BqFileUploadProps = {
   accept: string;
@@ -89,6 +90,8 @@ const definition: ComponentDefinition<BqFileUploadProps, BqFileUploadState> = {
     ${baseStyles}
     ${reset}
     ${srOnly}
+    ${focusRing}
+    ${iconCss('upload')}
     :host { display: block; }
     .field { font-family: var(--bq-font-family-sans); }
     .label {
@@ -116,7 +119,8 @@ const definition: ComponentDefinition<BqFileUploadProps, BqFileUploadState> = {
     :host([data-dragging]) .zone { border-color: var(--bq-color-primary-600,#2563eb); background: var(--bq-color-primary-50,#eff6ff); }
     :host([error]) .zone { border-color: var(--bq-color-danger-600,#dc2626); }
     .browse { color: var(--bq-color-primary-600,#2563eb); font-weight: var(--bq-font-weight-semibold,600); }
-    .icon { display: inline-flex; font-size: 1.5rem; }
+    .dropzone-icon { display: inline-flex; color: var(--bq-text-subtle,#94a3b8); }
+    .dropzone-icon .icon { --bq-icon-size: 2rem; }
 
     input[type="file"] {
       position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
@@ -348,7 +352,7 @@ const definition: ComponentDefinition<BqFileUploadProps, BqFileUploadState> = {
           ${props.error ? 'aria-invalid="true"' : ''}
           ${describedBy ? `aria-describedby="${escapeHtml(describedBy)}"` : ''}
         >
-          <span class="icon" part="icon"><slot name="icon"></slot></span>
+          <span class="dropzone-icon" part="icon"><slot name="icon"><span class="icon" data-icon="upload" aria-hidden="true"></span></slot></span>
           <span
             >${escapeHtml(t('fileUpload.hint'))}
             <span class="browse">${escapeHtml(t('fileUpload.browse'))}</span></span

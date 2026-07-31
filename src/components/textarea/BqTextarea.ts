@@ -24,10 +24,19 @@ import { escapeHtml } from '@bquery/bquery/security';
 import { t } from '../../i18n/index.js';
 import { uniqueId } from '../../utils/dom.js';
 import { bindFormProxy, syncFormProxy } from '../../utils/form.js';
-import { bind, release, store } from '../../utils/component.js';
-import { captureFocus, restoreFocus, type FocusSnapshot } from '../../utils/focus.js';
+import { bind, release } from '../../utils/component.js';
+import {
+  markFocus,
+  restorePreservedFocus,
+  trackFocus,
+} from '../../utils/focus.js';
 import { bindValidation } from '../../utils/validation.js';
-import { baseStyles } from '../../utils/styles.js';
+import {
+  baseStyles,
+  fieldStyles,
+  focusRing,
+  reset,
+} from '../../utils/styles.js';
 
 type BqTextareaProps = {
   label: string;
@@ -50,9 +59,6 @@ type BqTextareaState = { uid: string };
  * tree, so without this the field the user is typing in is destroyed on
  * every keystroke that reflects a value to an attribute.
  */
-const textareaFocusStore = (owner: object) =>
-  store<{ snapshot?: FocusSnapshot | null }>(owner, () => ({}));
-
 const definition: ComponentDefinition<BqTextareaProps, BqTextareaState> = {
   props: {
     label: { type: String, default: '' },
@@ -73,7 +79,9 @@ const definition: ComponentDefinition<BqTextareaProps, BqTextareaState> = {
   },
   styles: css`
     ${baseStyles}
-    *, *::before, *::after { box-sizing: border-box; }
+    ${reset}
+    ${fieldStyles}
+    ${focusRing}
     :host { display: block; }
     .field { display: flex; flex-direction: column; gap: 0.375rem; }
     .label { font-size: var(--bq-font-size-sm,0.875rem); font-weight: var(--bq-font-weight-medium,500); color: var(--bq-text-base,#0f172a); font-family: var(--bq-font-family-sans); display: flex; align-items: center; gap: 0.25rem; }
@@ -94,7 +102,7 @@ const definition: ComponentDefinition<BqTextareaProps, BqTextareaState> = {
     .hint { font-size: var(--bq-font-size-sm,0.875rem); color: var(--bq-text-muted,#475569); font-family: var(--bq-font-family-sans); }
     .error-msg { font-size: var(--bq-font-size-sm,0.875rem); color: var(--bq-color-danger-600,#dc2626); font-family: var(--bq-font-family-sans); }
     .footer { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; }
-    .counter { font-size: var(--bq-font-size-sm,0.875rem); color: var(--bq-text-muted,#475569); font-family: var(--bq-font-family-sans); margin-left: auto; }
+    .counter { font-size: var(--bq-font-size-sm,0.875rem); color: var(--bq-text-muted,#475569); font-family: var(--bq-font-family-sans); margin-inline-start: auto; font-variant-numeric: tabular-nums; }
     .counter[data-over="true"] { color: var(--bq-color-danger-600,#dc2626); }
     @media (prefers-reduced-motion: reduce) {
       textarea { transition: none; }
@@ -162,6 +170,11 @@ const definition: ComponentDefinition<BqTextareaProps, BqTextareaState> = {
           new CustomEvent('bq-blur', { bubbles: true, composed: true })
         );
     };
+    // Attribute-driven renders are covered by `beforeUpdate`; this also
+    // covers the ones a future state write would trigger, and costs one
+    // capture-phase listener.
+    trackFocus(self, scope);
+
     const shadow = self.shadowRoot;
     scope.on(shadow, 'input', ih);
     scope.on(shadow, 'change', ch);
@@ -172,11 +185,10 @@ const definition: ComponentDefinition<BqTextareaProps, BqTextareaState> = {
     release(this);
   },
   beforeUpdate() {
-    textareaFocusStore(this).snapshot = captureFocus(this.shadowRoot);
+    markFocus(this);
   },
   updated() {
-    restoreFocus(this.shadowRoot, textareaFocusStore(this).snapshot);
-    textareaFocusStore(this).snapshot = null;
+    restorePreservedFocus(this);
     syncFormProxy(this);
   },
   render({ props, state }) {

@@ -17,7 +17,7 @@ import { escapeHtml } from '@bquery/bquery/security';
 import { t } from '../../i18n/index.js';
 import { bind, host, release } from '../../utils/component.js';
 import { uniqueId } from '../../utils/dom.js';
-import { baseStyles } from '../../utils/styles.js';
+import { baseStyles, reset } from '../../utils/styles.js';
 
 type BqIconButtonProps = {
   variant: string; size: string; disabled: boolean; loading: boolean;
@@ -40,7 +40,7 @@ const definition: ComponentDefinition<BqIconButtonProps, BqIconButtonState> = {
   },
   styles: css`
     ${baseStyles}
-    *, *::before, *::after { box-sizing: border-box; }
+    ${reset}
     :host { display: inline-block; }
     .btn {
       display: inline-flex; align-items: center; justify-content: center;

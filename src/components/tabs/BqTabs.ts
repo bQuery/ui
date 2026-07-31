@@ -11,7 +11,7 @@ import { component, css, html } from '@bquery/bquery/component';
 import { escapeHtml } from '@bquery/bquery/security';
 import { t } from '../../i18n/index.js';
 import { bind, release } from '../../utils/component.js';
-import { baseStyles } from '../../utils/styles.js';
+import { baseStyles, reset } from '../../utils/styles.js';
 
 type BqTabsProps = { 'active-tab': string; variant: string };
 
@@ -37,30 +37,33 @@ const definition: ComponentDefinition<BqTabsProps> = {
   },
   styles: css`
     ${baseStyles}
-    *, *::before, *::after { box-sizing: border-box; }
+    ${reset}
     :host { display: block; }
     .tabs { display: flex; flex-direction: column; }
     .tablist { display: flex; gap: 0.25rem; }
     .tablist[data-variant="default"] { background: var(--bq-bg-subtle,#f8fafc); border-radius: var(--bq-radius-lg); padding: 0.25rem; }
-    .tablist[data-variant="underline"] { border-bottom: 2px solid var(--bq-border-base,#e2e8f0); }
+    .tablist[data-variant="underline"] { border-block-end: 2px solid var(--bq-border-base,#e2e8f0); }
     .tab {
       display: inline-flex; align-items: center; justify-content: center; gap: 0.375rem;
       font-size: var(--bq-font-size-sm,0.875rem); font-weight: var(--bq-font-weight-medium,500);
       font-family: var(--bq-font-family-sans); cursor: pointer; background: none; border: none;
       color: var(--bq-text-muted,#475569); white-space: nowrap;
-      transition: all var(--bq-duration-fast) var(--bq-easing-standard);
+      transition: color var(--bq-duration-fast) var(--bq-easing-standard),
+                  background-color var(--bq-duration-fast) var(--bq-easing-standard),
+                  border-color var(--bq-duration-fast) var(--bq-easing-standard),
+                  box-shadow var(--bq-duration-fast) var(--bq-easing-standard);
     }
     .tab[data-variant="default"]  { padding: 0.375rem 0.875rem; border-radius: var(--bq-radius-md,0.375rem); }
-    .tab[data-variant="underline"] { padding: 0.625rem 1rem; border-bottom: 2px solid transparent; margin-bottom: -2px; border-radius: 0; }
+    .tab[data-variant="underline"] { padding: 0.625rem 1rem; border-block-end: 2px solid transparent; margin-block-end: -2px; border-radius: 0; }
     .tab[data-variant="pills"]    { padding: 0.375rem 0.875rem; border-radius: var(--bq-radius-full,9999px); }
     .tab:hover:not([disabled]):not([aria-selected="true"]) { color: var(--bq-text-base,#0f172a); }
     .tab[data-variant="default"]:hover:not([disabled]):not([aria-selected="true"]) { background: var(--bq-bg-emphasis,#e2e8f0); }
-    .tab[aria-selected="true"][data-variant="default"]   { background: var(--bq-bg-base,#fff); box-shadow: var(--bq-shadow-sm); color: var(--bq-color-primary-600,#2563eb); }
+    .tab[aria-selected="true"][data-variant="default"]   { background: var(--bq-surface-raised,#fff); box-shadow: var(--bq-shadow-sm); color: var(--bq-color-primary-600,#2563eb); }
     .tab[aria-selected="true"][data-variant="underline"] { border-bottom-color: var(--bq-color-primary-600,#2563eb); color: var(--bq-color-primary-600,#2563eb); }
-    .tab[aria-selected="true"][data-variant="pills"]     { background: var(--bq-color-primary-600,#2563eb); color: #fff; }
+    .tab[aria-selected="true"][data-variant="pills"]     { background: var(--bq-color-primary-600,#2563eb); color: var(--bq-text-on-primary,#fff); }
     .tab[disabled] { opacity: 0.45; cursor: not-allowed; }
     .tab:focus-visible { outline: 2px solid transparent; box-shadow: var(--bq-focus-ring); }
-    .panels { padding-top: var(--bq-space-4,1rem); }
+    .panels { padding-block-start: var(--bq-space-4,1rem); }
     @media (prefers-reduced-motion: reduce) {
       .tab { transition: none; }
     }

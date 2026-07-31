@@ -15,7 +15,8 @@ import type { ComponentDefinition } from '@bquery/bquery/component';
 import { escapeHtml } from '@bquery/bquery/security';
 import { t } from '../../i18n/index.js';
 import { bind, host, release } from '../../utils/component.js';
-import { baseStyles, reset, srOnly } from '../../utils/styles.js';
+import { iconCss } from '../../utils/icons.js';
+import { baseStyles, focusRing, reset, srOnly } from '../../utils/styles.js';
 
 type BqBannerProps = {
   variant: string;
@@ -40,6 +41,8 @@ const definition: ComponentDefinition<BqBannerProps> = {
   },
   styles: css`
     ${baseStyles}
+    ${focusRing}
+    ${iconCss('x')}
     ${reset}
     ${srOnly}
     :host { display: block; }
@@ -54,7 +57,7 @@ const definition: ComponentDefinition<BqBannerProps> = {
     }
     .content { flex: 1 1 auto; min-width: 0; }
     .actions { display: flex; align-items: center; gap: 0.5rem; flex: 0 0 auto; }
-    .icon { display: inline-flex; flex: 0 0 auto; }
+    .banner-icon { display: inline-flex; flex: 0 0 auto; }
     .dismiss {
       display: inline-flex; align-items: center; justify-content: center;
       width: 1.75rem; height: 1.75rem; flex: 0 0 auto;
@@ -63,7 +66,8 @@ const definition: ComponentDefinition<BqBannerProps> = {
       font-size: 1rem; line-height: 1;
       transition: background-color var(--bq-duration-fast) var(--bq-easing-standard);
     }
-    .dismiss:hover { background: rgba(0,0,0,0.08); }
+    .dismiss:hover { background: var(--bq-bg-hover,rgba(15,23,42,0.08)); }
+    .dismiss { --bq-icon-size: 1rem; }
     .dismiss:focus-visible { outline: 2px solid transparent; box-shadow: var(--bq-focus-ring); }
     .banner[data-variant="info"]    { background: var(--bq-color-info-100,#dbeafe);    color: var(--bq-color-info-700,#1d4ed8);    border-bottom-color: var(--bq-color-info-200,#bfdbfe); }
     .banner[data-variant="success"] { background: var(--bq-color-success-100,#dcfce7); color: var(--bq-color-success-700,#15803d); border-bottom-color: var(--bq-color-success-200,#bbf7d0); }
@@ -107,12 +111,12 @@ const definition: ComponentDefinition<BqBannerProps> = {
         aria-live="${live}"
         ${label ? `aria-label="${escapeHtml(label)}"` : ''}
       >
-        <span class="icon" part="icon"><slot name="icon"></slot></span>
+        <span class="banner-icon" part="icon"><slot name="icon"></slot></span>
         <div class="content" part="content"><slot></slot></div>
         <div class="actions" part="actions"><slot name="actions"></slot></div>
         ${
           props.dismissible
-            ? `<button type="button" part="dismiss" class="dismiss" aria-label="${escapeHtml(dismissLabel)}">&times;</button>`
+            ? `<button type="button" part="dismiss" class="dismiss" aria-label="${escapeHtml(dismissLabel)}"><span class="icon" data-icon="x" aria-hidden="true"></span></button>`
             : ''
         }
       </div>

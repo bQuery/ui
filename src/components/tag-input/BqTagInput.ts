@@ -32,12 +32,16 @@ import type { ComponentDefinition } from '@bquery/bquery/component';
 import { component, css, html } from '@bquery/bquery/component';
 import { escapeHtml } from '@bquery/bquery/security';
 import { t } from '../../i18n/index.js';
-import { bind, host, release, store } from '../../utils/component.js';
+import { bind, host, release } from '../../utils/component.js';
 import { uniqueId } from '../../utils/dom.js';
-import { captureFocus, restoreFocus } from '../../utils/focus.js';
-import type { FocusSnapshot } from '../../utils/focus.js';
+import {
+  markFocus,
+  restorePreservedFocus,
+  trackFocus,
+} from '../../utils/focus.js';
 import { bindFormProxy, syncFormProxy } from '../../utils/form.js';
-import { baseStyles, reset, srOnly } from '../../utils/styles.js';
+import { iconCss } from '../../utils/icons.js';
+import { baseStyles, focusRing, reset, srOnly } from '../../utils/styles.js';
 import { bindValidation } from '../../utils/validation.js';
 
 type BqTagInputProps = {
@@ -57,9 +61,6 @@ type BqTagInputProps = {
 };
 
 type BqTagInputState = { uid: string; draft: string };
-
-const tagStore = (owner: object) =>
-  store<{ snapshot?: FocusSnapshot | null }>(owner, () => ({}));
 
 /** Splits a joined value into individual tags. */
 export function parseTags(raw: string, separator = ','): string[] {
@@ -111,6 +112,8 @@ const definition: ComponentDefinition<BqTagInputProps, BqTagInputState> = {
     ${baseStyles}
     ${reset}
     ${srOnly}
+    ${focusRing}
+    ${iconCss('x')}
     :host { display: block; }
     .field { display: flex; flex-direction: column; gap: 0.375rem; }
     .label {
@@ -139,17 +142,22 @@ const definition: ComponentDefinition<BqTagInputProps, BqTagInputState> = {
       background: var(--bq-color-primary-50,#eff6ff);
       color: var(--bq-color-primary-700,#1d4ed8);
       border: 1px solid var(--bq-color-primary-200,#bfdbfe);
-      border-radius: var(--bq-radius-sm,0.25rem);
-      padding: 0.125rem 0.25rem 0.125rem 0.5rem;
+      border-radius: var(--bq-radius-md,0.375rem);
+      padding-block: 0.125rem;
+      padding-inline: 0.5rem 0.25rem;
       font-size: var(--bq-font-size-sm,0.875rem);
       font-family: var(--bq-font-family-sans);
     }
     .tag button {
+      display: inline-flex; align-items: center; justify-content: center;
       border: none; background: none; cursor: pointer; line-height: 1;
-      color: inherit; padding: 0 0.125rem;
-      border-radius: var(--bq-radius-sm,0.25rem);
+      color: inherit; padding: 0.125rem;
+      border-radius: var(--bq-radius-full,9999px);
+      --bq-icon-size: 0.75rem;
+      transition: color var(--bq-duration-fast) var(--bq-easing-standard),
+                  background-color var(--bq-duration-fast) var(--bq-easing-standard);
     }
-    .tag button:hover { color: var(--bq-color-danger-600,#dc2626); }
+    .tag button:hover { color: var(--bq-color-danger-600,#dc2626); background: var(--bq-bg-hover,rgba(15,23,42,0.06)); }
     .tag button:focus-visible { outline: 2px solid transparent; box-shadow: var(--bq-focus-ring); }
 
     input {
@@ -234,6 +242,12 @@ const definition: ComponentDefinition<BqTagInputProps, BqTagInputState> = {
       Array.from(self.getAttribute('delimiters') ?? ',').filter(
         (ch) => ch !== ''
       );
+
+    // Every handler below writes state, and every state write replaces the
+    // shadow tree — including the field the user is typing in. `trackFocus`
+    // records the caret from the same events in the capture phase, and
+    // `updated()` puts it back.
+    trackFocus(self, scope);
 
     scope.on(self.shadowRoot, 'input', (event) => {
       const input = event.target as HTMLInputElement | null;
@@ -321,15 +335,13 @@ const definition: ComponentDefinition<BqTagInputProps, BqTagInputState> = {
     });
   },
   beforeUpdate() {
-    tagStore(this).snapshot = captureFocus(this.shadowRoot);
+    markFocus(this);
   },
   disconnected() {
     release(this);
   },
   updated() {
-    const local = tagStore(this);
-    restoreFocus(this.shadowRoot, local.snapshot);
-    local.snapshot = null;
+    restorePreservedFocus(this);
     syncFormProxy(this);
   },
   render({ props, state }) {
@@ -353,7 +365,7 @@ const definition: ComponentDefinition<BqTagInputProps, BqTagInputState> = {
             data-index="${index}"
             aria-label="${escapeHtml(t('tagInput.remove', { tag }))}"
             ${props.disabled ? 'disabled' : ''}
-          >&times;</button></li>`
+          ><span class="icon" data-icon="x" aria-hidden="true"></span></button></li>`
       )
       .join('');
 

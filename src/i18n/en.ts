@@ -71,6 +71,9 @@ export const en = {
   tabs: {
     listLabel: 'Tabs',
   },
+  switch: {
+    defaultLabel: 'Toggle',
+  },
   slider: {
     ariaLabel: 'Slider',
     valueText: 'Value: {value}',
@@ -141,6 +144,22 @@ export const en = {
     removeOption: 'Remove {label}',
     resultCount: '{count} options available',
     selected: '{count} selected',
+  },
+  datePicker: {
+    placeholder: 'Select a date',
+    open: 'Open calendar',
+    clear: 'Clear date',
+    prevMonth: 'Previous month',
+    nextMonth: 'Next month',
+    today: 'Today',
+  },
+  copyButton: {
+    copy: 'Copy to clipboard',
+    copied: 'Copied',
+  },
+  pinInput: {
+    cell: 'Digit {index} of {total}',
+    progress: '{count} of {total} characters entered',
   },
   tagInput: {
     placeholder: 'Add a tag…',

@@ -19,7 +19,7 @@ import { t } from '../../i18n/index.js';
 import { uniqueId } from '../../utils/dom.js';
 import { bindFormProxy, syncFormProxy } from '../../utils/form.js';
 import { bind, release, store } from '../../utils/component.js';
-import { baseStyles } from '../../utils/styles.js';
+import { baseStyles, reset } from '../../utils/styles.js';
 
 type BqSegmentedControlProps = {
   label: string;
@@ -59,7 +59,7 @@ const definition: ComponentDefinition<
   },
   styles: css`
     ${baseStyles}
-    *, *::before, *::after { box-sizing: border-box; }
+    ${reset}
     :host { display: block; }
     .field { display: flex; flex-direction: column; gap: 0.375rem; }
     .label {

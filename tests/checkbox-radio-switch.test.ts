@@ -104,6 +104,51 @@ describe('BqRadio', () => {
     expect(input?.getAttribute('value')).toBe('red');
   });
 
+  // Each radio lives in its own shadow root, so the platform's "one checked
+  // per name" rule cannot see the siblings — the component has to enforce it.
+  it('unchecks the other radios in its group', () => {
+    const form = doc.createElement('form');
+    doc.body.appendChild(form);
+    const make = (value: string, checked = false) => {
+      const el = doc.createElement('bq-radio');
+      el.setAttribute('name', 'color');
+      el.setAttribute('value', value);
+      if (checked) el.setAttribute('checked', '');
+      form.appendChild(el);
+      return el;
+    };
+    const red = make('red', true);
+    const blue = make('blue');
+
+    const input = blue.shadowRoot?.querySelector('input') as HTMLInputElement;
+    input.checked = true;
+    input.dispatchEvent(new win.Event('change', { bubbles: true, composed: true }));
+
+    expect(blue.hasAttribute('checked')).toBe(true);
+    expect(red.hasAttribute('checked')).toBe(false);
+  });
+
+  it('leaves an unrelated group alone', () => {
+    const form = doc.createElement('form');
+    doc.body.appendChild(form);
+    const other = doc.createElement('bq-radio');
+    other.setAttribute('name', 'size');
+    other.setAttribute('value', 'lg');
+    other.setAttribute('checked', '');
+    form.appendChild(other);
+
+    const el = doc.createElement('bq-radio');
+    el.setAttribute('name', 'color');
+    el.setAttribute('value', 'red');
+    form.appendChild(el);
+
+    const input = el.shadowRoot?.querySelector('input') as HTMLInputElement;
+    input.checked = true;
+    input.dispatchEvent(new win.Event('change', { bubbles: true, composed: true }));
+
+    expect(other.hasAttribute('checked')).toBe(true);
+  });
+
   it('should render label text', () => {
     const el = doc.createElement('bq-radio');
     el.setAttribute('label', 'Option A');

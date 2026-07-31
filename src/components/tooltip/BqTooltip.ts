@@ -13,7 +13,7 @@ import type { Disposer } from '../../utils/component.js';
 import { bind, host, release, store } from '../../utils/component.js';
 import { uniqueId } from '../../utils/dom.js';
 import { autoPosition } from '../../utils/position.js';
-import { baseStyles } from '../../utils/styles.js';
+import { baseStyles, reset } from '../../utils/styles.js';
 
 type BqTooltipProps = { content: string; placement: string; delay: number };
 type BqTooltipState = { visible: boolean; uid: string };
@@ -55,10 +55,11 @@ const definition: ComponentDefinition<BqTooltipProps, BqTooltipState> = {
   state: { visible: false, uid: '' },
   styles: css`
     ${baseStyles}
+    ${reset}
     :host { display: inline-block; position: relative; }
     .tip {
       position: absolute; z-index: var(--bq-z-tooltip,700);
-      background: var(--bq-color-secondary-900,#0f172a); color: #fff;
+      background: var(--bq-bg-inverse,#0f172a); color: var(--bq-text-inverse,#f8fafc);
       font-family: var(--bq-font-family-sans); font-size: var(--bq-font-size-sm,0.875rem);
       padding: 0.375rem 0.625rem; border-radius: var(--bq-radius-md,0.375rem);
       max-width: min(20rem, 90vw); width: max-content;

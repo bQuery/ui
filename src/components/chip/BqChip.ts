@@ -15,7 +15,8 @@ import { component, css, html } from '@bquery/bquery/component';
 import { escapeHtml } from '@bquery/bquery/security';
 import { t } from '../../i18n/index.js';
 import { bind, host, release } from '../../utils/component.js';
-import { baseStyles } from '../../utils/styles.js';
+import { iconCss } from '../../utils/icons.js';
+import { baseStyles, focusRing, reset } from '../../utils/styles.js';
 
 type BqChipProps = {
   variant: string;
@@ -35,14 +36,18 @@ const definition: ComponentDefinition<BqChipProps> = {
   },
   styles: css`
     ${baseStyles}
-    *, *::before, *::after { box-sizing: border-box; }
+    ${reset}
+    ${focusRing}
+    ${iconCss('x')}
     :host { display: inline-flex; }
     .chip {
       display: inline-flex; align-items: center; gap: 0.375rem;
       border-radius: var(--bq-radius-full,9999px); font-family: var(--bq-font-family-sans);
       font-weight: var(--bq-font-weight-medium,500); white-space: nowrap; cursor: pointer;
       border: 1.5px solid transparent;
-      transition: all var(--bq-duration-fast) var(--bq-easing-standard);
+      transition: color var(--bq-duration-fast) var(--bq-easing-standard),
+                  background-color var(--bq-duration-fast) var(--bq-easing-standard),
+                  border-color var(--bq-duration-fast) var(--bq-easing-standard);
     }
     .chip[data-size="sm"] { font-size: 0.75rem; padding: 0.25rem 0.625rem; }
     .chip[data-size="md"] { font-size: 0.875rem; padding: 0.375rem 0.75rem; }
@@ -58,9 +63,13 @@ const definition: ComponentDefinition<BqChipProps> = {
     .remove-btn {
       display: inline-flex; align-items: center; justify-content: center;
       background: none; border: none; cursor: pointer; color: inherit;
-      padding: 0; width: 1rem; height: 1rem; border-radius: 50%; font-size: 0.75rem; opacity: 0.7;
+      padding: 0; inline-size: 1rem; block-size: 1rem;
+      border-radius: var(--bq-radius-full,9999px); opacity: 0.6;
+      --bq-icon-size: 0.75rem;
+      transition: opacity var(--bq-duration-fast) var(--bq-easing-standard),
+                  background-color var(--bq-duration-fast) var(--bq-easing-standard);
     }
-    .remove-btn:hover { opacity: 1; }
+    .remove-btn:hover { opacity: 1; background: var(--bq-bg-hover,rgba(15,23,42,0.1)); }
     .remove-btn:focus-visible { outline: 2px solid transparent; box-shadow: var(--bq-focus-ring); }
     @media (prefers-reduced-motion: reduce) {
       .chip { transition: none; }
@@ -131,7 +140,7 @@ const definition: ComponentDefinition<BqChipProps> = {
       >
         <slot></slot>
         ${props.removable
-          ? `<button type="button" class="remove-btn" aria-label="${t('chip.remove')}">✕</button>`
+          ? `<button type="button" class="remove-btn" aria-label="${t('chip.remove')}"><span class="icon" data-icon="x" aria-hidden="true"></span></button>`
           : ''}
       </span>
     `;

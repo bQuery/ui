@@ -11,13 +11,15 @@
  * keystroke re-renders on every keystroke, so the user can type exactly one
  * character before losing the field.
  *
- * These helpers bracket a render — capture in `beforeUpdate()`, restore in
- * `updated()` — and put focus and selection back on the node that replaced
- * the one the user was in.
+ * These helpers bracket a render and put focus and selection back on the node
+ * that replaced the one the user was in. Most components want the packaged
+ * form — {@link trackFocus} plus {@link restorePreservedFocus} — rather than
+ * the {@link captureFocus} / {@link restoreFocus} primitives underneath it:
  *
  * ```ts
- * beforeUpdate() { focusStore(this).snapshot = captureFocus(this.shadowRoot); },
- * updated() { restoreFocus(this.shadowRoot, focusStore(this).snapshot); },
+ * connected()    { trackFocus(host(this), bind(this)); },
+ * beforeUpdate() { markFocus(this); },
+ * updated()      { restorePreservedFocus(this); },
  * ```
  */
 
@@ -59,27 +61,50 @@ function cssEscape(value: string): string {
 }
 
 /**
+ * Attributes that tell two otherwise identical nodes apart.
+ *
+ * A shadow tree usually contains several elements sharing one `part` — every
+ * page button in a pagination bar, every remove button in a tag list. Matching
+ * on `part` alone would put focus back on the first of them, so the selector
+ * also pins whichever of these the element carries.
+ */
+const DISCRIMINATORS = ['data-value', 'data-index', 'data-page', 'name'];
+
+function discriminatorSelector(el: Element): string {
+  for (const attribute of DISCRIMINATORS) {
+    const value = el.getAttribute(attribute);
+    if (value !== null) return `[${attribute}="${cssEscape(value)}"]`;
+  }
+  return '';
+}
+
+/**
  * Derives a selector that will match the equivalent node after a re-render.
  *
- * `part` first: it is this library's convention for naming the meaningful
- * elements of a shadow tree, it is stable across renders, and it is unique
- * per component. Falls back to `id`, then to a tag/class shape.
+ * `id` first: components in this library derive ids from a per-instance uid,
+ * so an id is both stable across renders and unique within the shadow tree.
+ * Falls back to `part` — the convention for naming the meaningful elements of
+ * a shadow tree — and then to a tag/class shape, in both cases narrowed by a
+ * {@link DISCRIMINATORS} attribute when the element carries one.
  */
 function describeElement(el: Element): string | null {
+  const id = el.getAttribute('id');
+  if (id) return `[id="${cssEscape(id)}"]`;
+
+  const extra = discriminatorSelector(el);
+
   const part = el.getAttribute('part');
   if (part) {
     const first = part.trim().split(/\s+/)[0];
-    if (first) return `[part~="${cssEscape(first)}"]`;
+    if (first) return `[part~="${cssEscape(first)}"]${extra}`;
   }
-  const id = el.getAttribute('id');
-  if (id) return `[id="${cssEscape(id)}"]`;
 
   const tag = el.tagName.toLowerCase();
   const classes = Array.from(el.classList);
   if (classes.length > 0) {
-    return `${tag}.${classes.map((c) => CSS_ESCAPE(c)).join('.')}`;
+    return `${tag}.${classes.map((c) => CSS_ESCAPE(c)).join('.')}${extra}`;
   }
-  return tag;
+  return `${tag}${extra}`;
 }
 
 // Class names may contain characters that are invalid bare in a selector.
@@ -158,4 +183,107 @@ export function restoreFocus(
   }
 
   return true;
+}
+
+// ─── Element-keyed convenience layer ─────────────────────────────────────────
+
+/**
+ * `beforeUpdate()` only runs for attribute-driven renders. A component that
+ * keeps draft text in component *state* re-renders through `setState`, which
+ * skips that hook entirely — so those components record the focus position
+ * from the event that is about to change state instead. See {@link trackFocus}.
+ */
+const pendingSnapshots = new WeakMap<object, FocusSnapshot | null>();
+const scheduledClears = new WeakSet<object>();
+
+function scheduleClear(el: HTMLElement): void {
+  if (scheduledClears.has(el)) return;
+  scheduledClears.add(el);
+  const clear = () => {
+    scheduledClears.delete(el);
+    pendingSnapshots.delete(el);
+  };
+  if (typeof queueMicrotask === 'function') queueMicrotask(clear);
+  else Promise.resolve().then(clear);
+}
+
+/**
+ * Records where focus is, to be restored by the next
+ * {@link restorePreservedFocus} call.
+ *
+ * The snapshot expires at the end of the current task. That is the whole
+ * guarantee: a render caused by whatever is running *now* repairs focus, while
+ * an unrelated render minutes later — an attribute set by application code
+ * while the user is somewhere else entirely — does not yank focus back.
+ */
+export function markFocus(el: HTMLElement): void {
+  pendingSnapshots.set(el, captureFocus(el.shadowRoot));
+  scheduleClear(el);
+}
+
+/**
+ * Restores the position recorded by {@link markFocus}. Call from `updated()`.
+ *
+ * The snapshot is deliberately not consumed by the first restore: one event
+ * handler often calls `setState` several times, each render destroys the field
+ * again, and only the first of them would otherwise be repaired.
+ *
+ * @returns whether focus was actually restored.
+ */
+export function restorePreservedFocus(el: HTMLElement): boolean {
+  const snapshot = pendingSnapshots.get(el);
+  if (snapshot === undefined) return false;
+  return restoreFocus(el.shadowRoot, snapshot);
+}
+
+/**
+ * Events after which the focus position is worth recording.
+ *
+ * These are the events a component acts on. Listening in the **capture** phase
+ * on the shadow root means the snapshot is taken before the component's own
+ * (bubble-phase) handler runs, so it describes the tree as the user left it —
+ * caret included, since `input` capture already sees the inserted character.
+ */
+const TRACKED_EVENTS = [
+  'focusin',
+  'input',
+  'keydown',
+  'mousedown',
+  'click',
+  'select',
+] as const;
+
+/** Minimal view of the disposer scope from `./component.js`. */
+interface FocusScope {
+  on(
+    target: EventTarget | null | undefined,
+    type: string,
+    handler: EventListener,
+    options?: AddEventListenerOptions | boolean
+  ): unknown;
+}
+
+/**
+ * Keeps focus and the caret pinned across re-renders, for the whole lifetime
+ * of a component.
+ *
+ * Rendering assigns `shadowRoot.innerHTML`, so every render destroys the node
+ * the user is in. Components used to work around that by marking the focus
+ * position by hand before each `setState` — easy to forget, and it missed the
+ * renders triggered from `focusin`, which is how a field loses focus the very
+ * moment it is clicked.
+ *
+ * One call in `connected()` covers the component instead:
+ *
+ * ```ts
+ * connected() { trackFocus(host(this), bind(this)); },
+ * beforeUpdate() { markFocus(this); },
+ * updated() { restorePreservedFocus(this); },
+ * ```
+ */
+export function trackFocus(el: HTMLElement, scope: FocusScope): void {
+  const root = el.shadowRoot;
+  if (!root) return;
+  const record: EventListener = () => markFocus(el);
+  for (const type of TRACKED_EVENTS) scope.on(root, type, record, true);
 }

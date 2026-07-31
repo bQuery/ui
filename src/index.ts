@@ -27,7 +27,9 @@ import { __bqComponentEntry as bannerComponentEntry } from './components/banner/
 import { __bqComponentEntry as buttonGroupComponentEntry } from './components/button-group/index.js';
 import { __bqComponentEntry as fileUploadComponentEntry } from './components/file-upload/index.js';
 import { __bqComponentEntry as kbdComponentEntry } from './components/kbd/index.js';
+import { __bqComponentEntry as meterComponentEntry } from './components/meter/index.js';
 import { __bqComponentEntry as numberInputComponentEntry } from './components/number-input/index.js';
+import { __bqComponentEntry as pinInputComponentEntry } from './components/pin-input/index.js';
 import { __bqComponentEntry as popoverComponentEntry } from './components/popover/index.js';
 import { __bqComponentEntry as ratingComponentEntry } from './components/rating/index.js';
 import { __bqComponentEntry as stepperComponentEntry } from './components/stepper/index.js';
@@ -39,11 +41,14 @@ import { __bqComponentEntry as cardComponentEntry } from './components/card/inde
 import { __bqComponentEntry as checkboxComponentEntry } from './components/checkbox/index.js';
 import { __bqComponentEntry as chipComponentEntry } from './components/chip/index.js';
 import { __bqComponentEntry as comboboxComponentEntry } from './components/combobox/index.js';
+import { __bqComponentEntry as copyButtonComponentEntry } from './components/copy-button/index.js';
+import { __bqComponentEntry as datePickerComponentEntry } from './components/date-picker/index.js';
 import { __bqComponentEntry as dialogComponentEntry } from './components/dialog/index.js';
 import { __bqComponentEntry as dividerComponentEntry } from './components/divider/index.js';
 import { __bqComponentEntry as drawerComponentEntry } from './components/drawer/index.js';
 import { __bqComponentEntry as dropdownMenuComponentEntry } from './components/dropdown-menu/index.js';
 import { __bqComponentEntry as emptyStateComponentEntry } from './components/empty-state/index.js';
+import { __bqComponentEntry as iconComponentEntry } from './components/icon/index.js';
 import { __bqComponentEntry as iconButtonComponentEntry } from './components/icon-button/index.js';
 import { __bqComponentEntry as inputComponentEntry } from './components/input/index.js';
 import { __bqComponentEntry as paginationComponentEntry } from './components/pagination/index.js';
@@ -61,6 +66,7 @@ import { __bqComponentEntry as tagInputComponentEntry } from './components/tag-i
 import { __bqComponentEntry as tabsComponentEntry } from './components/tabs/index.js';
 import { __bqComponentEntry as textareaComponentEntry } from './components/textarea/index.js';
 import { __bqComponentEntry as tooltipComponentEntry } from './components/tooltip/index.js';
+import { __bqComponentEntry as treeComponentEntry } from './components/tree/index.js';
 // Toast is imported directly because its wrapper both registers the component and re-exports showToast().
 import './components/toast/index.js';
 
@@ -78,7 +84,9 @@ Object.defineProperty(registerAll, COMPONENT_ENTRY_MAP_KEY, {
     'button-group': buttonGroupComponentEntry,
     'file-upload': fileUploadComponentEntry,
     'kbd': kbdComponentEntry,
+    'meter': meterComponentEntry,
     'number-input': numberInputComponentEntry,
+    'pin-input': pinInputComponentEntry,
     'popover': popoverComponentEntry,
     'rating': ratingComponentEntry,
     'stepper': stepperComponentEntry,
@@ -90,11 +98,14 @@ Object.defineProperty(registerAll, COMPONENT_ENTRY_MAP_KEY, {
     'checkbox': checkboxComponentEntry,
     'chip': chipComponentEntry,
     'combobox': comboboxComponentEntry,
+    'copy-button': copyButtonComponentEntry,
+    'date-picker': datePickerComponentEntry,
     'dialog': dialogComponentEntry,
     'divider': dividerComponentEntry,
     'drawer': drawerComponentEntry,
     'dropdown-menu': dropdownMenuComponentEntry,
     'empty-state': emptyStateComponentEntry,
+    'icon': iconComponentEntry,
     'icon-button': iconButtonComponentEntry,
     'input': inputComponentEntry,
     'pagination': paginationComponentEntry,
@@ -112,6 +123,7 @@ Object.defineProperty(registerAll, COMPONENT_ENTRY_MAP_KEY, {
     'tabs': tabsComponentEntry,
     'textarea': textareaComponentEntry,
     'tooltip': tooltipComponentEntry,
+    'tree': treeComponentEntry,
   },
   writable: false,
   enumerable: false,

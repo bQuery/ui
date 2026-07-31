@@ -37,11 +37,15 @@ import { t } from '../../i18n/index.js';
 import { bind, host, release, store } from '../../utils/component.js';
 import type { Disposer } from '../../utils/component.js';
 import { uniqueId } from '../../utils/dom.js';
-import { captureFocus, restoreFocus } from '../../utils/focus.js';
-import type { FocusSnapshot } from '../../utils/focus.js';
+import {
+  markFocus,
+  restorePreservedFocus,
+  trackFocus,
+} from '../../utils/focus.js';
 import { bindFormProxy, syncFormProxy } from '../../utils/form.js';
 import { autoPosition } from '../../utils/position.js';
-import { baseStyles, reset, srOnly } from '../../utils/styles.js';
+import { iconCss, iconMask } from '../../utils/icons.js';
+import { baseStyles, focusRing, reset, srOnly } from '../../utils/styles.js';
 import { bindValidation } from '../../utils/validation.js';
 
 type BqComboboxProps = {
@@ -84,7 +88,6 @@ export interface ComboboxOption {
 
 const comboboxStore = (owner: object) =>
   store<{
-    snapshot?: FocusSnapshot | null;
     syncPosition?: () => void;
     syncOptions?: () => void;
     stopPosition?: Disposer | null;
@@ -201,10 +204,13 @@ const definition: ComponentDefinition<BqComboboxProps, BqComboboxState> = {
     size: { type: String, default: 'md' },
   },
   state: { uid: '', open: false, query: '', activeIndex: -1, options: [] },
+  sanitize: { allowAttributes: ['spellcheck'] },
   styles: css`
     ${baseStyles}
     ${reset}
     ${srOnly}
+    ${focusRing}
+    ${iconCss('x', 'chevron-down')}
     :host { display: block; position: relative; }
     .field { display: flex; flex-direction: column; gap: 0.375rem; }
     .label {
@@ -248,11 +254,15 @@ const definition: ComponentDefinition<BqComboboxProps, BqComboboxState> = {
       font-family: var(--bq-font-family-sans);
     }
     .token button {
+      display: inline-flex; align-items: center; justify-content: center;
       border: none; background: none; cursor: pointer; line-height: 1;
-      color: var(--bq-text-muted,#475569); padding: 0 0.125rem;
-      border-radius: var(--bq-radius-sm,0.25rem);
+      color: var(--bq-text-muted,#475569); padding: 0.125rem;
+      border-radius: var(--bq-radius-full,9999px);
+      --bq-icon-size: 0.75rem;
+      transition: color var(--bq-duration-fast) var(--bq-easing-standard),
+                  background-color var(--bq-duration-fast) var(--bq-easing-standard);
     }
-    .token button:hover { color: var(--bq-color-danger-600,#dc2626); }
+    .token button:hover { color: var(--bq-color-danger-600,#dc2626); background: var(--bq-bg-hover,rgba(15,23,42,0.06)); }
     .token button:focus-visible { outline: 2px solid transparent; box-shadow: var(--bq-focus-ring); }
 
     .actions { display: inline-flex; align-items: center; gap: 0.125rem; margin-inline-start: auto; }
@@ -262,7 +272,10 @@ const definition: ComponentDefinition<BqComboboxProps, BqComboboxState> = {
       color: var(--bq-text-muted,#475569); cursor: pointer; line-height: 1;
       border-radius: var(--bq-radius-sm,0.25rem); font-size: 0.75rem;
     }
+    .action { --bq-icon-size: 1rem; }
     .action:hover { background: var(--bq-bg-muted,#f1f5f9); color: var(--bq-text-base,#0f172a); }
+    :host([data-open]) .toggle .icon { transform: rotate(180deg); }
+    .toggle .icon { transition: transform var(--bq-duration-normal) var(--bq-easing-standard); }
     .action:focus-visible { outline: 2px solid transparent; box-shadow: var(--bq-focus-ring); }
 
     .listbox {
@@ -270,9 +283,9 @@ const definition: ComponentDefinition<BqComboboxProps, BqComboboxState> = {
       inset-inline-start: 0; min-width: 100%;
       max-height: 16rem; overflow-y: auto;
       margin-top: 0.25rem;
-      background: var(--bq-bg-base,#fff);
+      background: var(--bq-surface-overlay,#fff);
       border: 1px solid var(--bq-border-base,#e2e8f0);
-      border-radius: var(--bq-radius-lg,0.5rem);
+      border-radius: var(--bq-radius-xl,0.75rem);
       box-shadow: var(--bq-shadow-lg);
       padding: 0.25rem 0;
       font-family: var(--bq-font-family-sans);
@@ -288,7 +301,15 @@ const definition: ComponentDefinition<BqComboboxProps, BqComboboxState> = {
     }
     .option[data-active="true"] { background: var(--bq-bg-muted,#f1f5f9); }
     .option[aria-selected="true"] { font-weight: var(--bq-font-weight-semibold,600); }
-    .option[aria-selected="true"]::after { content: "✓"; margin-inline-start: auto; color: var(--bq-color-primary-600,#2563eb); }
+    .option[aria-selected="true"]::after {
+      content: ''; margin-inline-start: auto; flex: none;
+      inline-size: 1rem; block-size: 1rem;
+      background-color: var(--bq-color-primary-600,#2563eb);
+      -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat;
+      -webkit-mask-position: center; mask-position: center;
+      -webkit-mask-size: contain; mask-size: contain;
+      ${iconMask('check')}
+    }
     .option[aria-disabled="true"] { opacity: 0.5; cursor: not-allowed; }
 
     .group-label {
@@ -423,6 +444,12 @@ const definition: ComponentDefinition<BqComboboxProps, BqComboboxState> = {
       );
     };
     local.syncPosition = syncPosition;
+
+    // Every handler below writes state, and every state write replaces the
+    // shadow tree — including the field the user is typing in. `trackFocus`
+    // records the caret from the same events in the capture phase, and
+    // `updated()` puts it back.
+    trackFocus(self, scope);
 
     // ── Input ────────────────────────────────────────────────────────────
     scope.on(self.shadowRoot, 'input', (event) => {
@@ -594,15 +621,14 @@ const definition: ComponentDefinition<BqComboboxProps, BqComboboxState> = {
     }
   },
   beforeUpdate() {
-    comboboxStore(this).snapshot = captureFocus(this.shadowRoot);
+    markFocus(this);
   },
   disconnected() {
     release(this);
   },
   updated() {
     const local = comboboxStore(this);
-    restoreFocus(this.shadowRoot, local.snapshot);
-    local.snapshot = null;
+    restorePreservedFocus(this);
     local.syncOptions?.();
     local.syncPosition?.();
     syncFormProxy(this);
@@ -643,7 +669,7 @@ const definition: ComponentDefinition<BqComboboxProps, BqComboboxState> = {
                   data-value="${escapeHtml(value)}"
                   tabindex="-1"
                   aria-label="${escapeHtml(t('combobox.removeOption', { label }))}"
-                >&times;</button></span>`;
+                ><span class="icon" data-icon="x" aria-hidden="true"></span></button></span>`;
             })
             .join('')
         : '';
@@ -703,10 +729,10 @@ const definition: ComponentDefinition<BqComboboxProps, BqComboboxState> = {
           <span class="actions">
             ${
               props.clearable && values.length > 0
-                ? `<button type="button" class="action clear" part="clear" tabindex="-1" aria-label="${escapeHtml(t('combobox.clear'))}">&times;</button>`
+                ? `<button type="button" class="action clear" part="clear" tabindex="-1" aria-label="${escapeHtml(t('combobox.clear'))}"><span class="icon" data-icon="x" aria-hidden="true"></span></button>`
                 : ''
             }
-            <button type="button" class="action toggle" part="toggle" tabindex="-1" aria-label="${escapeHtml(t('combobox.toggle'))}">&#9660;</button>
+            <button type="button" class="action toggle" part="toggle" tabindex="-1" aria-label="${escapeHtml(t('combobox.toggle'))}"><span class="icon" data-icon="chevron-down" aria-hidden="true"></span></button>
           </span>
         </div>
         <div
