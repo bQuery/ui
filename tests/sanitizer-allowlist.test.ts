@@ -80,7 +80,11 @@ function renderedAttributes(source: string): Set<string> {
   const body = source.slice(renderStart);
   const attributes = new Set<string>();
 
-  for (const tag of body.matchAll(/<([a-zA-Z][\w-]*)((?:[^<>]|\n)*?)>/g)) {
+  // `[^<>]` already matches newlines — a character class is not affected by
+  // the `s` flag — so spelling out `(?:[^<>]|\n)` made the two branches
+  // ambiguous and the group exponentially backtrackable on an unterminated
+  // tag. One unambiguous class matches the same text in linear time.
+  for (const tag of body.matchAll(/<([a-zA-Z][\w-]*)([^<>]*)>/g)) {
     if (!KNOWN_TAGS.has((tag[1] ?? '').toLowerCase())) continue;
     for (const attribute of (tag[2] ?? '').matchAll(
       /(?:^|[\s"'`])([a-zA-Z][a-zA-Z0-9-]*)\s*=\s*["']/g
