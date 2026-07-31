@@ -88,13 +88,13 @@ const itemDefinition: ComponentDefinition<BqTimelineItemProps> = {
       width: 0.875rem; height: 0.875rem; margin-top: 0.25rem; flex: 0 0 auto;
       border-radius: var(--bq-radius-full,9999px);
       background: var(--bq-color-primary-600,#2563eb);
-      box-shadow: 0 0 0 3px var(--bq-color-primary-100,#dbeafe);
+      box-shadow: 0 0 0 3px var(--bq-intent-primary-bg,#dbeafe);
       color: var(--bq-text-on-primary,#fff); font-size: 0.5rem; line-height: 1;
     }
-    .item[data-variant="success"] .marker { background: var(--bq-color-success-600,#16a34a); box-shadow: 0 0 0 3px var(--bq-color-success-100,#dcfce7); }
-    .item[data-variant="danger"]  .marker { background: var(--bq-color-danger-600,#dc2626);  box-shadow: 0 0 0 3px var(--bq-color-danger-100,#fee2e2); }
-    .item[data-variant="warning"] .marker { background: var(--bq-color-warning-600,#d97706); box-shadow: 0 0 0 3px var(--bq-color-warning-100,#fef3c7); }
-    .item[data-variant="info"]    .marker { background: var(--bq-color-info-600,#2563eb);    box-shadow: 0 0 0 3px var(--bq-color-info-100,#dbeafe); }
+    .item[data-variant="success"] .marker { background: var(--bq-color-success-600,#16a34a); box-shadow: 0 0 0 3px var(--bq-intent-success-bg,#dcfce7); }
+    .item[data-variant="danger"]  .marker { background: var(--bq-color-danger-600,#dc2626);  box-shadow: 0 0 0 3px var(--bq-intent-danger-bg,#fee2e2); }
+    .item[data-variant="warning"] .marker { background: var(--bq-color-warning-600,#d97706); box-shadow: 0 0 0 3px var(--bq-intent-warning-bg,#fef3c7); }
+    .item[data-variant="info"]    .marker { background: var(--bq-color-info-600,#2563eb);    box-shadow: 0 0 0 3px var(--bq-intent-info-bg,#dbeafe); }
     .item[data-variant="neutral"] .marker { background: var(--bq-text-subtle,#94a3b8);       box-shadow: 0 0 0 3px var(--bq-bg-emphasis,#e2e8f0); }
 
     .connector { flex: 1 1 auto; width: 2px; background: var(--bq-border-base,#e2e8f0); margin-top: 0.25rem; min-height: 0.5rem; }

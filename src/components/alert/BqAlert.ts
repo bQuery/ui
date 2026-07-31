@@ -47,22 +47,30 @@ const definition: ComponentDefinition<BqAlertProps> = {
          as a status band without the heavy full outline it used to have. */
       border-inline-start-width: 3px;
     }
-    .alert[data-variant="info"]    { background: var(--bq-color-info-50,#eff6ff);    border-color: var(--bq-color-info-200,#bfdbfe);    border-inline-start-color: var(--bq-color-info-500,#3b82f6);    color: var(--bq-color-info-800,#1e40af); }
-    .alert[data-variant="success"] { background: var(--bq-color-success-50,#f0fdf4); border-color: var(--bq-color-success-200,#bbf7d0); border-inline-start-color: var(--bq-color-success-500,#22c55e); color: var(--bq-color-success-800,#166534); }
-    .alert[data-variant="warning"] { background: var(--bq-color-warning-50,#fffbeb); border-color: var(--bq-color-warning-200,#fde68a); border-inline-start-color: var(--bq-color-warning-500,#f59e0b); color: var(--bq-color-warning-800,#92400e); }
-    .alert[data-variant="danger"]  { background: var(--bq-color-danger-50,#fef2f2);  border-color: var(--bq-color-danger-200,#fecaca);  border-inline-start-color: var(--bq-color-danger-500,#ef4444);  color: var(--bq-color-danger-800,#991b1b); }
-
-    /* Dark mode cannot use the 50-step tints — they are near-white. A
-       translucent wash of the accent over the page keeps the same hue
-       relationship at the right lightness. */
-    :host([data-theme="dark"]) .alert[data-variant="info"],
-    :host([data-theme="dark"]) .alert[data-variant="success"],
-    :host([data-theme="dark"]) .alert[data-variant="warning"],
-    :host([data-theme="dark"]) .alert[data-variant="danger"] { background: var(--bq-bg-subtle,#1e293b); }
-    :host([data-theme="dark"]) .alert[data-variant="info"]    { border-color: var(--bq-color-info-800,#1e40af);    color: var(--bq-color-info-200,#bfdbfe); }
-    :host([data-theme="dark"]) .alert[data-variant="success"] { border-color: var(--bq-color-success-800,#166534); color: var(--bq-color-success-200,#bbf7d0); }
-    :host([data-theme="dark"]) .alert[data-variant="warning"] { border-color: var(--bq-color-warning-800,#92400e); color: var(--bq-color-warning-200,#fde68a); }
-    :host([data-theme="dark"]) .alert[data-variant="danger"]  { border-color: var(--bq-color-danger-800,#991b1b);  color: var(--bq-color-danger-200,#fecaca); }
+    .alert[data-variant="info"] {
+      background: var(--bq-intent-info-bg,#dbeafe);
+      border-color: var(--bq-intent-info-border,#bfdbfe);
+      border-inline-start-color: var(--bq-color-info-500,#3b82f6);
+      color: var(--bq-intent-info-fg,#1d4ed8);
+    }
+    .alert[data-variant="success"] {
+      background: var(--bq-intent-success-bg,#dcfce7);
+      border-color: var(--bq-intent-success-border,#bbf7d0);
+      border-inline-start-color: var(--bq-color-success-500,#22c55e);
+      color: var(--bq-intent-success-fg,#15803d);
+    }
+    .alert[data-variant="warning"] {
+      background: var(--bq-intent-warning-bg,#fef3c7);
+      border-color: var(--bq-intent-warning-border,#fde68a);
+      border-inline-start-color: var(--bq-color-warning-500,#f59e0b);
+      color: var(--bq-intent-warning-fg,#b45309);
+    }
+    .alert[data-variant="danger"] {
+      background: var(--bq-intent-danger-bg,#fee2e2);
+      border-color: var(--bq-intent-danger-border,#fecaca);
+      border-inline-start-color: var(--bq-color-danger-500,#ef4444);
+      color: var(--bq-intent-danger-fg,#b91c1c);
+    }
 
     .status-icon { --bq-icon-size: 1.25rem; margin-block-start: 0.0625rem; }
     .content { flex: 1; min-inline-size: 0; }

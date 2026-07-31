@@ -62,13 +62,19 @@ const definition: ComponentDefinition<BqSwitchProps, BqSwitchState> = {
 
     /* One custom property drives width, height, thumb size and travel, so a
        new size is one line rather than four coordinated ones. */
+    .switch {
+      position: relative;
+      display: inline-grid;
+      place-items: center;
+      flex: none;
+    }
     .track {
       --bq-switch-track-h: 1.375rem;
       --bq-switch-track-w: 2.5rem;
       --bq-switch-gap: 2px;
       position: relative;
-      display: inline-block;
-      flex: none;
+      display: block;
+      pointer-events: none;
       inline-size: var(--bq-switch-track-w);
       block-size: var(--bq-switch-track-h);
       background: var(--bq-border-strong, #94a3b8);
@@ -171,7 +177,7 @@ const definition: ComponentDefinition<BqSwitchProps, BqSwitchState> = {
     return html`
       <div class="field" part="wrapper">
         <label class="control" part="control">
-          <span class="track" part="track" data-size="${escapeHtml(props.size)}">
+          <span class="switch">
             <input
               type="checkbox"
               part="input"
@@ -188,7 +194,9 @@ const definition: ComponentDefinition<BqSwitchProps, BqSwitchState> = {
               }
               ${describedBy ? `aria-describedby="${escapeHtml(describedBy)}"` : ''}
             />
-            <span class="thumb" part="thumb"></span>
+            <span class="track" part="track" data-size="${escapeHtml(props.size)}">
+              <span class="thumb" part="thumb"></span>
+            </span>
           </span>
           ${
             props.label

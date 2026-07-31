@@ -87,6 +87,21 @@ Anything reaching outside the component — `document`/`window` listeners, timer
 elements — must be registered on the scope. `tests/component-utils.test.ts`
 asserts that the overlay components leave no document listeners behind.
 
+**`connected()` runs twice.** The runtime mounts an element from
+`attributeChangedCallback` during upgrade, and the `connectedCallback` that
+follows sees it already mounted and takes its reconnect path — so any element
+carrying an observed attribute in the initial HTML runs `connected()` a second
+time. `bind()` absorbs that: calling it again unwinds the previous scope, so
+exactly one set of listeners stays live. Consequences to respect:
+
+- Call `bind()` **once**, at the top of `connected()`. Use `scopeOf(owner)` to
+  add teardown from another hook.
+- `connected()` must be safe to run twice for everything it does *besides*
+  registering on the scope. Anything not on the scope — a `queueMicrotask` that
+  mutates light DOM, an event dispatched on connect — will happen twice.
+
+This is what made `bq-dropdown-menu` toggle twice per click and never open.
+
 Use `store(owner, init)` when a value created in `connected()` has to stay
 reachable from `updated()`.
 
@@ -143,6 +158,15 @@ updated()      { restorePreservedFocus(this); },
 runs. `beforeUpdate` covers attribute-driven renders, which no event precedes.
 `setState` renders skip `beforeUpdate` entirely, which is why the event-driven
 half is needed at all.
+
+### Tinted surfaces
+
+Never paint a background from a 50/100/200 palette step. Those are *light*
+colours in both schemes, so a badge or an alert built on them stays near-white
+on a dark page — which is how alerts, badges, chips, avatars and tags all
+shipped broken in dark mode. Use `--bq-intent-{primary|success|danger|warning|
+info|neutral}-{bg|fg|border}`, which flip with the scheme.
+`tests/component-css.test.ts` fails the build on a violation.
 
 ### Theming across the shadow boundary
 

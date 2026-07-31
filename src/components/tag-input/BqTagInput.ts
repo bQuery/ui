@@ -139,9 +139,9 @@ const definition: ComponentDefinition<BqTagInputProps, BqTagInputState> = {
     .tags { display: contents; list-style: none; margin: 0; padding: 0; }
     .tag {
       display: inline-flex; align-items: center; gap: 0.25rem;
-      background: var(--bq-color-primary-50,#eff6ff);
-      color: var(--bq-color-primary-700,#1d4ed8);
-      border: 1px solid var(--bq-color-primary-200,#bfdbfe);
+      background: var(--bq-intent-primary-bg,#dbeafe);
+      color: var(--bq-intent-primary-fg,#1d4ed8);
+      border: 1px solid var(--bq-intent-primary-border,#bfdbfe);
       border-radius: var(--bq-radius-md,0.375rem);
       padding-block: 0.125rem;
       padding-inline: 0.5rem 0.25rem;

@@ -69,10 +69,10 @@ const definition: ComponentDefinition<BqBannerProps> = {
     .dismiss:hover { background: var(--bq-bg-hover,rgba(15,23,42,0.08)); }
     .dismiss { --bq-icon-size: 1rem; }
     .dismiss:focus-visible { outline: 2px solid transparent; box-shadow: var(--bq-focus-ring); }
-    .banner[data-variant="info"]    { background: var(--bq-color-info-100,#dbeafe);    color: var(--bq-color-info-700,#1d4ed8);    border-bottom-color: var(--bq-color-info-200,#bfdbfe); }
-    .banner[data-variant="success"] { background: var(--bq-color-success-100,#dcfce7); color: var(--bq-color-success-700,#15803d); border-bottom-color: var(--bq-color-success-200,#bbf7d0); }
-    .banner[data-variant="warning"] { background: var(--bq-color-warning-100,#fef3c7); color: var(--bq-color-warning-700,#b45309); border-bottom-color: var(--bq-color-warning-200,#fde68a); }
-    .banner[data-variant="danger"]  { background: var(--bq-color-danger-100,#fee2e2);  color: var(--bq-color-danger-700,#b91c1c);  border-bottom-color: var(--bq-color-danger-200,#fecaca); }
+    .banner[data-variant="info"]      { background: var(--bq-intent-info-bg); color: var(--bq-intent-info-fg); border-bottom-color: var(--bq-intent-info-border); }
+    .banner[data-variant="success"]   { background: var(--bq-intent-success-bg); color: var(--bq-intent-success-fg); border-bottom-color: var(--bq-intent-success-border); }
+    .banner[data-variant="warning"]   { background: var(--bq-intent-warning-bg); color: var(--bq-intent-warning-fg); border-bottom-color: var(--bq-intent-warning-border); }
+    .banner[data-variant="danger"]    { background: var(--bq-intent-danger-bg); color: var(--bq-intent-danger-fg); border-bottom-color: var(--bq-intent-danger-border); }
     .banner[data-variant="neutral"] { background: var(--bq-bg-muted,#f1f5f9);          color: var(--bq-text-base,#0f172a);         border-bottom-color: var(--bq-border-base,#e2e8f0); }
     @media (prefers-reduced-motion: reduce) {
       .dismiss { transition: none; }

@@ -1,11 +1,92 @@
 import { beforeAll, describe, expect, it } from 'bun:test';
-import { bind, host, release, store } from '../src/utils/component.js';
+import {
+  bind,
+  host,
+  release,
+  scopeOf,
+  store,
+} from '../src/utils/component.js';
 import { waitForFrame } from './helpers.js';
 
 const win = (globalThis as unknown as Record<string, unknown>)[
   'window'
 ] as Window & typeof globalThis;
 const doc = win.document as unknown as Document;
+
+describe('bind() re-entry', () => {
+  // The component runtime calls `connected()` twice for any element that
+  // carries an observed attribute in the initial HTML: `attributeChangedCallback`
+  // mounts it during upgrade, then `connectedCallback` sees it already mounted
+  // and takes its reconnect path. Every listener was registered twice, and the
+  // runtime had replaced its own scope reference in between, so the first set
+  // could never be released. `bq-dropdown-menu` toggled twice per click and so
+  // never opened at all.
+  it('unwinds the previous scope when connected() runs again', () => {
+    const owner = {};
+    const target = doc.createElement('div');
+    let calls = 0;
+    const handler = () => {
+      calls += 1;
+    };
+
+    bind(owner).on(target, 'ping', handler);
+    bind(owner).on(target, 'ping', handler);
+
+    target.dispatchEvent(new win.Event('ping'));
+    expect(calls).toBe(1);
+  });
+
+  it('still tears everything down on release', () => {
+    const owner = {};
+    const target = doc.createElement('div');
+    let calls = 0;
+
+    bind(owner).on(target, 'ping', () => {
+      calls += 1;
+    });
+    bind(owner).on(target, 'ping', () => {
+      calls += 1;
+    });
+    release(owner);
+
+    target.dispatchEvent(new win.Event('ping'));
+    expect(calls).toBe(0);
+  });
+
+  // A real reconnect runs `disconnected()` first, so the set is already empty
+  // and re-binding must not swallow the new registration.
+  it('re-registers cleanly after a genuine disconnect', () => {
+    const owner = {};
+    const target = doc.createElement('div');
+    let calls = 0;
+    const handler = () => {
+      calls += 1;
+    };
+
+    bind(owner).on(target, 'ping', handler);
+    release(owner);
+    bind(owner).on(target, 'ping', handler);
+
+    target.dispatchEvent(new win.Event('ping'));
+    expect(calls).toBe(1);
+  });
+
+  it('scopeOf adds to the existing scope instead of replacing it', () => {
+    const owner = {};
+    const target = doc.createElement('div');
+    let calls = 0;
+
+    bind(owner).on(target, 'ping', () => {
+      calls += 1;
+    });
+    scopeOf(owner).on(target, 'ping', () => {
+      calls += 1;
+    });
+
+    target.dispatchEvent(new win.Event('ping'));
+    expect(calls).toBe(2);
+  });
+});
 
 describe('component scope', () => {
   it('removes listeners registered through the scope on release', () => {

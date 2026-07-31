@@ -113,10 +113,10 @@ const definition: ComponentDefinition<BqFileUploadProps, BqFileUploadState> = {
       transition: border-color var(--bq-duration-fast) var(--bq-easing-standard),
                   background-color var(--bq-duration-fast) var(--bq-easing-standard);
     }
-    .zone:hover:not(:disabled) { border-color: var(--bq-color-primary-600,#2563eb); background: var(--bq-color-primary-50,#eff6ff); }
+    .zone:hover:not(:disabled) { border-color: var(--bq-color-primary-600,#2563eb); background: var(--bq-bg-selected,rgba(37,99,235,0.1)); }
     .zone:focus-visible { outline: 2px solid transparent; box-shadow: var(--bq-focus-ring); }
     .zone:disabled { opacity: 0.55; cursor: not-allowed; }
-    :host([data-dragging]) .zone { border-color: var(--bq-color-primary-600,#2563eb); background: var(--bq-color-primary-50,#eff6ff); }
+    :host([data-dragging]) .zone { border-color: var(--bq-color-primary-600,#2563eb); background: var(--bq-bg-selected,rgba(37,99,235,0.1)); }
     :host([error]) .zone { border-color: var(--bq-color-danger-600,#dc2626); }
     .browse { color: var(--bq-color-primary-600,#2563eb); font-weight: var(--bq-font-weight-semibold,600); }
     .dropzone-icon { display: inline-flex; color: var(--bq-text-subtle,#94a3b8); }

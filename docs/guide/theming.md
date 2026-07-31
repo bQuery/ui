@@ -87,6 +87,24 @@ theme in both schemes. To override only one scheme, write a rule against
 | `--bq-focus-ring`       | The focus ring `box-shadow`                           |
 | `--bq-overlay-backdrop` | Dialog and drawer scrims                              |
 
+### Intent surfaces
+
+A tinted status surface — an alert, a badge, a chip, a tag — needs a *pair* of
+colours that swap together with the scheme. Reaching into the palette for
+`--bq-color-success-100` on `--bq-color-success-700` hard-codes a light
+treatment: those steps are near-white and near-black no matter what the page is
+doing, so the badge stays glaring white on a dark page.
+
+| Token | Used for |
+| ----- | -------- |
+| `--bq-intent-{intent}-bg` | The tinted panel or pill |
+| `--bq-intent-{intent}-fg` | Text and icons on that tint |
+| `--bq-intent-{intent}-border` | Its outline |
+
+`{intent}` is one of `primary`, `success`, `danger`, `warning`, `info`,
+`neutral`. Use these anywhere you would otherwise reach for a 50/100/200 step
+as a background.
+
 The surfaces are a stack — sunken, base, raised, overlay. In light mode they
 are told apart by shadow; in dark mode shadows are invisible, so each level is
 a slightly different lightness. That is why an overlay has its own token rather

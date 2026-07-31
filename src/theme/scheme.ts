@@ -70,6 +70,33 @@ const LIGHT_TOKENS = {
   'focus-ring-warning': '0 0 0 3px rgba(217, 119, 6, 0.35)',
 
   'overlay-backdrop': 'rgba(15, 23, 42, 0.5)',
+
+  /* Intent surfaces.
+   *
+   * The palette itself is scheme-independent, so a component that paints a
+   * badge with `--bq-color-success-100` on `--bq-color-success-700` text is
+   * hard-coding a *light* treatment: those steps are near-white and near-black
+   * whatever the page is doing. Every tinted surface in the library — alerts,
+   * badges, chips, avatars, tags — goes through these instead, so the tint
+   * flips with the scheme while the meaning stays put. */
+  'intent-primary-bg': '#dbeafe',
+  'intent-primary-fg': '#1d4ed8',
+  'intent-primary-border': '#bfdbfe',
+  'intent-success-bg': '#dcfce7',
+  'intent-success-fg': '#15803d',
+  'intent-success-border': '#bbf7d0',
+  'intent-danger-bg': '#fee2e2',
+  'intent-danger-fg': '#b91c1c',
+  'intent-danger-border': '#fecaca',
+  'intent-warning-bg': '#fef3c7',
+  'intent-warning-fg': '#b45309',
+  'intent-warning-border': '#fde68a',
+  'intent-info-bg': '#dbeafe',
+  'intent-info-fg': '#1d4ed8',
+  'intent-info-border': '#bfdbfe',
+  'intent-neutral-bg': '#f1f5f9',
+  'intent-neutral-fg': '#334155',
+  'intent-neutral-border': '#e2e8f0',
 } as const;
 
 const DARK_TOKENS: Record<SemanticTokenName, string> = {
@@ -107,6 +134,29 @@ const DARK_TOKENS: Record<SemanticTokenName, string> = {
   'focus-ring-warning': '0 0 0 3px rgba(251, 191, 36, 0.4)',
 
   'overlay-backdrop': 'rgba(2, 6, 23, 0.72)',
+
+  /* Deep, desaturated tints of the same hue: dark enough to sit on the page
+   * without glowing, saturated enough to keep the intent readable. The
+   * foreground jumps to the 300 step, which is the lightest one that still
+   * carries the hue at small text sizes. */
+  'intent-primary-bg': '#172554',
+  'intent-primary-fg': '#93c5fd',
+  'intent-primary-border': '#1e40af',
+  'intent-success-bg': '#052e16',
+  'intent-success-fg': '#86efac',
+  'intent-success-border': '#166534',
+  'intent-danger-bg': '#450a0a',
+  'intent-danger-fg': '#fca5a5',
+  'intent-danger-border': '#991b1b',
+  'intent-warning-bg': '#451a03',
+  'intent-warning-fg': '#fcd34d',
+  'intent-warning-border': '#92400e',
+  'intent-info-bg': '#172554',
+  'intent-info-fg': '#93c5fd',
+  'intent-info-border': '#1e40af',
+  'intent-neutral-bg': '#1e293b',
+  'intent-neutral-fg': '#cbd5e1',
+  'intent-neutral-border': '#334155',
 };
 
 /**

@@ -28,7 +28,7 @@ export {
   isIconName,
 } from './icons.js';
 export type { IconName } from './icons.js';
-export { bind, host, release, store } from './component.js';
+export { bind, host, release, scopeOf, store } from './component.js';
 export type { ComponentScope, Disposer } from './component.js';
 export {
   dispatch,

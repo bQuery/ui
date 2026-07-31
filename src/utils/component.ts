@@ -94,14 +94,56 @@ function scopeSet(owner: object): Set<Disposer> {
   return set;
 }
 
+/** Runs and clears every disposer in a set, tolerating re-entrant edits. */
+function unwind(set: Set<Disposer>): void {
+  // Snapshot first: a disposer may register or remove others while running.
+  const pending = Array.from(set);
+  set.clear();
+  for (const dispose of pending) {
+    try {
+      dispose();
+    } catch {
+      /* teardown must never block the rest of the unwind */
+    }
+  }
+}
+
 /**
- * Returns the disposer scope for a component instance, creating it on first
- * use. Calling `bind()` twice returns a scope backed by the same registry, so
- * it is safe to call from any hook.
+ * Opens a disposer scope for a component instance.
+ *
+ * **Calling `bind()` again unwinds the previous scope first.** That is not
+ * defensive tidiness — the component runtime really does call `connected()`
+ * twice for any element that carries an observed attribute in the initial
+ * HTML: `attributeChangedCallback` mounts the element during upgrade, and the
+ * `connectedCallback` that follows sees it already mounted and takes its
+ * reconnect path. Every listener, observer and timer was therefore registered
+ * twice, and the runtime replaced its own scope reference in between, so the
+ * first set could never be released.
+ *
+ * The symptoms were not subtle: `bq-dropdown-menu` toggled twice per click and
+ * so never opened at all. Re-binding collapses both calls onto one live set of
+ * registrations, and a genuine reconnect — where `disconnected()` already ran
+ * `release()` — finds the set empty and unwinds nothing.
+ *
+ * Call it once, at the top of `connected()`. Use {@link scopeOf} to reach an
+ * existing scope from another hook.
  */
 export function bind(owner: object): ComponentScope {
   const set = scopeSet(owner);
+  if (set.size > 0) unwind(set);
+  return makeScope(set);
+}
 
+/**
+ * Returns the scope for an owner **without** unwinding it.
+ *
+ * For hooks other than `connected()` that need to register more teardown.
+ */
+export function scopeOf(owner: object): ComponentScope {
+  return makeScope(scopeSet(owner));
+}
+
+function makeScope(set: Set<Disposer>): ComponentScope {
   const add = (dispose: Disposer): Disposer => {
     set.add(dispose);
     return () => {
@@ -142,16 +184,7 @@ export function bind(owner: object): ComponentScope {
       return remove;
     },
     dispose() {
-      // Snapshot first: a disposer may register or remove others while running.
-      const pending = Array.from(set);
-      set.clear();
-      for (const dispose of pending) {
-        try {
-          dispose();
-        } catch {
-          /* teardown must never block the rest of the unwind */
-        }
-      }
+      unwind(set);
     },
   };
 }
@@ -163,5 +196,5 @@ export function bind(owner: object): ComponentScope {
 export function release(owner: object): void {
   const set = scopes.get(owner);
   if (!set || set.size === 0) return;
-  bind(owner).dispose();
+  unwind(set);
 }

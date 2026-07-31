@@ -10,7 +10,7 @@ import type { ComponentDefinition } from '@bquery/bquery/component';
 import { component, css, html } from '@bquery/bquery/component';
 import { escapeHtml } from '@bquery/bquery/security';
 import { t } from '../../i18n/index.js';
-import { bind, release } from '../../utils/component.js';
+import { bind, release, store } from '../../utils/component.js';
 import { baseStyles, reset } from '../../utils/styles.js';
 
 type BqTabsProps = { 'active-tab': string; variant: string };
@@ -29,6 +29,28 @@ function getPanelId(tabId: string): string | null {
   const ariaIdPart = getAriaIdPart(tabId);
   return ariaIdPart ? `panel-${ariaIdPart}` : null;
 }
+
+/**
+ * Writes an attribute only when the value would actually change.
+ *
+ * `setAttribute` produces a mutation record even when the value is identical,
+ * and this component writes `id` onto its light-DOM panels from `updated()`
+ * while a MutationObserver watches the subtree for `id` — so an unconditional
+ * write re-entered its own observer, re-rendered, wrote again, and hung the
+ * main thread outright. Any page using the documented panel markup froze on
+ * load.
+ */
+function setAttr(el: Element, name: string, value: string): void {
+  if (el.getAttribute(name) !== value) el.setAttribute(name, value);
+}
+
+function removeAttr(el: Element, name: string): void {
+  if (el.hasAttribute(name)) el.removeAttribute(name);
+}
+
+/** The subtree observer, so `updated()` can pause its own writes. */
+const tabsStore = (owner: object) =>
+  store<{ observer?: MutationObserver | null }>(owner, () => ({}));
 
 const definition: ComponentDefinition<BqTabsProps> = {
   props: {
@@ -92,6 +114,9 @@ const definition: ComponentDefinition<BqTabsProps> = {
 
     // MutationObserver to re-render when child items change
     const obs = new MutationObserver(() => {
+      // Records queued before `updated()` paused the observer still arrive
+      // here; ignore them rather than re-entering the render.
+      if (!tabsStore(self).observer) return;
       readTabs();
       // Trigger re-render by touching an attribute
       const cur = (self as HTMLElement).getAttribute('active-tab') ?? '';
@@ -103,7 +128,11 @@ const definition: ComponentDefinition<BqTabsProps> = {
       attributes: true,
       attributeFilter: ['label', 'disabled', 'id'],
     });
-    scope.add(() => obs.disconnect());
+    tabsStore(self).observer = obs;
+    scope.add(() => {
+      tabsStore(self).observer = null;
+      obs.disconnect();
+    });
 
     const clickH = (e: Event) => {
       const btn = (e.target as Element).closest(
@@ -157,37 +186,50 @@ const definition: ComponentDefinition<BqTabsProps> = {
     release(this);
   },
   updated() {
-    // Sync panel visibility after each render
-    const active = this.getAttribute('active-tab') ?? '';
-    this.querySelectorAll<HTMLElement>('[data-tab]').forEach((panel) => {
-      const tabId = panel.getAttribute('data-tab') ?? '';
-      const isActive = tabId === active;
-      const panelId = panel.id || getPanelId(tabId);
-      const button = Array.from(
-        this.shadowRoot?.querySelectorAll<HTMLElement>('.tab[data-tab-id]') ?? []
-      ).find((candidate) => candidate.getAttribute('data-tab-id') === tabId);
-      const labelledBy = button?.id || (button ? getTabButtonId(tabId) : null);
+    // The panels live in the light DOM, so wiring them up means writing to the
+    // very subtree this component observes. Pause the observer for the pass and
+    // write only what changes: either guard alone is enough to break the loop,
+    // and both together mean a future edit here cannot reintroduce it.
+    const local = tabsStore(this);
+    const observer = local.observer;
+    local.observer = null;
+    observer?.disconnect();
 
-      if (panelId) {
-        panel.id = panelId;
-      }
-      panel.hidden = !isActive;
-      panel.setAttribute('role', 'tabpanel');
-      panel.setAttribute('tabindex', isActive ? '0' : '-1');
-      if (labelledBy) {
-        panel.setAttribute('aria-labelledby', labelledBy);
-      } else {
-        panel.removeAttribute('aria-labelledby');
-      }
-      panel.setAttribute('aria-hidden', isActive ? 'false' : 'true');
-      if (button) {
-        if (panelId) {
-          button.setAttribute('aria-controls', panelId);
-        } else {
-          button.removeAttribute('aria-controls');
+    try {
+      const active = this.getAttribute('active-tab') ?? '';
+      this.querySelectorAll<HTMLElement>('[data-tab]').forEach((panel) => {
+        const tabId = panel.getAttribute('data-tab') ?? '';
+        const isActive = tabId === active;
+        const panelId = panel.id || getPanelId(tabId);
+        const button = Array.from(
+          this.shadowRoot?.querySelectorAll<HTMLElement>('.tab[data-tab-id]') ??
+            []
+        ).find((candidate) => candidate.getAttribute('data-tab-id') === tabId);
+        const labelledBy = button?.id || (button ? getTabButtonId(tabId) : null);
+
+        if (panelId) setAttr(panel, 'id', panelId);
+        if (panel.hidden !== !isActive) panel.hidden = !isActive;
+        setAttr(panel, 'role', 'tabpanel');
+        setAttr(panel, 'tabindex', isActive ? '0' : '-1');
+        if (labelledBy) setAttr(panel, 'aria-labelledby', labelledBy);
+        else removeAttr(panel, 'aria-labelledby');
+        setAttr(panel, 'aria-hidden', isActive ? 'false' : 'true');
+        if (button) {
+          if (panelId) setAttr(button, 'aria-controls', panelId);
+          else removeAttr(button, 'aria-controls');
         }
+      });
+    } finally {
+      if (observer && this.isConnected) {
+        observer.observe(this, {
+          childList: true,
+          subtree: true,
+          attributes: true,
+          attributeFilter: ['label', 'disabled', 'id'],
+        });
+        local.observer = observer;
       }
-    });
+    }
   },
   render({ props, state }) {
     const items =

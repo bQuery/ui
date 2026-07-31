@@ -98,7 +98,7 @@ const definition: ComponentDefinition<BqButtonProps, BqButtonState> = {
     .btn[data-variant="secondary"] { background-color: var(--bq-bg-muted,#f1f5f9); color: var(--bq-text-base,#0f172a); border-color: var(--bq-border-base,#e2e8f0); }
     .btn[data-variant="secondary"]:hover:not(:disabled):not([aria-disabled="true"]) { background-color: var(--bq-bg-emphasis,#e2e8f0); border-color: var(--bq-border-emphasis,#cbd5e1); }
     .btn[data-variant="outline"] { background-color: transparent; color: var(--bq-color-primary-600,#2563eb); border-color: var(--bq-color-primary-600,#2563eb); }
-    .btn[data-variant="outline"]:hover:not(:disabled):not([aria-disabled="true"]) { background-color: var(--bq-color-primary-50,#eff6ff); }
+    .btn[data-variant="outline"]:hover:not(:disabled):not([aria-disabled="true"]) { background-color: var(--bq-bg-selected,rgba(37,99,235,0.1)); }
     .btn[data-variant="ghost"] { background-color: transparent; color: var(--bq-text-base,#0f172a); border-color: transparent; }
     .btn[data-variant="ghost"]:hover:not(:disabled):not([aria-disabled="true"]) { background-color: var(--bq-bg-hover,rgba(15,23,42,0.06)); }
     .btn[data-variant="danger"] {

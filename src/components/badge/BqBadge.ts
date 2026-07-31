@@ -32,12 +32,12 @@ const definition: ComponentDefinition<BqBadgeProps> = {
     .badge[data-size="sm"] { font-size: 0.6875rem; padding: 0.125rem 0.5rem; }
     .badge[data-size="md"] { font-size: 0.75rem; padding: 0.2rem 0.6rem; }
     .badge[data-size="lg"] { font-size: 0.875rem; padding: 0.3rem 0.75rem; }
-    .badge[data-variant="primary"]   { background: var(--bq-color-primary-100,#dbeafe); color: var(--bq-color-primary-700,#1d4ed8); }
-    .badge[data-variant="secondary"] { background: var(--bq-color-secondary-100,#f1f5f9); color: var(--bq-color-secondary-700,#334155); }
-    .badge[data-variant="success"]   { background: var(--bq-color-success-100,#dcfce7); color: var(--bq-color-success-700,#15803d); }
-    .badge[data-variant="danger"]    { background: var(--bq-color-danger-100,#fee2e2); color: var(--bq-color-danger-700,#b91c1c); }
-    .badge[data-variant="warning"]   { background: var(--bq-color-warning-100,#fef3c7); color: var(--bq-color-warning-700,#b45309); }
-    .badge[data-variant="info"]      { background: var(--bq-color-info-100,#dbeafe); color: var(--bq-color-info-700,#1d4ed8); }
+    .badge[data-variant="primary"]   { background: var(--bq-intent-primary-bg); color: var(--bq-intent-primary-fg); }
+    .badge[data-variant="secondary"] { background: var(--bq-intent-neutral-bg); color: var(--bq-intent-neutral-fg); }
+    .badge[data-variant="success"]   { background: var(--bq-intent-success-bg); color: var(--bq-intent-success-fg); }
+    .badge[data-variant="danger"]    { background: var(--bq-intent-danger-bg); color: var(--bq-intent-danger-fg); }
+    .badge[data-variant="warning"]   { background: var(--bq-intent-warning-bg); color: var(--bq-intent-warning-fg); }
+    .badge[data-variant="info"]      { background: var(--bq-intent-info-bg); color: var(--bq-intent-info-fg); }
     .badge[data-variant="outline"]   { background: transparent; color: var(--bq-text-base,#0f172a); border: 1.5px solid var(--bq-border-emphasis,#cbd5e1); }
   `,
   render({ props }) {

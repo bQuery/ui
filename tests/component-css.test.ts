@@ -105,4 +105,24 @@ describe('component stylesheets', () => {
       expect(css).toContain(':host([data-theme="dark"])');
     }
   });
+
+  // The palette is scheme-independent on purpose, so the 50/100/200 steps are
+  // *light* colours whatever the page is doing. A badge painted with
+  // `--bq-color-success-100` stayed near-white in dark mode — as did the
+  // alerts, chips, avatars and tags. Tinted surfaces go through
+  // `--bq-intent-*-bg` instead, which flips with the scheme.
+  it('paints no surface with a palette step that cannot change scheme', () => {
+    const offenders: string[] = [];
+    const rule = /background(?:-color)?\s*:\s*[^;{}]*--bq-color-[a-z]+-(?:50|100|200)\b/g;
+
+    for (const tag of tags) {
+      // Only the component's own rules; the token block itself legitimately
+      // defines every palette step.
+      const css = shadowCss(tag).split(':host-context([data-theme="dark"])').pop() ?? '';
+      for (const match of css.matchAll(rule)) {
+        offenders.push(`${tag}: ${match[0].trim()}`);
+      }
+    }
+    expect(offenders).toEqual([]);
+  });
 });
