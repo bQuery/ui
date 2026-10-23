@@ -143,9 +143,12 @@ attribute the sanitizer would drop, so this can no longer ship unnoticed.
 
 ### Focus across re-renders
 
-Rendering assigns `shadowRoot.innerHTML`, so every render destroys the node the
-user is in. Any component with a focusable element inside its shadow root wants
-the packaged treatment:
+Since bQuery 1.18 a re-render morphs the existing shadow tree in place
+(`renderStrategy: 'morph'`), so the focused node usually survives. The peer
+range still includes 1.15–1.17, which render by assigning
+`shadowRoot.innerHTML` and destroy the node the user is in, so any component
+with a focusable element inside its shadow root still wants the packaged
+treatment:
 
 ```ts
 connected()    { trackFocus(host(this), bind(this)); },
@@ -157,7 +160,11 @@ updated()      { restorePreservedFocus(this); },
 **capture** phase, so the snapshot is taken before the component's own handler
 runs. `beforeUpdate` covers attribute-driven renders, which no event precedes.
 `setState` renders skip `beforeUpdate` entirely, which is why the event-driven
-half is needed at all.
+half is needed at all. `restorePreservedFocus` does nothing while something in
+the tree still has focus, so it is harmless under morph. A roving tab stop
+(tree nodes, calendar days) must therefore move focus itself in `updated()`
+when focus sits on an item other than the active one: under morph the old item
+keeps focus.
 
 ### Tinted surfaces
 
@@ -178,10 +185,29 @@ Chromium. See `src/theme/scheme.ts`.
 
 ### Shadow-DOM state and re-renders
 
-Every render replaces the shadow root's contents. Anything written into the
-shadow root imperatively (for example the file-upload file list, or the
-avatar-group overflow counter, which depend on light-DOM children that `render`
-cannot see) must be repainted from `updated()`.
+Write components so they behave the same under both render strategies:
+
+- **Morph (bQuery ≥ 1.18, the default).** Nodes are reused. Attributes are
+  diffed against the *previous render*, so an attribute set or removed at
+  runtime survives until the template changes that attribute, and a form
+  control's `value`/`checked` property is only written when the rendered
+  attribute changes. A render with identical markup skips the DOM write
+  entirely. Children the template does not contain are removed.
+- **Replace (bQuery 1.15–1.17, still in the peer range).** Every render
+  replaces the shadow root's contents.
+
+Consequences:
+
+- Anything written into the shadow root imperatively (for example the
+  file-upload file list, or the avatar-group overflow counter, which depend on
+  light-DOM children that `render` cannot see) must be repainted from
+  `updated()`.
+- Never rely on a re-render to throw away what the user typed. When a control
+  normalizes or rejects input and the committed value may equal the previous
+  one (a pin-input cell rejecting a letter, a number-input clamped back to its
+  max), write the normalized value into the control's property yourself.
+- Listeners on shadow-root children must be bound once (or delegated to the
+  shadow root, as most components do); never re-bind them in `updated()`.
 
 ## Setup and validation
 
