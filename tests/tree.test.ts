@@ -200,6 +200,20 @@ describe('bq-tree', () => {
     expect(nodes(el)[1]?.getAttribute('tabindex')).toBe('0');
   });
 
+  it('moves focus along with the roving tab stop', async () => {
+    const el = create();
+    await waitForFrame();
+    nodes(el)[0]?.focus();
+
+    press(el, 0, 'ArrowDown');
+    await waitForFrame();
+    expect(el.shadowRoot?.activeElement).toBe(nodes(el)[1] ?? null);
+
+    press(el, 1, 'ArrowUp');
+    await waitForFrame();
+    expect(el.shadowRoot?.activeElement).toBe(nodes(el)[0] ?? null);
+  });
+
   it('selects on click and reports the node', async () => {
     const el = create();
     await waitForFrame();

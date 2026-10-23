@@ -109,13 +109,15 @@ describe('form controls survive a re-render while focused', () => {
     input.focus();
     expect(el.shadowRoot?.activeElement).toBe(input);
 
-    // Reflecting a keystroke re-renders the shadow tree, replacing the node
-    // the user is typing into.
+    // Reflecting a keystroke re-renders the shadow tree. bQuery >= 1.18
+    // patches the existing nodes in place; older releases replaced the node
+    // the user was typing into, and `restorePreservedFocus` moved focus onto
+    // its replacement. Either way the field the user sees keeps focus.
     el.setAttribute('value', 'abc');
     await waitForFrame();
 
     const next = el.shadowRoot?.querySelector('input') as HTMLInputElement;
-    expect(next).not.toBe(input);
+    expect(next.value).toBe('abc');
     expect(el.shadowRoot?.activeElement).toBe(next);
   });
 

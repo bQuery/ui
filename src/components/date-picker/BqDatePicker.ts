@@ -599,13 +599,18 @@ const definition: ComponentDefinition<BqDatePickerProps, BqDatePickerState> = {
     local.syncPosition?.();
     syncFormProxy(this);
 
-    // Arrow keys move a roving tab stop through the grid, and the render that
-    // moved it destroyed the button that had focus.
+    // Arrow keys move a roving tab stop through the grid. bQuery >= 1.18
+    // patches the grid in place, so the day that had focus keeps it (older
+    // releases replaced it, and focus was restored onto a stand-in); move
+    // focus to the cursor whenever it is on another day, or nowhere.
     const root = this.shadowRoot;
     const cursor = root?.querySelector(
       '.day[tabindex="0"]'
     ) as HTMLElement | null;
-    if (cursor && this.hasAttribute('data-open') && !root?.activeElement) {
+    const focused = root?.activeElement as HTMLElement | null | undefined;
+    const focusOnOtherDay =
+      !focused || (focused !== cursor && focused.classList.contains('day'));
+    if (cursor && this.hasAttribute('data-open') && focusOnOtherDay) {
       cursor.focus();
     }
   },

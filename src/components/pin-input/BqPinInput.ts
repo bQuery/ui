@@ -165,6 +165,20 @@ const definition: ComponentDefinition<BqPinInputProps, BqPinInputState> = {
     const cells = (): HTMLInputElement[] =>
       Array.from(self.shadowRoot?.querySelectorAll('.cell') ?? []);
 
+    /**
+     * Writes the committed code back into the cells. A re-render only touches
+     * a cell whose rendered value changed (bQuery >= 1.18 morphs the shadow
+     * tree instead of replacing it), so a rejected character, or one typed
+     * over a cell that keeps its value, would otherwise stay on screen.
+     */
+    const syncCells = () => {
+      const value = sanitizePin(readValue(), type(), length());
+      cells().forEach((cell, index) => {
+        const char = value[index] ?? '';
+        if (cell.value !== char) cell.value = char;
+      });
+    };
+
     const focusCell = (index: number) => {
       const list = cells();
       const clamped = Math.max(0, Math.min(index, list.length - 1));
@@ -186,6 +200,7 @@ const definition: ComponentDefinition<BqPinInputProps, BqPinInputState> = {
       const size = length();
       self.setAttribute('value', next);
       proxy.setValue(next);
+      syncCells();
       // The attribute write re-renders synchronously, so the cells that exist
       // after it are the ones to move focus into.
       focusCell(caret);
@@ -228,7 +243,7 @@ const definition: ComponentDefinition<BqPinInputProps, BqPinInputState> = {
       const cell = event.target as HTMLInputElement;
       const typed = sanitizePin(cell.value, type(), length());
       const next = applyPinEdit(readValue(), index, typed, length());
-      // An empty edit means the character was rejected; re-render anyway so
+      // An empty edit means the character was rejected; commit anyway so
       // the cell drops what the user typed instead of showing it.
       commit(next, typed ? index + typed.length : index);
     });

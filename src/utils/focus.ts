@@ -1,11 +1,16 @@
 /**
  * Focus and caret preservation across re-renders.
  *
- * The component runtime renders by assigning `shadowRoot.innerHTML`, which
+ * bQuery 1.15–1.17 render by assigning `shadowRoot.innerHTML`, which
  * discards every node in the shadow tree and builds new ones. For a purely
  * presentational component that is invisible. For a component containing a
  * focused text field it is not: the focused node is destroyed, focus falls
  * back to the document body, and the caret position is gone.
+ *
+ * bQuery 1.18 morphs the existing tree instead, so the focused node usually
+ * survives and these helpers find focus still in place and do nothing. They
+ * stay because the peer range still includes the replacing releases, and
+ * because a morph can still recreate a node whose tag changes.
  *
  * Concretely, a control that reflects its value to an attribute on every
  * keystroke re-renders on every keystroke, so the user can type exactly one

@@ -224,6 +224,14 @@ const definition: ComponentDefinition<BqNumberInputProps, BqNumberInputState> = 
       const { min, max, step, precision } = readSettings();
       const value = normalizeNumber(next, min, max, step, precision);
       self.setAttribute('value', String(value));
+      // Show the normalized value even when it equals the previous one (e.g.
+      // 999 typed into a field already at its max of 10): the attribute write
+      // then renders identical markup, and bQuery >= 1.18 morphs the shadow
+      // tree instead of replacing it, so the field would keep the raw text.
+      const field = self.shadowRoot?.querySelector(
+        'input[type="number"]'
+      ) as HTMLInputElement | null;
+      if (field && field.value !== String(value)) field.value = String(value);
       local.proxy?.setValue(String(value));
       self.dispatchEvent(
         new CustomEvent(eventName, {

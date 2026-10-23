@@ -399,13 +399,20 @@ const definition: ComponentDefinition<BqTreeProps, BqTreeState> = {
   },
   updated() {
     restorePreservedFocus(this);
-    // The roving tab stop has to end up on the node the keyboard moved to,
-    // and the render that moved it also destroyed the element that had focus.
+    // The roving tab stop has to end up on the node the keyboard moved to.
+    // bQuery >= 1.18 patches the tree in place, so the node that had focus
+    // keeps it; older releases replaced it and `restorePreservedFocus` put
+    // focus back on its stand-in. Either way focus still sits on the old
+    // node, so move it whenever it is on a node other than the active one.
     const root = this.shadowRoot;
     const active = root?.querySelector(
       '.node[data-active="true"]'
     ) as HTMLElement | null;
-    if (active && root?.activeElement === null && this.matches(':focus-within')) {
+    const focused = root?.activeElement as HTMLElement | null | undefined;
+    const focusInTree = focused
+      ? focused.classList.contains('node')
+      : this.matches(':focus-within');
+    if (active && focused !== active && focusInTree) {
       active.focus();
     }
     active?.scrollIntoView?.({ block: 'nearest' });
