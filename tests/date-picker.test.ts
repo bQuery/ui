@@ -272,6 +272,26 @@ describe('bq-date-picker', () => {
     ).toBe('2026-03-22');
   });
 
+  it('moves focus along with the cursor', async () => {
+    const el = create({ value: '2026-03-15' });
+    await waitForFrame();
+    click(el.shadowRoot?.querySelector('.calendar-btn') ?? null);
+    await waitForFrame();
+    const focusedDate = () =>
+      (el.shadowRoot?.activeElement as HTMLElement | null)?.getAttribute(
+        'data-date'
+      );
+
+    (el.shadowRoot?.querySelector('.day[tabindex="0"]') as HTMLElement).focus();
+    press(el, 'ArrowRight');
+    await waitForFrame();
+    expect(focusedDate()).toBe('2026-03-16');
+
+    press(el, 'ArrowDown');
+    await waitForFrame();
+    expect(focusedDate()).toBe('2026-03-23');
+  });
+
   it('closes on Escape without changing the value', async () => {
     const el = create({ value: '2026-03-15' });
     await waitForFrame();
