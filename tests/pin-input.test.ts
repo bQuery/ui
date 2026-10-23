@@ -117,6 +117,15 @@ describe('bq-pin-input', () => {
     expect(cells(el)[0]?.value ?? '').toBe('');
   });
 
+  it('drops a rejected character typed over a filled cell', async () => {
+    const el = create({ type: 'numeric', value: '12' });
+    await waitForFrame();
+    type(el, 0, 'a');
+    await waitForFrame();
+    expect(el.getAttribute('value')).toBe('12');
+    expect(cells(el).map((cell) => cell.value)).toEqual(['1', '2', '', '']);
+  });
+
   it('clears the current cell on Backspace, then steps back', async () => {
     const el = create({ value: '12' });
     await waitForFrame();

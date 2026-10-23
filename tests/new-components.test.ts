@@ -348,6 +348,20 @@ describe('BqNumberInput', () => {
     ).toBe(true);
   });
 
+  it('repaints a typed value clamped back to the current one', () => {
+    // The committed value does not change, so the re-render produces the same
+    // markup; the field must still drop the out-of-range text.
+    const el = mount('bq-number-input', { value: '10', min: '0', max: '10' });
+    const input = el.shadowRoot?.querySelector('input') as HTMLInputElement;
+    input.value = '999';
+    input.dispatchEvent(new win.Event('change', { bubbles: true }));
+
+    expect(el.getAttribute('value')).toBe('10');
+    expect(
+      (el.shadowRoot?.querySelector('input') as HTMLInputElement).value
+    ).toBe('10');
+  });
+
   it('links hint and error text to the field', () => {
     const el = mount('bq-number-input', { hint: 'Between 1 and 9', label: 'Qty' });
     const input = el.shadowRoot?.querySelector('input');
