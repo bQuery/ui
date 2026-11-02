@@ -458,7 +458,6 @@ const definition: ComponentDefinition<BqCommandPaletteProps, BqCommandPaletteSta
           ke.preventDefault();
           self.setState('activeIndex', nextEnabled(list, current < 0 ? 0 : current, -1));
           return;
-          return;
         case 'Home':
           if (ke.shiftKey) return;
           ke.preventDefault();
