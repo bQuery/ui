@@ -38,6 +38,20 @@ export {
   trapFocus,
   uniqueId,
 } from './dom.js';
+export {
+  formatDate,
+  formatNumber,
+  formatRelativeTime,
+  parseDate,
+  refreshDelay,
+  resolveLocale,
+  selectUnit,
+} from './format.js';
+export type {
+  FormatDateOptions,
+  FormatNumberOptions,
+  RelativeTimeOptions,
+} from './format.js';
 export { bindFormProxy, createFormProxy, syncFormProxy } from './form.js';
 export type {
   FormProxy,

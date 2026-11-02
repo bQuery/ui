@@ -49,6 +49,8 @@ describe('component stylesheets', () => {
           'segmented-control', 'select', 'skeleton', 'slider', 'spinner',
           'stat-card', 'stepper', 'switch', 'table', 'tabs', 'tag-input',
           'textarea', 'timeline', 'toast', 'tooltip', 'tree',
+          'carousel', 'command-palette', 'format-date', 'format-number',
+          'relative-time', 'split-panel',
         ].map((name) => `bq-${name}`)
       )
     );

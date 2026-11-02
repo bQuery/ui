@@ -219,8 +219,23 @@ describe('bq-tag-input', () => {
     const el = create({ value: 'a,b', max: '2' });
     await waitForFrame();
 
-    expect(input(el).disabled).toBe(true);
+    // Read-only rather than disabled: the field keeps focus so Backspace can
+    // still remove the last tag, and the placeholder says why it is full.
+    expect(input(el).disabled).toBe(false);
+    expect(input(el).readOnly).toBe(true);
+    expect(input(el).placeholder).toBe('Tag limit reached');
     expect(el.shadowRoot?.querySelector('.count')?.textContent).toBe('2/2');
+  });
+
+  it('lets Backspace free a slot once the maximum is reached', async () => {
+    const el = create({ value: 'a,b', max: '2' });
+    await waitForFrame();
+
+    press(el, 'Backspace');
+    await waitForFrame();
+
+    expect(el.getAttribute('value')).toBe('a');
+    expect(input(el).readOnly).toBe(false);
   });
 
   it('clears the draft on Escape', async () => {

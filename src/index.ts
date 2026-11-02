@@ -67,6 +67,12 @@ import { __bqComponentEntry as tabsComponentEntry } from './components/tabs/inde
 import { __bqComponentEntry as textareaComponentEntry } from './components/textarea/index.js';
 import { __bqComponentEntry as tooltipComponentEntry } from './components/tooltip/index.js';
 import { __bqComponentEntry as treeComponentEntry } from './components/tree/index.js';
+import { __bqComponentEntry as carouselComponentEntry } from './components/carousel/index.js';
+import { __bqComponentEntry as commandPaletteComponentEntry } from './components/command-palette/index.js';
+import { __bqComponentEntry as formatDateComponentEntry } from './components/format-date/index.js';
+import { __bqComponentEntry as formatNumberComponentEntry } from './components/format-number/index.js';
+import { __bqComponentEntry as relativeTimeComponentEntry } from './components/relative-time/index.js';
+import { __bqComponentEntry as splitPanelComponentEntry } from './components/split-panel/index.js';
 // Toast is imported directly because its wrapper both registers the component and re-exports showToast().
 import './components/toast/index.js';
 
@@ -124,6 +130,12 @@ Object.defineProperty(registerAll, COMPONENT_ENTRY_MAP_KEY, {
     'textarea': textareaComponentEntry,
     'tooltip': tooltipComponentEntry,
     'tree': treeComponentEntry,
+    'carousel': carouselComponentEntry,
+    'command-palette': commandPaletteComponentEntry,
+    'format-date': formatDateComponentEntry,
+    'format-number': formatNumberComponentEntry,
+    'relative-time': relativeTimeComponentEntry,
+    'split-panel': splitPanelComponentEntry,
   },
   writable: false,
   enumerable: false,

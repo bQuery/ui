@@ -10,10 +10,11 @@ This catalog gives you a complete overview of the currently available building b
 | --- | --- |
 | **Actions** | `bq-button`, `bq-icon-button`, `bq-button-group`, `bq-copy-button` |
 | **Forms** | `bq-input`, `bq-number-input`, `bq-textarea`, `bq-select`, `bq-combobox`, `bq-tag-input`, `bq-pin-input`, `bq-date-picker`, `bq-segmented-control`, `bq-checkbox`, `bq-radio`, `bq-switch`, `bq-slider`, `bq-chip`, `bq-rating`, `bq-file-upload` |
-| **Navigation & Disclosure** | `bq-tabs`, `bq-accordion`, `bq-breadcrumbs`, `bq-pagination`, `bq-stepper`, `bq-tree` |
-| **Data Display** | `bq-card`, `bq-badge`, `bq-avatar`, `bq-avatar-group`, `bq-table`, `bq-divider`, `bq-empty-state`, `bq-stat-card`, `bq-timeline`, `bq-kbd`, `bq-icon`, `bq-meter` |
+| **Navigation & Disclosure** | `bq-tabs`, `bq-accordion`, `bq-breadcrumbs`, `bq-pagination`, `bq-stepper`, `bq-tree`, `bq-carousel` |
+| **Data Display** | `bq-card`, `bq-badge`, `bq-avatar`, `bq-avatar-group`, `bq-table`, `bq-divider`, `bq-empty-state`, `bq-stat-card`, `bq-timeline`, `bq-kbd`, `bq-icon`, `bq-meter`, `bq-format-number`, `bq-format-date`, `bq-relative-time` |
 | **Feedback & Loading** | `bq-alert`, `bq-banner`, `bq-progress`, `bq-spinner`, `bq-skeleton`, `bq-tooltip`, `bq-toast` |
-| **Overlays** | `bq-dialog`, `bq-drawer`, `bq-dropdown-menu`, `bq-popover` |
+| **Overlays** | `bq-dialog`, `bq-drawer`, `bq-dropdown-menu`, `bq-popover`, `bq-command-palette` |
+| **Layout** | `bq-split-panel` |
 
 ## Cross-Cutting Features
 
@@ -66,6 +67,7 @@ Across the component library you will find the same professional capabilities th
 | `bq-pagination` | Paging through result sets | Previous/next controls, ellipsis logic, sibling page calculation |
 | `bq-stepper` | Multi-step flows and wizards | Horizontal/vertical layouts, clickable steps, per-step status announcements |
 | `bq-tree` | Hierarchical browsing and pickers | ARIA tree pattern, roving tab stop, typeahead, single or multiple selection |
+| `bq-carousel` | Rotating content and galleries | ARIA carousel pattern, inert off-screen slides, several slides per view, swipe, accessible autoplay with pause button |
 
 ## Data Display
 
@@ -83,6 +85,9 @@ Across the component library you will find the same professional capabilities th
 | `bq-kbd` | Keyboard shortcuts | Combination parsing, symbol substitution, sizes and variants |
 | `bq-icon` | Interface glyphs | Mask-rendered set that inherits text colour and size, decorative by default |
 | `bq-meter` | Levels and gauges that are not progress | Native `<meter>` band semantics, graded colouring, custom value text |
+| `bq-format-number` | Numbers, prices, percentages, file sizes | `Intl.NumberFormat`, compact notation, automatic byte units, safe fallbacks |
+| `bq-format-date` | Dates and times | `Intl.DateTimeFormat` presets or fields, time zones, semantic `<time>` |
+| `bq-relative-time` | “5 minutes ago” timestamps | `Intl.RelativeTimeFormat`, self-updating with `sync`, absolute date on hover |
 
 ## Feedback & Loading
 
@@ -104,6 +109,13 @@ Across the component library you will find the same professional capabilities th
 | `bq-drawer` | Supplemental side panels and mobile flows | Multiple placements, responsive sizes, overlay/backdrop handling |
 | `bq-dropdown-menu` | Contextual actions and navigation menus | Full keyboard navigation, placement options, click-outside close, focus management |
 | `bq-popover` | Rich anchored overlays | Dialog semantics, placement options, focus management, escape and click-outside close |
+| `bq-command-palette` | ⌘K search for pages and actions | Global hotkey, ranked fuzzy search with keywords, groups, shortcut hints, ARIA combobox in a modal dialog |
+
+## Layout
+
+| Component | Use it for | Highlights |
+| --- | --- | --- |
+| `bq-split-panel` | Resizable master–detail and editor layouts | WAI-ARIA window splitter, drag and keyboard resizing, snap points, collapse with Enter, RTL-aware |
 
 ## Feature Coverage Compared to Typical UI Libraries
 

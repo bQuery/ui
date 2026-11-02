@@ -33,10 +33,11 @@ The current library covers the core component categories developers expect from 
 | ---------------- | --------------------------------------------------------------------------------------------------------------------- |
 | **Actions**      | Button, Icon Button, Button Group, Copy Button                                                                                              |
 | **Forms**        | Input, Number Input, Textarea, Select, Combobox, Tag Input, Pin Input, Date Picker, Segmented Control, Checkbox, Radio, Switch, Slider, Chip, Rating, File Upload |
-| **Navigation**   | Tabs, Accordion, Breadcrumbs, Pagination, Stepper, Tree                                                                                     |
-| **Data Display** | Card, Badge, Avatar, Avatar Group, Table, Divider, Empty State, Stat Card, Timeline, Kbd, Icon, Meter                                       |
+| **Navigation**   | Tabs, Accordion, Breadcrumbs, Pagination, Stepper, Tree, Carousel                                                                           |
+| **Data Display** | Card, Badge, Avatar, Avatar Group, Table, Divider, Empty State, Stat Card, Timeline, Kbd, Icon, Meter, Format Number, Format Date, Relative Time |
 | **Feedback**     | Alert, Banner, Progress, Spinner, Skeleton, Tooltip, Toast                                                                                  |
-| **Overlays**     | Dialog, Drawer, Dropdown Menu, Popover                                                                                                      |
+| **Overlays**     | Dialog, Drawer, Dropdown Menu, Popover, Command Palette                                                                                     |
+| **Layout**       | Split Panel                                                                                                                                 |
 
 For the full catalog and feature coverage, see [`docs/components/index.md`](./docs/components/index.md).
 

@@ -76,6 +76,10 @@ const ICON_BODY = {
   upload: `<path d='M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4'/><path d='m17 8-5-5-5 5'/><path d='M12 3v12'/>`,
   refresh: `<path d='M3 12a9 9 0 0 1 9-9 9.8 9.8 0 0 1 6.7 2.7L21 8'/><path d='M21 3v5h-5'/><path d='M21 12a9 9 0 0 1-9 9 9.8 9.8 0 0 1-6.7-2.7L3 16'/><path d='M8 16H3v5'/>`,
   filter: `<path d='M22 3H2l8 9.5V19l4 2v-8.5L22 3Z'/>`,
+  play: `<path d='M6 3v18l15-9Z'/>`,
+  pause: `<rect width='4' height='16' x='6' y='4' rx='1'/><rect width='4' height='16' x='14' y='4' rx='1'/>`,
+  'grip-vertical': `<circle cx='9' cy='5' r='1.4' fill='#000' stroke='none'/><circle cx='9' cy='12' r='1.4' fill='#000' stroke='none'/><circle cx='9' cy='19' r='1.4' fill='#000' stroke='none'/><circle cx='15' cy='5' r='1.4' fill='#000' stroke='none'/><circle cx='15' cy='12' r='1.4' fill='#000' stroke='none'/><circle cx='15' cy='19' r='1.4' fill='#000' stroke='none'/>`,
+  'grip-horizontal': `<circle cx='5' cy='9' r='1.4' fill='#000' stroke='none'/><circle cx='12' cy='9' r='1.4' fill='#000' stroke='none'/><circle cx='19' cy='9' r='1.4' fill='#000' stroke='none'/><circle cx='5' cy='15' r='1.4' fill='#000' stroke='none'/><circle cx='12' cy='15' r='1.4' fill='#000' stroke='none'/><circle cx='19' cy='15' r='1.4' fill='#000' stroke='none'/>`,
   settings: `<circle cx='12' cy='12' r='3'/><path d='M13.8 2.2a1.8 1.8 0 0 0-3.6 0 1.8 1.8 0 0 1-2.7 1.1 1.8 1.8 0 0 0-2.5 2.5 1.8 1.8 0 0 1-1.1 2.7 1.8 1.8 0 0 0 0 3.6 1.8 1.8 0 0 1 1.1 2.7 1.8 1.8 0 0 0 2.5 2.5 1.8 1.8 0 0 1 2.7 1.1 1.8 1.8 0 0 0 3.6 0 1.8 1.8 0 0 1 2.7-1.1 1.8 1.8 0 0 0 2.5-2.5 1.8 1.8 0 0 1 1.1-2.7 1.8 1.8 0 0 0 0-3.6 1.8 1.8 0 0 1-1.1-2.7 1.8 1.8 0 0 0-2.5-2.5 1.8 1.8 0 0 1-2.7-1.1Z'/>`,
 
   // ── Objects ──────────────────────────────────────────────────────────────
