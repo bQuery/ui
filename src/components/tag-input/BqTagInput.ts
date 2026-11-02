@@ -170,6 +170,7 @@ const definition: ComponentDefinition<BqTagInputProps, BqTagInputState> = {
     :host([size="md"]) input, :host(:not([size])) input { font-size: 1rem; padding: 0.375rem 0.5rem; }
     :host([size="lg"]) input { font-size: 1.125rem; padding: 0.5rem 0.625rem; }
     input:disabled { cursor: not-allowed; }
+    input[readonly] { cursor: default; }
 
     .hint { font-size: var(--bq-font-size-sm,0.875rem); color: var(--bq-text-muted,#475569); font-family: var(--bq-font-family-sans); }
     .error-msg { font-size: var(--bq-font-size-sm,0.875rem); color: var(--bq-color-danger-600,#dc2626); font-family: var(--bq-font-family-sans); }
@@ -262,9 +263,19 @@ const definition: ComponentDefinition<BqTagInputProps, BqTagInputState> = {
         );
         const parts = input.value.split(pattern);
         const trailing = parts.pop() ?? '';
-        for (const part of parts) commitDraft(part);
-        input.value = trailing;
-        self.setState('draft', trailing);
+        // Text refused only because the limit is reached stays in the field
+        // so it is not lost; duplicates and blanks are still dropped.
+        const max = Number(self.getAttribute('max') ?? '0') || 0;
+        const kept: string[] = [];
+        for (const part of parts) {
+          if (commitDraft(part)) continue;
+          if (max > 0 && readTags().length >= max && part.trim()) {
+            kept.push(part.trim());
+          }
+        }
+        const draft = [...kept, trailing].filter(Boolean).join(chars[0] ?? ',');
+        input.value = draft;
+        self.setState('draft', draft);
         return;
       }
       self.setState('draft', input.value);
@@ -388,11 +399,12 @@ const definition: ComponentDefinition<BqTagInputProps, BqTagInputState> = {
             type="text"
             autocomplete="off"
             value="${escapeHtml(state.draft ?? '')}"
-            placeholder="${escapeHtml(full ? '' : props.placeholder || t('tagInput.placeholder'))}"
+            placeholder="${escapeHtml(full ? t('tagInput.limitReached') : props.placeholder || t('tagInput.placeholder'))}"
             aria-invalid="${hasError ? 'true' : 'false'}"
             aria-describedby="${escapeHtml([...describedBy, `${uid}-help`].join(' '))}"
             ${props.required ? 'aria-required="true"' : ''}
-            ${props.disabled || full ? 'disabled' : ''}
+            ${props.disabled ? 'disabled' : ''}
+            ${full && !props.disabled && !(state.draft ?? '') ? 'readonly' : ''}
           />
           ${max > 0 ? `<span class="count" part="count">${tags.length}/${max}</span>` : ''}
         </div>

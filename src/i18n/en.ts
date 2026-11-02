@@ -169,6 +169,26 @@ export const en = {
     count: '{count} tags',
     limitReached: 'Tag limit reached',
   },
+  commandPalette: {
+    label: 'Command palette',
+    placeholder: 'Type a command or search…',
+    noResults: 'No matching commands',
+    resultCount: '{count} commands available',
+    close: 'Close command palette',
+  },
+  splitPanel: {
+    label: 'Resize panels',
+  },
+  carousel: {
+    label: 'Carousel',
+    prev: 'Previous slide',
+    next: 'Next slide',
+    slide: '{index} of {total}',
+    goTo: 'Go to slide {index}',
+    pause: 'Pause automatic slide show',
+    play: 'Start automatic slide show',
+    picker: 'Choose slide',
+  },
   validation: {
     valueMissing: 'Please fill out this field.',
     typeMismatchEmail: 'Please enter a valid email address.',

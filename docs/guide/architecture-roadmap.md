@@ -109,9 +109,18 @@ This follow-up batch focuses on a missing dashboard primitive that appears consi
    - updated component catalog and sidebar coverage,
    - refreshed roadmap language to call out dashboard/data-summary primitives as a current priority.
 
+## App-Shell and Formatting Batch
+
+This batch delivers several of the *advanced future opportunities* listed above:
+
+1. **`bq-command-palette`** — the ⌘K command surface: global hotkey, ranked search over labels, keywords and descriptions, groups and shortcut hints, built on the ARIA 1.2 combobox pattern inside a modal dialog.
+2. **`bq-split-panel`** — a resizable two-pane layout implementing the WAI-ARIA window splitter, with drag and keyboard resizing, snap points and collapse/restore.
+3. **`bq-carousel`** — the WAI-ARIA carousel pattern with inert off-screen slides, several slides per view, swipe, and autoplay that pauses on hover/focus and always offers a pause button.
+4. **Date and number primitives** — `bq-format-number`, `bq-format-date` and `bq-relative-time`, thin `Intl` wrappers that follow the document language. Their pure formatters (`formatNumber`, `formatDate`, `formatRelativeTime`) are exported from `@bquery/ui/utils`.
+5. **Coverage gaps closed** — reference pages and Storybook stories for `bq-combobox` and `bq-tag-input`, which previously shipped without either.
+
 ## Recommended Next Steps
 
-- Add a composable **combobox / rich select** next.
 - Expand **table recipes** and column-control patterns.
 - Add more **layout and workspace primitives** for responsive app shells and settings pages.
 - Continue auditing older components for shared size/variant/state consistency.
