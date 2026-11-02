@@ -71,10 +71,10 @@ import '@bquery/ui';
 
 ```html
 <!-- UMD -->
-<script src="https://cdn.jsdelivr.net/npm/@bquery/ui@1.15.0/dist/index.umd.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@bquery/ui@1.16.0/dist/index.umd.js"></script>
 
 <!-- IIFE -->
-<script src="https://cdn.jsdelivr.net/npm/@bquery/ui@1.15.0/dist/index.iife.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@bquery/ui@1.16.0/dist/index.iife.js"></script>
 ```
 
 The UMD and IIFE bundles register all components on load and expose the library on `window.BQueryUI`.
@@ -82,14 +82,14 @@ For ESM-based app builds, prefer importing `@bquery/ui` from your bundler or oth
 
 ## Current release snapshot
 
-The current release (`1.15.0`) emphasizes:
+The current release (`1.16.0`) emphasizes:
 
-- **A built-in icon set.** Interface glyphs are rendered as CSS masks rather than text characters, so they inherit `currentColor`, scale with `font-size`, and look the same on every platform. Available as `<bq-icon>` and to your own components through `iconCss()`.
-- **Dark mode that works in every browser.** The scheme now travels through an inherited custom-property channel instead of `:host-context()`, which exists only in Chromium — and which, sitting in a selector list, previously took the whole dark theme down with it in Firefox and Safari. `data-theme` also works on any subtree, not just the root.
-- **A deeper token layer.** Semantic surfaces (`--bq-surface-raised`, `--bq-surface-overlay`), translucent interaction states, per-intent focus rings, a shared control-height scale, and dark-mode elevation.
-- **Focus that survives a re-render.** Rendering replaces the shadow tree; text fields, calendars and tree views now keep focus and the caret across the renders their own interactions cause.
-- **A larger production-ready catalog.** The package spans 49 web components across actions, forms, navigation, data display, feedback, and overlays — including `bq-date-picker`, `bq-tree`, `bq-pin-input`, `bq-meter`, `bq-copy-button`, and `bq-icon`.
-- **Aligned docs and browser bundles.** Version-pinned CDN snippets, migration guidance, and Storybook/VitePress references target `1.15.0`.
+- **App-shell building blocks.** `bq-command-palette` brings the ⌘K / Ctrl+K command surface with ranked search, groups and shortcut hints; `bq-split-panel` adds resizable master–detail and editor layouts; `bq-carousel` covers galleries and highlights with accessible autoplay.
+- **Locale-aware formatting.** `bq-format-number`, `bq-format-date` and `bq-relative-time` wrap `Intl` and follow the document language. The same formatters are exported from `@bquery/ui/utils`.
+- **Accessibility patterns from WAI-ARIA.** Window splitter, carousel (inert off-screen slides, pause button for autoplay) and combobox-in-dialog, with keyboard support and RTL awareness throughout.
+- **Complete docs and stories.** Every component, including `bq-combobox` and `bq-tag-input`, now has a reference page and Storybook stories, and the Storybook build registers the components again.
+- **A larger production-ready catalog.** The package now spans 55 web components across actions, forms, navigation, data display, feedback, overlays and layout.
+- **Up-to-date toolchain.** Vite, Storybook, ESLint, happy-dom and friends are on their latest releases; bQuery `1.18.0` is used for development and the bundled CDN builds, with the peer range still starting at `1.15.1`.
 
 ## Tree-Shakeable Usage
 

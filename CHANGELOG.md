@@ -4,6 +4,8 @@ All notable changes to `@bquery/ui` are documented in this file. The format is b
 
 ## [Unreleased]
 
+## [1.16.0] - 2026-11-02
+
 ### Added
 
 - **`bq-command-palette`**: a ⌘K / Ctrl+K command palette. Commands are `<option>` elements (grouped with `<optgroup>`) with optional `data-keywords`, `data-description` and `data-shortcut`. Results are ranked (prefix, word prefix, substring, keyword, then in-order letters), diacritic-insensitive. Configurable `hotkey`, cancelable `bq-select`, `keep-open`, `empty` and `footer` slots. ARIA 1.2 combobox inside a modal dialog with focus trap and restore.
@@ -17,11 +19,14 @@ All notable changes to `@bquery/ui` are documented in this file. The format is b
 
 ### Changed
 
+- **Dependencies**: all dev dependencies updated to their latest releases — Storybook 10.6, Vite 8.3, vite-plugin-dts 5.1, ESLint 10.14, typescript-eslint 8.72, happy-dom 21, PostCSS 8.5.32, Autoprefixer 10.6, `@types/node` 26.6, `bun-types` 1.4 and `globals` 17.14. TypeScript stays on 6.0.3: typescript-eslint does not support TypeScript 7 yet.
 - **`bq-tag-input`**: when `max` is reached the field becomes read-only instead of disabled and shows the localized `tagInput.limitReached` text (previously defined but never shown). Focus stays in the field, so Backspace can still remove the last tag to free a slot.
 
 - **Dependencies**: the `@bquery/bquery` dev dependency is now `^1.18.0`, so tests, Storybook, the docs and the bundled CDN builds (`index.umd.js` / `index.iife.js`) use bQuery 1.18.0. In 1.18 component re-renders morph the existing shadow tree instead of replacing `innerHTML`: input values, focus, caret and nested elements survive an update. The peer dependency stays `^1.15.1`. The library uses no 1.18-only API, and the fixes below work with both rendering strategies. The full test suite passes against 1.15.1 and 1.18.0.
 
 ### Fixed
+
+- **Storybook**: components render again in the built Storybook. `sideEffects` in `package.json` only listed `dist/` files, so the production build dropped `.storybook/preview.ts`'s `import '../src/index.js'` as side-effect free and no element was ever registered. Source files are now listed too; the published package (which ships only `dist/`) is unaffected.
 
 - **`bq-pin-input`**: a rejected character stays out of the cell even when the code does not change. Typing a letter into a numeric cell that already held a digit used to leave the letter on screen under bQuery 1.18, because a render with unchanged markup no longer rewrites the cells.
 - **`bq-number-input`**: a typed value that is clamped back to the current value is shown normalized. Typing `999` into a field already at its `max` of `10` used to keep showing `999` under bQuery 1.18.

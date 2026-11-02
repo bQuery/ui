@@ -1,6 +1,6 @@
 {
   "name": "@bquery/ui",
-  "version": "1.15.0",
+  "version": "1.16.0",
   "description": "Production-grade web component library for the bQuery project",
   "type": "module",
   "main": "./dist/index.cjs",
@@ -62,7 +62,8 @@
     "./dist/components/*.js",
     "./dist/components/*.cjs",
     "./dist/component-*.js",
-    "./dist/component-*.cjs"
+    "./dist/component-*.cjs",
+    "./src/**/*.ts"
   ],
   "files": [
     "dist",
@@ -90,24 +91,24 @@
   },
   "devDependencies": {
     "@bquery/bquery": "^1.18.0",
-    "@storybook/addon-docs": "^10.5.5",
-    "@storybook/web-components-vite": "^10.5.5",
+    "@storybook/addon-docs": "^10.6.5",
+    "@storybook/web-components-vite": "^10.6.5",
     "@tailwindcss/postcss": "^4.3.3",
-    "@types/node": "^26.1.2",
-    "@typescript-eslint/eslint-plugin": "^8.65.0",
-    "@typescript-eslint/parser": "^8.65.0",
-    "autoprefixer": "^10.5.4",
-    "bun-types": "^1.3.14",
-    "eslint": "^10.8.0",
+    "@types/node": "^26.6.6",
+    "@typescript-eslint/eslint-plugin": "^8.72.1",
+    "@typescript-eslint/parser": "^8.72.1",
+    "autoprefixer": "^10.6.2",
+    "bun-types": "^1.4.4",
+    "eslint": "^10.14.0",
     "eslint-config-prettier": "^10.1.8",
-    "globals": "^17.8.0",
-    "happy-dom": "^20.11.1",
-    "postcss": "^8.5.25",
-    "storybook": "^10.5.5",
+    "globals": "^17.14.0",
+    "happy-dom": "^21.0.4",
+    "postcss": "^8.5.32",
+    "storybook": "^10.6.5",
     "tailwindcss": "^4.3.3",
     "typescript": "^6.0.3",
-    "vite": "^8.2.0",
-    "vite-plugin-dts": "^5.0.3",
+    "vite": "^8.3.5",
+    "vite-plugin-dts": "^5.1.2",
     "vitepress": "^1.6.4"
   }
 }

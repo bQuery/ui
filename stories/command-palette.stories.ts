@@ -7,7 +7,7 @@ const meta: Meta = {
   render: (args) => {
     const container = document.createElement('div');
     container.innerHTML = storyHtml`
-    <p>Press <bq-kbd keys="mod+K"></bq-kbd> or use the button.</p>
+    <p>Press <bq-kbd keys="cmd+K"></bq-kbd> / <bq-kbd keys="ctrl+K"></bq-kbd> or use the button.</p>
     <bq-button>Open command palette</bq-button>
     <bq-command-palette
       ?open=${args.open}
