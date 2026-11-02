@@ -202,7 +202,10 @@ const definition: ComponentDefinition<BqSplitPanelProps, BqSplitPanelState> = {
         );
       }
       value = round(value);
-      if (value === round(current()) && self.hasAttribute('position')) return;
+      // Compare with the attribute itself, not the clamped reading of it: a
+      // `position` outside `[min, max]` must still be rewritten to the value
+      // that is actually displayed.
+      if (self.getAttribute('position') === String(value)) return;
       self.setAttribute('position', String(value));
       self.dispatchEvent(
         new CustomEvent('bq-resize', {
@@ -247,8 +250,11 @@ const definition: ComponentDefinition<BqSplitPanelProps, BqSplitPanelState> = {
         origin?.closest?.('[slot="divider"]')?.parentElement === self;
       if (!onDivider) return;
       if (pe.button !== undefined && pe.button !== 0) return;
+      // A second finger must not take over or restart an active drag.
+      if (local.stopDrag) return;
       pe.preventDefault();
-      stopDrag();
+      const pointerId = pe.pointerId;
+      const isDragPointer = (e: Event) => (e as PointerEvent).pointerId === pointerId;
       (self.shadowRoot?.querySelector('.divider') as HTMLElement | null)?.focus();
       self.setAttribute('data-dragging', '');
 
@@ -259,10 +265,15 @@ const definition: ComponentDefinition<BqSplitPanelProps, BqSplitPanelState> = {
       };
       disposers.push(
         scope.on(document, 'pointermove', (move) => {
+          if (!isDragPointer(move)) return;
           setPosition(positionFromPointer(move as PointerEvent), { snap: true });
         }),
-        scope.on(document, 'pointerup', stopDrag),
-        scope.on(document, 'pointercancel', stopDrag)
+        scope.on(document, 'pointerup', (up) => {
+          if (isDragPointer(up)) stopDrag();
+        }),
+        scope.on(document, 'pointercancel', (cancel) => {
+          if (isDragPointer(cancel)) stopDrag();
+        })
       );
       local.stopDrag = scope.add(finish);
     });

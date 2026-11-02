@@ -429,6 +429,8 @@ const definition: ComponentDefinition<BqCommandPaletteProps, BqCommandPaletteSta
 
     scope.on(document, 'keydown', (event) => {
       const ke = event as KeyboardEvent;
+      // Escape cancels an IME composition; it must not also clear or close.
+      if (ke.isComposing) return;
       const hotkey = self.getAttribute('hotkey') ?? 'mod+k';
       if (hotkey && matchesHotkey(ke, hotkey) && !(isPlainHotkey(hotkey) && isEditableTarget(ke))) {
         ke.preventDefault();

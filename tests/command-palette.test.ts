@@ -360,6 +360,18 @@ describe('bq-command-palette', () => {
     expect(el.hasAttribute('open')).toBe(true);
   });
 
+  it('ignores Escape and the hotkey while an IME composition is active', async () => {
+    const el = create({ open: '', hotkey: 'ctrl+k' });
+    await waitForFrame();
+    type(el, 'go');
+    await waitForFrame();
+    press(input(el), 'Escape', { isComposing: true } as KeyboardEventInit);
+    press(input(el), 'k', { ctrlKey: true, isComposing: true } as KeyboardEventInit);
+    await waitForFrame();
+    expect(input(el).value).toBe('go');
+    expect(el.hasAttribute('open')).toBe(true);
+  });
+
   it('ignores Enter while an IME composition is active', async () => {
     const el = create({ open: '' });
     await waitForFrame();

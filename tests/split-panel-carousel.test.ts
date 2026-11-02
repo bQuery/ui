@@ -162,6 +162,36 @@ describe('bq-split-panel', () => {
     expect(el.hasAttribute('data-dragging')).toBe(false);
   });
 
+  it('rewrites an out-of-range position to the displayed value', async () => {
+    const el = create({ position: '50', min: '60' });
+    await waitForFrame();
+    const positions: number[] = [];
+    el.addEventListener('bq-resize', (e) =>
+      positions.push((e as CustomEvent<{ position: number }>).detail.position)
+    );
+    key(divider(el), 'Home');
+    expect(el.getAttribute('position')).toBe('60');
+    expect(positions).toEqual([60]);
+  });
+
+  it('follows only the pointer that started the drag', async () => {
+    const el = create({ position: '50' });
+    await waitForFrame();
+    const pointer = (type: string, pointerId: number, target: EventTarget) => {
+      const event = new win.Event(type, { bubbles: true, composed: true, cancelable: true });
+      Object.defineProperty(event, 'pointerId', { value: pointerId });
+      target.dispatchEvent(event);
+    };
+    pointer('pointerdown', 1, divider(el));
+    expect(el.hasAttribute('data-dragging')).toBe(true);
+    // A second finger neither restarts nor ends the drag.
+    pointer('pointerdown', 2, divider(el));
+    pointer('pointerup', 2, doc);
+    expect(el.hasAttribute('data-dragging')).toBe(true);
+    pointer('pointerup', 1, doc);
+    expect(el.hasAttribute('data-dragging')).toBe(false);
+  });
+
   it('removes drag listeners from document on disconnect', async () => {
     const el = create();
     await waitForFrame();

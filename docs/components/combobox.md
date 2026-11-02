@@ -78,6 +78,8 @@ With `multiple`, each pick becomes a removable token and the list stays open, so
   let latest = 0;
   field.addEventListener('bq-input', async (event) => {
     const request = ++latest;
+    // Drop the previous results so they cannot be picked for the new query.
+    field.replaceChildren();
     const users = await searchUsers(event.detail.query);
     // Ignore a response that arrives after a newer query was sent.
     if (request !== latest) return;
@@ -97,6 +99,8 @@ With `multiple`, each pick becomes a removable token and the list stays open, so
 </bq-combobox>
 ```
 
+The field takes part in form submission through a hidden input, which the browser excludes from native constraint validation, so an empty required combobox is **not** reported by `form.checkValidity()`. Instead the component guards the form itself: when the form is submitted, invalid `bq-*` controls block the submission and show their message. To check a single field from script, call the element's own `checkValidity()` or `reportValidity()`.
+
 ## Properties
 
 | Property      | Type                        | Default      | Description                                                                 |
@@ -110,7 +114,7 @@ With `multiple`, each pick becomes a removable token and the list stays open, so
 | `no-filter`   | `boolean`                   | `false`      | Show every option and leave filtering to the application.                  |
 | `filter-mode` | `contains \| starts-with`   | `contains`   | How the query is matched against option labels.                            |
 | `disabled`    | `boolean`                   | `false`      | Disables the field.                                                         |
-| `required`    | `boolean`                   | `false`      | Marks the field as required for native form validation.                    |
+| `required`    | `boolean`                   | `false`      | Requires a value. Enforced by the component's submit guard and its own `checkValidity()`, not by `form.checkValidity()`. |
 | `error`       | `string`                    | `''`         | Error message; switches the field into its invalid state.                  |
 | `hint`        | `string`                    | `''`         | Supporting text below the field.                                            |
 | `size`        | `sm \| md \| lg`            | `md`         | Field size.                                                                 |

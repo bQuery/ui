@@ -248,6 +248,17 @@ describe('bq-tag-input', () => {
     expect(input(el).readOnly).toBe(false);
   });
 
+  it('keeps text the limit rejected instead of discarding it', async () => {
+    const el = create({ max: '2' });
+    await waitForFrame();
+    type(el, 'a,b,c');
+    await waitForFrame();
+    type(el, 'c,');
+    await waitForFrame();
+    expect(el.getAttribute('value')).toBe('a,b');
+    expect(input(el).value).toBe('c');
+  });
+
   it('clears the draft on Escape', async () => {
     const el = create();
     await waitForFrame();

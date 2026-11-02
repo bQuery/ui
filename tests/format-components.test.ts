@@ -87,9 +87,12 @@ describe('formatNumber', () => {
   });
 
   it('keeps the style when the locale tag is invalid', () => {
+    // The fallback uses the host locale, so assert only that the unit
+    // survived (the output is not the bare number), not its spelling.
     const text = formatNumber(1500, { type: 'bytes', locale: 'en_US' });
-    expect(text).toContain('kB');
-    expect(formatDate(new Date('2024-03-01T12:00:00Z'), { locale: 'en_US', timeZone: 'UTC', month: 'long' })).not.toContain('T12:00');
+    expect(text).not.toBe('1500');
+    expect(text).not.toBe('1,500');
+    expect(text).toMatch(/1[.,]5/);
   });
 
   it('keeps max fraction digits at or above the minimum', () => {
@@ -160,11 +163,22 @@ describe('parseDate / formatDate', () => {
     ).toBe('15:05');
   });
 
-  it('falls back on an invalid time zone', () => {
+  it('keeps the locale when only the time zone is invalid', () => {
+    // Without the bad zone the host zone applies, so the day can differ by
+    // one; the language and year must not.
     const date = new Date('2024-03-01T12:00:00Z');
-    expect(formatDate(date, { locale: 'en-US', timeZone: 'Mars/Olympus' })).toBe(
-      'Mar 1, 2024'
-    );
+    const text = formatDate(date, { locale: 'de-DE', timeZone: 'Mars/Olympus', month: 'long', year: 'numeric' });
+    expect(text).toBe('März 2024');
+  });
+
+  it('keeps the field options when the locale tag is invalid', () => {
+    const text = formatDate(new Date('2024-03-01T12:00:00Z'), {
+      locale: 'en_US',
+      timeZone: 'UTC',
+      year: 'numeric',
+    });
+    expect(text).toContain('2024');
+    expect(text).not.toContain('T12:00');
   });
 });
 

@@ -195,20 +195,27 @@ export function formatDate(date: Date, options: FormatDateOptions = {}): string 
   if (options.hourFormat === '12') intl.hour12 = true;
   else if (options.hourFormat === '24') intl.hourCycle = 'h23';
 
-  try {
-    return new Intl.DateTimeFormat(locale, intl).format(date);
-  } catch {
+  // Retry with progressively fewer assumptions, mirroring formatNumber: an
+  // invalid time zone must not change the language, so drop the zone before
+  // the locale, and the custom fields last.
+  const withoutZone: Intl.DateTimeFormatOptions = { ...intl };
+  delete withoutZone.timeZone;
+  const attempts: Array<() => string> = [
+    () => new Intl.DateTimeFormat(locale, intl).format(date),
+    () => new Intl.DateTimeFormat(locale, withoutZone).format(date),
+    () => new Intl.DateTimeFormat(undefined, intl).format(date),
+    () => new Intl.DateTimeFormat(undefined, withoutZone).format(date),
+    () => new Intl.DateTimeFormat(locale, { dateStyle: 'medium' }).format(date),
+    () => new Intl.DateTimeFormat(undefined, { dateStyle: 'medium' }).format(date),
+  ];
+  for (const attempt of attempts) {
     try {
-      return new Intl.DateTimeFormat(undefined, intl).format(date);
+      return attempt();
     } catch {
-      /* fall through */
-    }
-    try {
-      return new Intl.DateTimeFormat(undefined, { dateStyle: 'medium' }).format(date);
-    } catch {
-      return date.toISOString();
+      /* try the next, simpler format */
     }
   }
+  return date.toISOString();
 }
 
 const SECOND = 1000;

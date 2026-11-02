@@ -38,7 +38,9 @@ Pasting `design, tokens, a11y` commits `design` and `tokens` at once and leaves 
 <bq-tag-input label="Duplicates allowed" allow-duplicates></bq-tag-input>
 ```
 
-With `max`, a `3/3`-style counter is shown. Once the limit is reached the field turns read-only and says so in its placeholder; `Backspace` still removes the last tag to free a slot. Duplicates are ignored unless `allow-duplicates` is set.
+With `max`, a `3/3`-style counter is shown. Once the limit is reached and the field is empty, it turns read-only and says so in its placeholder; `Backspace` still removes the last tag to free a slot. Duplicates are ignored unless `allow-duplicates` is set.
+
+If text is still being typed when the limit is reached (for example after pasting `a,b,c` into a field with `max="2"`), that text stays in the field and remains editable instead of being discarded. In that case `Backspace` edits the text rather than removing a tag, and the limit placeholder is not shown until the field is cleared.
 
 ## Validation
 
@@ -59,7 +61,7 @@ With `max`, a `3/3`-style counter is shown. Once the limit is reached the field 
 | `max`              | `number`         | `0`       | Maximum number of tags; `0` means unlimited.             |
 | `allow-duplicates` | `boolean`        | `false`   | Accept the same tag more than once.                      |
 | `disabled`         | `boolean`        | `false`   | Disables the field.                                      |
-| `required`         | `boolean`        | `false`   | Requires at least one tag for native form validation.   |
+| `required`         | `boolean`        | `false`   | Requires at least one tag. Enforced by the component's submit guard and its own `checkValidity()`, not by `form.checkValidity()`. |
 | `error`            | `string`         | `''`      | Error message.                                           |
 | `hint`             | `string`         | `''`      | Supporting text.                                         |
 | `size`             | `sm \| md \| lg` | `md`      | Field size.                                              |

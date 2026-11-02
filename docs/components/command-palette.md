@@ -90,7 +90,7 @@ With an empty query the declared order and group headings are kept. While search
 | Property      | Type      | Default   | Description                                                         |
 | ------------- | --------- | --------- | ------------------------------------------------------------------- |
 | `open`        | `boolean` | `false`   | Whether the palette is shown.                                       |
-| `hotkey`      | `string`  | `mod+k`   | Global shortcut that toggles the palette. Empty disables it.        |
+| `hotkey`      | `string`  | `mod+k`   | Global shortcut that toggles the palette. Empty disables it. A hotkey without Ctrl/⌘/Alt (for example `/`) is ignored while typing in an input, textarea, select or editable element, including the palette's own search field. |
 | `placeholder` | `string`  | localized | Search field placeholder.                                           |
 | `label`       | `string`  | localized | Accessible name of the dialog and the search field.                 |
 | `keep-open`   | `boolean` | `false`   | Stay open after a command is chosen.                                |

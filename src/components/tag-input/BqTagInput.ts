@@ -263,9 +263,19 @@ const definition: ComponentDefinition<BqTagInputProps, BqTagInputState> = {
         );
         const parts = input.value.split(pattern);
         const trailing = parts.pop() ?? '';
-        for (const part of parts) commitDraft(part);
-        input.value = trailing;
-        self.setState('draft', trailing);
+        // Text refused only because the limit is reached stays in the field
+        // so it is not lost; duplicates and blanks are still dropped.
+        const max = Number(self.getAttribute('max') ?? '0') || 0;
+        const kept: string[] = [];
+        for (const part of parts) {
+          if (commitDraft(part)) continue;
+          if (max > 0 && readTags().length >= max && part.trim()) {
+            kept.push(part.trim());
+          }
+        }
+        const draft = [...kept, trailing].filter(Boolean).join(chars[0] ?? ',');
+        input.value = draft;
+        self.setState('draft', draft);
         return;
       }
       self.setState('draft', input.value);
