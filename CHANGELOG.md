@@ -26,6 +26,7 @@ All notable changes to `@bquery/ui` are documented in this file. The format is b
 
 ### Fixed
 
+- **Publishing**: `package.json` now declares `repository`, `homepage`, `bugs` and `license`. npm rejected the provenance-signed publish of 1.16.0 (E422) because `repository.url` was empty and could not be matched against the GitHub repository in the provenance statement.
 - **Storybook**: components render again in the built Storybook. `sideEffects` in `package.json` only listed `dist/` files, so the production build dropped `.storybook/preview.ts`'s `import '../src/index.js'` as side-effect free and no element was ever registered. Source files are now listed too; the published package (which ships only `dist/`) is unaffected.
 
 - **`bq-pin-input`**: a rejected character stays out of the cell even when the code does not change. Typing a letter into a numeric cell that already held a digit used to leave the letter on screen under bQuery 1.18, because a render with unchanged markup no longer rewrites the cells.
