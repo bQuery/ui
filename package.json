@@ -2,6 +2,15 @@
   "name": "@bquery/ui",
   "version": "1.16.0",
   "description": "Production-grade web component library for the bQuery project",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bQuery/ui.git"
+  },
+  "homepage": "https://github.com/bQuery/ui#readme",
+  "bugs": {
+    "url": "https://github.com/bQuery/ui/issues"
+  },
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
