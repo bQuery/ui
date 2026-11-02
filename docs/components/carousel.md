@@ -10,15 +10,17 @@ import '@bquery/ui/components/carousel';
 
 ## Basic Usage
 
-Every element child is a slide.
+Every element child is a slide. Use a container element (`<div>`, `<figure>`, a card) for each slide rather than a bare `<img>`: the carousel gives every slide `role="group"` and a “1 of 3” label, which on an `<img>` would replace its image role and hide its `alt` text.
 
 ```html
 <bq-carousel label="Product photos">
-  <img src="/front.jpg" alt="Front view" />
-  <img src="/side.jpg" alt="Side view" />
-  <img src="/back.jpg" alt="Back view" />
+  <figure><img src="/front.jpg" alt="Front view" /></figure>
+  <figure><img src="/side.jpg" alt="Side view" /></figure>
+  <figure><img src="/back.jpg" alt="Back view" /></figure>
 </bq-carousel>
 ```
+
+A slide that already has its own `role`, `aria-roledescription`, `aria-label` or `aria-labelledby` keeps it; the carousel only fills in what is missing and restores the original attributes when it is removed.
 
 ## Several Slides per View
 

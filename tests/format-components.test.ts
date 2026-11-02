@@ -1,6 +1,7 @@
 // DOM environment is provided by tests/setup.ts (preloaded via bunfig.toml)
 import { afterEach, beforeAll, describe, expect, it } from 'bun:test';
 import {
+  isDateOnly,
   formatDate,
   formatNumber,
   formatRelativeTime,
@@ -77,6 +78,18 @@ describe('formatNumber', () => {
     expect(
       formatNumber(5, { type: 'unit', unit: 'bananas', locale: 'en-US' })
     ).toBe('5');
+  });
+
+  it('keeps the byte unit when a minimum fraction digit count is set', () => {
+    expect(
+      formatNumber(1500, { type: 'bytes', locale: 'en-US', minimumFractionDigits: 2 })
+    ).toBe('1.50 kB');
+  });
+
+  it('keeps the style when the locale tag is invalid', () => {
+    const text = formatNumber(1500, { type: 'bytes', locale: 'en_US' });
+    expect(text).toContain('kB');
+    expect(formatDate(new Date('2024-03-01T12:00:00Z'), { locale: 'en_US', timeZone: 'UTC', month: 'long' })).not.toContain('T12:00');
   });
 
   it('keeps max fraction digits at or above the minimum', () => {
@@ -250,6 +263,37 @@ describe('bq-format-number / bq-format-date / bq-relative-time', () => {
     const time = el.shadowRoot?.querySelector('time');
     expect(time?.getAttribute('datetime')).toBe('2024-03-01T12:00:00.000Z');
     expect(time?.textContent).toBe('March 1, 2024');
+  });
+
+  it('shows a date-only value on its calendar day in every time zone', async () => {
+    expect(isDateOnly('2024-03-01')).toBe(true);
+    expect(isDateOnly('2024-03-01T00:00:00Z')).toBe(false);
+    const el = create('bq-format-date', {
+      date: '2024-03-01',
+      locale: 'en-US',
+      month: 'long',
+      day: 'numeric',
+    });
+    await waitForFrame();
+    expect(el.shadowRoot?.querySelector('time')?.textContent).toBe('March 1');
+  });
+
+  it('measures a changed date against the current time, not the connect time', async () => {
+    const el = create('bq-relative-time', {
+      date: new Date(Date.now() - 3 * HOUR).toISOString(),
+      locale: 'en',
+    });
+    await waitForFrame();
+    const realNow = Date.now;
+    try {
+      // Two hours "pass" before the application updates the date.
+      Date.now = () => realNow() + 2 * HOUR;
+      el.setAttribute('date', new Date(Date.now() - 5 * MINUTE).toISOString());
+      await waitForFrame();
+      expect(el.shadowRoot?.querySelector('time')?.textContent).toBe('5 minutes ago');
+    } finally {
+      Date.now = realNow;
+    }
   });
 
   it('renders relative text with the absolute date as a title', async () => {

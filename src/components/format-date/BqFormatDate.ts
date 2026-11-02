@@ -28,7 +28,7 @@
 import type { ComponentDefinition } from '@bquery/bquery/component';
 import { component, css, html } from '@bquery/bquery/component';
 import { escapeHtml } from '@bquery/bquery/security';
-import { formatDate, parseDate } from '../../utils/format.js';
+import { formatDate, isDateOnly, parseDate } from '../../utils/format.js';
 import { baseStyles, reset } from '../../utils/styles.js';
 
 type BqFormatDateProps = {
@@ -76,7 +76,7 @@ const definition: ComponentDefinition<BqFormatDateProps> = {
       locale: props.locale,
       dateStyle: props['date-style'],
       timeStyle: props['time-style'],
-      timeZone: props['time-zone'],
+      timeZone: props['time-zone'] || (isDateOnly(props.date) ? 'UTC' : ''),
       hourFormat: props['hour-format'],
       weekday: props.weekday,
       year: props.year,

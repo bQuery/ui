@@ -2,6 +2,7 @@
 import { afterEach, beforeAll, describe, expect, it } from 'bun:test';
 import {
   filterCommands,
+  isPlainHotkey,
   matchesHotkey,
   nextEnabled,
   readCommands,
@@ -79,6 +80,13 @@ describe('command palette helpers', () => {
     expect(matchesHotkey(keyEvent('/'), '/', false)).toBe(true);
     expect(matchesHotkey(keyEvent('?', { shiftKey: true }), '?', false)).toBe(true);
     expect(matchesHotkey(keyEvent('k'), '', false)).toBe(false);
+  });
+
+  it('tells plain hotkeys from modified ones', () => {
+    expect(isPlainHotkey('/')).toBe(true);
+    expect(isPlainHotkey('shift+?')).toBe(true);
+    expect(isPlainHotkey('mod+k')).toBe(false);
+    expect(isPlainHotkey('Ctrl+Shift+P')).toBe(false);
   });
 
   it('reads options, groups and data attributes', () => {
@@ -332,5 +340,36 @@ describe('bq-command-palette', () => {
     press(doc, 'k', { ctrlKey: true });
     await waitForFrame();
     expect(el.hasAttribute('open')).toBe(false);
+  });
+
+  it('does not steal a plain hotkey typed into a text field', async () => {
+    const el = create({ hotkey: '/' });
+    const field = doc.createElement('input');
+    doc.body.appendChild(field);
+    await waitForFrame();
+    const typed = press(field, '/');
+    await waitForFrame();
+    expect(typed).toBe(true); // not prevented
+    expect(el.hasAttribute('open')).toBe(false);
+    press(doc.body, '/');
+    await waitForFrame();
+    expect(el.hasAttribute('open')).toBe(true);
+    // Typing "/" into the palette's own search field must not close it.
+    press(input(el), '/');
+    await waitForFrame();
+    expect(el.hasAttribute('open')).toBe(true);
+  });
+
+  it('ignores Enter while an IME composition is active', async () => {
+    const el = create({ open: '' });
+    await waitForFrame();
+    let selected = false;
+    el.addEventListener('bq-select', () => {
+      selected = true;
+    });
+    press(input(el), 'Enter', { isComposing: true } as KeyboardEventInit);
+    await waitForFrame();
+    expect(selected).toBe(false);
+    expect(el.hasAttribute('open')).toBe(true);
   });
 });

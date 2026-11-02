@@ -75,8 +75,12 @@ With `multiple`, each pick becomes a removable token and the list stays open, so
 
 <script type="module">
   const field = document.querySelector('#users');
+  let latest = 0;
   field.addEventListener('bq-input', async (event) => {
+    const request = ++latest;
     const users = await searchUsers(event.detail.query);
+    // Ignore a response that arrives after a newer query was sent.
+    if (request !== latest) return;
     field.replaceChildren(
       ...users.map((user) => new Option(user.name, user.id))
     );
@@ -148,7 +152,7 @@ With `multiple`, each pick becomes a removable token and the list stays open, so
 | ------------------------- | ---------------------------------------------------------------- |
 | `ArrowDown` / `ArrowUp`   | Opens the list, then moves the active option (skips disabled).  |
 | `Home` / `End`            | Jumps to the first / last option while the list is open.        |
-| `Enter`                   | Selects the active option. Submits the form when nothing is active. |
+| `Enter`                   | Selects the active option.                                       |
 | `Escape`                  | Closes the list.                                                 |
 | `Tab`                     | Closes the list and moves focus on.                             |
 | `Backspace`               | In `multiple` mode with an empty query, removes the last token. |

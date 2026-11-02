@@ -94,7 +94,11 @@ const definition: ComponentDefinition<BqRelativeTimeProps, BqRelativeTimeState> 
   render({ props, state }) {
     const date = parseDate(props.date);
     if (!date) return html`<span part="base"><slot></slot></span>`;
-    const now = state.now || Date.now();
+    // `state.now` only triggers the re-render; the text is always computed
+    // against the real clock, so a changed `date` or `locale` is never
+    // measured from a stale moment.
+    void state.now;
+    const now = Date.now();
     const text = formatRelativeTime(date, now, {
       locale: props.locale,
       format: props.format,

@@ -42,6 +42,7 @@ export {
   formatDate,
   formatNumber,
   formatRelativeTime,
+  isDateOnly,
   parseDate,
   refreshDelay,
   resolveLocale,

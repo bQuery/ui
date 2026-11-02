@@ -228,10 +228,24 @@ const definition: ComponentDefinition<BqSplitPanelProps, BqSplitPanelState> = {
       local.stopDrag = null;
     };
 
-    scope.on(self.shadowRoot, 'pointerdown', (event) => {
+    // Bound on the host so presses on a slotted custom handle (light DOM)
+    // arrive too. Neither `target` nor its light-DOM ancestors include the
+    // shadow divider, so check the composed path and the handle's slot.
+    scope.on(self, 'pointerdown', (event) => {
       const pe = event as PointerEvent;
       if (self.hasAttribute('disabled')) return;
-      if (!(pe.target as Element | null)?.closest?.('.divider')) return;
+      const origin = pe.composedPath()[0] as Element | undefined;
+      const onDivider =
+        pe
+          .composedPath()
+          .some(
+            (node) =>
+              node instanceof Element &&
+              node.getRootNode() === self.shadowRoot &&
+              node.classList.contains('divider')
+          ) ||
+        origin?.closest?.('[slot="divider"]')?.parentElement === self;
+      if (!onDivider) return;
       if (pe.button !== undefined && pe.button !== 0) return;
       pe.preventDefault();
       stopDrag();

@@ -247,6 +247,24 @@ export function matchesHotkey(
   return key.length === 1 && !/[a-z0-9]/.test(key) ? true : !event.shiftKey;
 }
 
+/** True when a hotkey has no Ctrl/⌘/Alt part, e.g. `/` or `?`. */
+export function isPlainHotkey(hotkey: string): boolean {
+  return !/(^|\+)\s*(mod|ctrl|control|meta|cmd|command|alt|option)\s*\+/i.test(hotkey);
+}
+
+/**
+ * Whether a key event comes from a text field or editable content. Uses
+ * `composedPath()[0]` because at document level the target is retargeted to
+ * the outermost shadow host.
+ */
+function isEditableTarget(event: Event): boolean {
+  const origin = event.composedPath?.()[0] ?? event.target;
+  if (!(origin instanceof HTMLElement)) return false;
+  if (origin.isContentEditable) return true;
+  const tag = origin.tagName;
+  return tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT';
+}
+
 const paletteStore = (owner: object) =>
   store<{
     syncCommands?: () => void;
@@ -412,7 +430,7 @@ const definition: ComponentDefinition<BqCommandPaletteProps, BqCommandPaletteSta
     scope.on(document, 'keydown', (event) => {
       const ke = event as KeyboardEvent;
       const hotkey = self.getAttribute('hotkey') ?? 'mod+k';
-      if (hotkey && matchesHotkey(ke, hotkey)) {
+      if (hotkey && matchesHotkey(ke, hotkey) && !(isPlainHotkey(hotkey) && isEditableTarget(ke))) {
         ke.preventDefault();
         if (self.hasAttribute('open')) close();
         else open();
@@ -447,6 +465,9 @@ const definition: ComponentDefinition<BqCommandPaletteProps, BqCommandPaletteSta
     scope.on(self.shadowRoot, 'keydown', (event) => {
       const ke = event as KeyboardEvent;
       if ((ke.target as Element | null)?.tagName !== 'INPUT') return;
+      // Enter and the arrows confirm or navigate an IME composition; they
+      // must not run a command or move the active option.
+      if (ke.isComposing) return;
       const list = visible();
       const current = resolveActive(list, self.getState<number>('activeIndex') ?? -1);
       switch (ke.key) {

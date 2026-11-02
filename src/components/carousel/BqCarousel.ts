@@ -90,8 +90,9 @@ const carouselStore = (owner: object) =>
     syncSlides?: () => void;
     schedule?: () => void;
     pending: Disposer | null;
-    written: WeakSet<Element>;
-  }>(owner, () => ({ pending: null, written: new WeakSet() }));
+    /** Each slide's own values of the attributes this component manages. */
+    originals: WeakMap<Element, Record<string, string | null>>;
+  }>(owner, () => ({ pending: null, originals: new WeakMap() }));
 
 const SLIDE_ATTRIBUTES = [
   'role',
@@ -239,10 +240,19 @@ const definition: ComponentDefinition<BqCarouselProps, BqCarouselState> = {
       const start = currentIndex();
       const end = start + perView();
       all.forEach((slide, i) => {
-        local.written.add(slide);
-        slide.setAttribute('role', 'group');
-        slide.setAttribute('aria-roledescription', 'slide');
-        if (!slide.hasAttribute('aria-labelledby')) {
+        let original = local.originals.get(slide);
+        if (!original) {
+          original = Object.fromEntries(
+            SLIDE_ATTRIBUTES.map((name) => [name, slide.getAttribute(name)])
+          );
+          local.originals.set(slide, original);
+        }
+        // Author-supplied semantics win; the defaults only fill gaps.
+        if (original['role'] === null) slide.setAttribute('role', 'group');
+        if (original['aria-roledescription'] === null) {
+          slide.setAttribute('aria-roledescription', 'slide');
+        }
+        if (original['aria-label'] === null && !slide.hasAttribute('aria-labelledby')) {
           slide.setAttribute(
             'aria-label',
             t('carousel.slide', { index: i + 1, total: all.length })
@@ -262,10 +272,15 @@ const definition: ComponentDefinition<BqCarouselProps, BqCarouselState> = {
 
     scope.add(() => {
       for (const slide of slides()) {
-        if (!local.written.has(slide)) continue;
-        for (const name of SLIDE_ATTRIBUTES) slide.removeAttribute(name);
+        const original = local.originals.get(slide);
+        if (!original) continue;
+        for (const name of SLIDE_ATTRIBUTES) {
+          const value = original[name];
+          if (value === null || value === undefined) slide.removeAttribute(name);
+          else slide.setAttribute(name, value);
+        }
       }
-      local.written = new WeakSet();
+      local.originals = new WeakMap();
     });
 
     const observer = new MutationObserver(() => syncSlides());

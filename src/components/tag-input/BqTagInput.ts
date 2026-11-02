@@ -394,7 +394,7 @@ const definition: ComponentDefinition<BqTagInputProps, BqTagInputState> = {
             aria-describedby="${escapeHtml([...describedBy, `${uid}-help`].join(' '))}"
             ${props.required ? 'aria-required="true"' : ''}
             ${props.disabled ? 'disabled' : ''}
-            ${full && !props.disabled ? 'readonly' : ''}
+            ${full && !props.disabled && !(state.draft ?? '') ? 'readonly' : ''}
           />
           ${max > 0 ? `<span class="count" part="count">${tags.length}/${max}</span>` : ''}
         </div>

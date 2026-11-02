@@ -137,6 +137,31 @@ describe('bq-split-panel', () => {
     expect(divider(el).getAttribute('aria-label')).toBe('Bereiche anpassen');
   });
 
+  it('starts a drag from a slotted custom handle', async () => {
+    const el = doc.createElement('bq-split-panel');
+    el.innerHTML =
+      '<div slot="start">A</div><span slot="divider" class="grip">::</span><div slot="end">B</div>';
+    doc.body.appendChild(el);
+    await waitForFrame();
+    el.querySelector('.grip')?.dispatchEvent(
+      new win.Event('pointerdown', { bubbles: true, composed: true, cancelable: true })
+    );
+    expect(el.hasAttribute('data-dragging')).toBe(true);
+    doc.dispatchEvent(new win.Event('pointerup'));
+    expect(el.hasAttribute('data-dragging')).toBe(false);
+  });
+
+  it('ignores presses on pane content that happens to use a divider class', async () => {
+    const el = doc.createElement('bq-split-panel');
+    el.innerHTML = '<div slot="start"><hr class="divider" /></div><div slot="end">B</div>';
+    doc.body.appendChild(el);
+    await waitForFrame();
+    el.querySelector('hr')?.dispatchEvent(
+      new win.Event('pointerdown', { bubbles: true, composed: true, cancelable: true })
+    );
+    expect(el.hasAttribute('data-dragging')).toBe(false);
+  });
+
   it('removes drag listeners from document on disconnect', async () => {
     const el = create();
     await waitForFrame();
@@ -331,5 +356,25 @@ describe('bq-carousel', () => {
     expect(slide.hasAttribute('role')).toBe(false);
     expect(slide.hasAttribute('inert')).toBe(false);
     expect(slide.hasAttribute('aria-label')).toBe(false);
+  });
+
+  it('keeps author-supplied slide semantics and restores them on disconnect', async () => {
+    const el = doc.createElement('bq-carousel');
+    el.innerHTML =
+      '<div role="tabpanel" aria-label="Intro">A</div><div aria-roledescription="card">B</div><div>C</div>';
+    doc.body.appendChild(el);
+    await waitForFrame();
+    const [a, b, c] = Array.from(el.children) as HTMLElement[];
+    expect(a?.getAttribute('role')).toBe('tabpanel');
+    expect(a?.getAttribute('aria-label')).toBe('Intro');
+    expect(b?.getAttribute('aria-roledescription')).toBe('card');
+    expect(b?.getAttribute('role')).toBe('group');
+    expect(c?.getAttribute('aria-label')).toBe('3 of 3');
+    el.remove();
+    expect(a?.getAttribute('role')).toBe('tabpanel');
+    expect(a?.getAttribute('aria-label')).toBe('Intro');
+    expect(b?.getAttribute('aria-roledescription')).toBe('card');
+    expect(b?.hasAttribute('role')).toBe(false);
+    expect(c?.hasAttribute('aria-label')).toBe(false);
   });
 });

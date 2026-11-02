@@ -16,7 +16,7 @@ Type a tag and press `Enter` or type a comma to commit it.
 <bq-tag-input label="Keywords" name="keywords" value="web,components"></bq-tag-input>
 ```
 
-Pasting `design, tokens, a11y` creates three tags at once. A half-typed tag is committed when the field loses focus, so nothing is silently lost.
+Pasting `design, tokens, a11y` commits `design` and `tokens` at once and leaves `a11y` as typed text, ready to be committed with `Enter`, another delimiter, or by leaving the field. A half-typed tag is committed when the field loses focus, so nothing is silently lost.
 
 ## Custom Delimiters and Separator
 
@@ -91,7 +91,7 @@ With `max`, a `3/3`-style counter is shown. Once the limit is reached the field 
 
 | Key              | Action                                              |
 | ---------------- | --------------------------------------------------- |
-| `Enter`          | Commits the typed text as a tag. Submits the form when the field is empty. |
+| `Enter`          | Commits the typed text as a tag.                    |
 | Delimiter        | Commits the typed text as a tag.                    |
 | `Backspace`      | With an empty field, removes the last tag.          |
 | `Escape`         | Clears the typed text.                              |

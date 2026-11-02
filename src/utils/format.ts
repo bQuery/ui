@@ -94,7 +94,10 @@ export function formatNumber(
       intl.unit = BYTE_UNITS[index];
       // Whole bytes never need decimals; larger units get one by default.
       if (options.maximumFractionDigits === undefined) {
-        intl.maximumFractionDigits = index === 0 ? 0 : 1;
+        intl.maximumFractionDigits = Math.max(
+          index === 0 ? 0 : 1,
+          options.minimumFractionDigits ?? 0
+        );
       }
     } else {
       intl.unit = options.unit || 'meter';
@@ -108,15 +111,23 @@ export function formatNumber(
     intl.maximumFractionDigits = Math.max(max, min ?? 0);
   }
 
-  try {
-    return new Intl.NumberFormat(locale, intl).format(amount);
-  } catch {
+  // Retry with progressively fewer assumptions instead of throwing during
+  // render: first without a locale tag Intl rejects (`en_US`, say), then
+  // without the style options, then with neither.
+  const attempts: Array<() => string> = [
+    () => new Intl.NumberFormat(locale, intl).format(amount),
+    () => new Intl.NumberFormat(undefined, intl).format(amount),
+    () => new Intl.NumberFormat(locale).format(amount),
+    () => new Intl.NumberFormat().format(amount),
+  ];
+  for (const attempt of attempts) {
     try {
-      return new Intl.NumberFormat(locale).format(amount);
+      return attempt();
     } catch {
-      return String(amount);
+      /* try the next, simpler format */
     }
   }
+  return String(amount);
 }
 
 export interface FormatDateOptions {
@@ -188,7 +199,12 @@ export function formatDate(date: Date, options: FormatDateOptions = {}): string 
     return new Intl.DateTimeFormat(locale, intl).format(date);
   } catch {
     try {
-      return new Intl.DateTimeFormat(locale, { dateStyle: 'medium' }).format(date);
+      return new Intl.DateTimeFormat(undefined, intl).format(date);
+    } catch {
+      /* fall through */
+    }
+    try {
+      return new Intl.DateTimeFormat(undefined, { dateStyle: 'medium' }).format(date);
     } catch {
       return date.toISOString();
     }
@@ -269,3 +285,12 @@ export function refreshDelay(diffMs: number): number {
   return HOUR;
 }
 
+
+/**
+ * True for a calendar date without a time (`2024-03-01`). `new Date()` reads
+ * such a string as UTC midnight, so it must also be displayed in UTC — in the
+ * viewer's zone it would show the previous day anywhere west of Greenwich.
+ */
+export function isDateOnly(raw: string | null | undefined): boolean {
+  return /^\d{4}-\d{2}-\d{2}$/.test((raw ?? '').trim());
+}
