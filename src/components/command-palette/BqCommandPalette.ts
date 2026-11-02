@@ -520,6 +520,14 @@ const definition: ComponentDefinition<BqCommandPaletteProps, BqCommandPaletteSta
     });
     scope.add(() => observer.disconnect());
 
+    // `slotchange` is the platform signal for added or removed commands; the
+    // MutationObserver above adds attribute and text edits on existing ones.
+    queueMicrotask(() => {
+      if (!self.isConnected) return;
+      scope.on(self.shadowRoot?.querySelector('slot.source'), 'slotchange', syncCommands);
+      syncCommands();
+    });
+
     syncCommands();
   },
   beforeUpdate() {

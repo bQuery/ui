@@ -271,6 +271,13 @@ const definition: ComponentDefinition<BqCarouselProps, BqCarouselState> = {
     const observer = new MutationObserver(() => syncSlides());
     observer.observe(self, { childList: true });
     scope.add(() => observer.disconnect());
+    // `slotchange` covers the same added/removed slides through the platform
+    // signal, so slide bookkeeping does not depend on the observer alone.
+    queueMicrotask(() => {
+      if (!self.isConnected) return;
+      scope.on(self.shadowRoot?.querySelector('.track slot'), 'slotchange', syncSlides);
+      syncSlides();
+    });
 
     // ── Autoplay ────────────────────────────────────────────────────────
     const prefersReducedMotion = () =>
