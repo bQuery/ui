@@ -37,6 +37,7 @@ describe('form submission from shadow controls', () => {
     await import('../src/components/button/index.js');
     await import('../src/components/input/index.js');
     await import('../src/components/number-input/index.js');
+    await import('../src/components/switch/index.js');
   });
 
   afterEach(() => {
