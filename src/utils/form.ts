@@ -194,3 +194,82 @@ export function bindFormProxy(
 export function syncFormProxy(owner: object): void {
   bindings.get(owner)?.sync();
 }
+
+// ─── Submission ──────────────────────────────────────────────────────────────
+
+/**
+ * The form a host belongs to: the `<form>` named by its `form` attribute, or
+ * the closest ancestor `<form>`.
+ *
+ * A native control inside a shadow root has no form owner in the light DOM,
+ * so components resolve the form from the host instead.
+ */
+export function formOf(host: Element): HTMLFormElement | null {
+  const id = host.getAttribute('form');
+  if (id) {
+    const named = host.ownerDocument?.getElementById(id);
+    return named?.tagName === 'FORM' ? (named as HTMLFormElement) : null;
+  }
+  return host.closest('form');
+}
+
+/** Selector for the controls that can act as a form's default button. */
+const SUBMIT_BUTTONS =
+  'button:not([type]), button[type="submit" i], input[type="submit" i], input[type="image" i], bq-button[type="submit" i]';
+
+/** Submits the host's form like a native submit button would. */
+export function submitForm(host: Element): void {
+  const form = formOf(host);
+  if (!form) return;
+  if (typeof form.requestSubmit === 'function') form.requestSubmit();
+  else form.submit();
+}
+
+/** Resets the host's form like a native reset button would. */
+export function resetForm(host: Element): void {
+  formOf(host)?.reset();
+}
+
+/**
+ * Implicit submission — what pressing Enter in a native text field does.
+ *
+ * The form's default button (its first submit button) is activated. When it
+ * is disabled, nothing happens, as in the platform. A form without a submit
+ * button is submitted directly.
+ */
+export function implicitSubmit(host: Element): void {
+  const form = formOf(host);
+  if (!form) return;
+  const button = Array.from(form.querySelectorAll<HTMLElement>(SUBMIT_BUTTONS)).find(
+    (el) => formOf(el) === form,
+  );
+  if (!button) {
+    submitForm(host);
+    return;
+  }
+  if (button.tagName === 'BQ-BUTTON') {
+    if (button.hasAttribute('disabled') || button.hasAttribute('loading')) return;
+    submitForm(button);
+    return;
+  }
+  if ((button as HTMLButtonElement).disabled) return;
+  button.click();
+}
+
+/**
+ * True for an Enter keydown that should submit: no modifier, not repeated
+ * from a held key, and not confirming an IME composition.
+ */
+export function isSubmitKey(event: KeyboardEvent): boolean {
+  return (
+    event.key === 'Enter' &&
+    !event.defaultPrevented &&
+    !event.isComposing &&
+    event.keyCode !== 229 &&
+    !event.repeat &&
+    !event.shiftKey &&
+    !event.altKey &&
+    !event.ctrlKey &&
+    !event.metaKey
+  );
+}

@@ -33,6 +33,7 @@ import { markFocus, restorePreservedFocus } from '../../utils/focus.js';
 import { bindFormProxy, syncFormProxy } from '../../utils/form.js';
 import { baseStyles, fieldStyles, reset, srOnly } from '../../utils/styles.js';
 import { bindValidation } from '../../utils/validation.js';
+import { defineFormControl, formControl } from '../../utils/model.js';
 
 type BqPinInputProps = {
   length: number;
@@ -379,4 +380,5 @@ const definition: ComponentDefinition<BqPinInputProps, BqPinInputState> = {
   },
 };
 
-component<BqPinInputProps, BqPinInputState>('bq-pin-input', definition);
+component<BqPinInputProps, BqPinInputState>('bq-pin-input', formControl(definition));
+defineFormControl('bq-pin-input');

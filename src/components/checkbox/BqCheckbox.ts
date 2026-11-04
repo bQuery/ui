@@ -27,6 +27,7 @@ import { bind, host, release } from '../../utils/component.js';
 import { uniqueId } from '../../utils/dom.js';
 import { iconMask } from '../../utils/icons.js';
 import { baseStyles, fieldStyles, reset } from '../../utils/styles.js';
+import { defineFormControl, formControl } from '../../utils/model.js';
 
 type BqCheckboxProps = {
   label: string;
@@ -225,4 +226,5 @@ const definition: ComponentDefinition<BqCheckboxProps, BqCheckboxState> = {
   },
 };
 
-component<BqCheckboxProps, BqCheckboxState>('bq-checkbox', definition);
+component<BqCheckboxProps, BqCheckboxState>('bq-checkbox', formControl(definition));
+defineFormControl('bq-checkbox', { kind: 'checkbox' });

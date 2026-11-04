@@ -53,7 +53,18 @@ export type {
   FormatNumberOptions,
   RelativeTimeOptions,
 } from './format.js';
-export { bindFormProxy, createFormProxy, syncFormProxy } from './form.js';
+export {
+  bindFormProxy,
+  createFormProxy,
+  formOf,
+  implicitSubmit,
+  isSubmitKey,
+  resetForm,
+  submitForm,
+  syncFormProxy,
+} from './form.js';
+export { defineFormControl, formControl, liveField } from './model.js';
+export type { FormControlOptions } from './model.js';
 export type {
   FormProxy,
   FormProxyBinding,

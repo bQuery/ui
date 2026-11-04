@@ -19,6 +19,7 @@ import { bind, host, release, store } from '../../utils/component.js';
 import { createFormProxy, type FormProxy } from '../../utils/form.js';
 import { iconCss } from '../../utils/icons.js';
 import { baseStyles, reset, srOnly } from '../../utils/styles.js';
+import { defineFormControl, formControl } from '../../utils/model.js';
 
 type BqRatingProps = {
   value: number;
@@ -213,4 +214,5 @@ const definition: ComponentDefinition<BqRatingProps> = {
   },
 };
 
-component<BqRatingProps>('bq-rating', definition);
+component<BqRatingProps>('bq-rating', formControl(definition));
+defineFormControl('bq-rating', { defaultValue: '0' });

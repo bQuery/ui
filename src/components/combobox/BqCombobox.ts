@@ -47,6 +47,7 @@ import { autoPosition } from '../../utils/position.js';
 import { iconCss, iconMask } from '../../utils/icons.js';
 import { baseStyles, focusRing, reset, srOnly } from '../../utils/styles.js';
 import { bindValidation } from '../../utils/validation.js';
+import { defineFormControl, formControl } from '../../utils/model.js';
 
 type BqComboboxProps = {
   label: string;
@@ -755,4 +756,5 @@ const definition: ComponentDefinition<BqComboboxProps, BqComboboxState> = {
   },
 };
 
-component<BqComboboxProps, BqComboboxState>('bq-combobox', definition);
+component<BqComboboxProps, BqComboboxState>('bq-combobox', formControl(definition));
+defineFormControl('bq-combobox');

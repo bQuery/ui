@@ -18,6 +18,7 @@ import { t } from '../../i18n/index.js';
 import { bindFormProxy, syncFormProxy } from '../../utils/form.js';
 import { bind, host, release } from '../../utils/component.js';
 import { baseStyles, reset } from '../../utils/styles.js';
+import { defineFormControl, formControl, liveField } from '../../utils/model.js';
 
 type BqSliderProps = {
   value: number;
@@ -238,4 +239,5 @@ const definition: ComponentDefinition<BqSliderProps> = {
   },
 };
 
-component<BqSliderProps>('bq-slider', definition);
+component<BqSliderProps>('bq-slider', formControl(definition));
+defineFormControl('bq-slider', { defaultValue: '50', live: liveField('input[type="range"]') });

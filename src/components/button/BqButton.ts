@@ -7,20 +7,24 @@
  * @prop {boolean} pill     - Fully rounded ends
  * @prop {boolean} disabled
  * @prop {boolean} loading
- * @prop {string}  type     - button | submit | reset
+ * @prop {string}  type     - button | submit | reset. `submit` and `reset` act on
+ *                            the surrounding `<form>` (or the one named by `form`).
+ * @prop {string}  form     - id of the `<form>` to submit or reset, when the button is outside it
  * @prop {string}  href
  * @prop {string}  target
  * @prop {string}  label    - Optional accessible label override
  * @slot          - Button content
  * @slot prefix-icon - Icon before content
  * @slot suffix-icon - Icon after content
- * @fires bq-click - { originalEvent: Event }
+ * @fires bq-click - { originalEvent: Event }. Cancelable: calling `preventDefault()`
+ *                   stops a `submit`/`reset` button from acting on its form.
  */
 import { bool, component, css, html } from '@bquery/bquery/component';
 import type { ComponentDefinition } from '@bquery/bquery/component';
 import { escapeHtml } from '@bquery/bquery/security';
 import { t } from '../../i18n/index.js';
 import { uniqueId } from '../../utils/dom.js';
+import { resetForm, submitForm } from '../../utils/form.js';
 import { bind, host, release } from '../../utils/component.js';
 import { baseStyles, reset, srOnly } from '../../utils/styles.js';
 
@@ -32,6 +36,7 @@ type BqButtonProps = {
   disabled: boolean;
   loading: boolean;
   type: string;
+  form: string;
   href: string;
   target: string;
   label: string;
@@ -47,6 +52,7 @@ const definition: ComponentDefinition<BqButtonProps, BqButtonState> = {
     disabled:{ type: Boolean, default: false },
     loading: { type: Boolean, default: false },
     type:    { type: String, default: 'button' },
+    form:    { type: String, default: '' },
     href:    { type: String, default: '' },
     target:  { type: String, default: '' },
     label:   { type: String, default: '' },
@@ -139,7 +145,15 @@ const definition: ComponentDefinition<BqButtonProps, BqButtonState> = {
       if (self.hasAttribute('disabled') || self.hasAttribute('loading')) {
         e.preventDefault(); e.stopPropagation(); return;
       }
-      self.dispatchEvent(new CustomEvent('bq-click', { detail: { originalEvent: e }, bubbles: true, composed: true }));
+      const proceed = self.dispatchEvent(
+        new CustomEvent('bq-click', { detail: { originalEvent: e }, bubbles: true, composed: true, cancelable: true }),
+      );
+      // The native <button> lives in the shadow root and has no form owner,
+      // so submit/reset are forwarded to the host's form by hand.
+      if (!proceed || e.defaultPrevented || self.hasAttribute('href')) return;
+      const type = (self.getAttribute('type') ?? '').trim().toLowerCase();
+      if (type === 'submit') submitForm(self);
+      else if (type === 'reset') resetForm(self);
     });
   },
   disconnected() {

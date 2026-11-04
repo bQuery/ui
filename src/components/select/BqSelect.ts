@@ -31,6 +31,7 @@ import {
   focusRing,
   reset,
 } from '../../utils/styles.js';
+import { defineFormControl, formControl } from '../../utils/model.js';
 
 type BqSelectProps = {
   label: string;
@@ -294,4 +295,5 @@ const definition: ComponentDefinition<BqSelectProps, BqSelectState> = {
   },
 };
 
-component<BqSelectProps, BqSelectState>('bq-select', definition);
+component<BqSelectProps, BqSelectState>('bq-select', formControl(definition));
+defineFormControl('bq-select');

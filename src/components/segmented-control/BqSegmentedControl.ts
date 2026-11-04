@@ -20,6 +20,7 @@ import { uniqueId } from '../../utils/dom.js';
 import { bindFormProxy, syncFormProxy } from '../../utils/form.js';
 import { bind, release, store } from '../../utils/component.js';
 import { baseStyles, reset } from '../../utils/styles.js';
+import { defineFormControl, formControl } from '../../utils/model.js';
 
 type BqSegmentedControlProps = {
   label: string;
@@ -452,5 +453,6 @@ const definition: ComponentDefinition<
 
 component<BqSegmentedControlProps, BqSegmentedControlState>(
   'bq-segmented-control',
-  definition
+  formControl(definition)
 );
+defineFormControl('bq-segmented-control');

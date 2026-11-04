@@ -43,6 +43,7 @@ import { bindFormProxy, syncFormProxy } from '../../utils/form.js';
 import { iconCss } from '../../utils/icons.js';
 import { baseStyles, focusRing, reset, srOnly } from '../../utils/styles.js';
 import { bindValidation } from '../../utils/validation.js';
+import { defineFormControl, formControl } from '../../utils/model.js';
 
 type BqTagInputProps = {
   label: string;
@@ -419,4 +420,5 @@ const definition: ComponentDefinition<BqTagInputProps, BqTagInputState> = {
   },
 };
 
-component<BqTagInputProps, BqTagInputState>('bq-tag-input', definition);
+component<BqTagInputProps, BqTagInputState>('bq-tag-input', formControl(definition));
+defineFormControl('bq-tag-input');

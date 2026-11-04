@@ -37,6 +37,7 @@ import {
   focusRing,
   reset,
 } from '../../utils/styles.js';
+import { defineFormControl, formControl } from '../../utils/model.js';
 
 type BqTextareaProps = {
   label: string;
@@ -257,4 +258,5 @@ ${escapeHtml(props.value)}</textarea
   },
 };
 
-component<BqTextareaProps, BqTextareaState>('bq-textarea', definition);
+component<BqTextareaProps, BqTextareaState>('bq-textarea', formControl(definition));
+defineFormControl('bq-textarea');
