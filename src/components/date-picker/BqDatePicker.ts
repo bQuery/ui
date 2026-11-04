@@ -50,6 +50,7 @@ import {
   srOnly,
 } from '../../utils/styles.js';
 import { bindValidation } from '../../utils/validation.js';
+import { defineFormControl, formControl } from '../../utils/model.js';
 
 type BqDatePickerProps = {
   label: string;
@@ -79,7 +80,17 @@ type BqDatePickerState = {
 const MS_PER_DAY = 86_400_000;
 
 const pickerStore = (owner: object) =>
-  store<{ syncPosition?: () => void; stopPosition?: Disposer | null }>(
+  store<{
+    syncPosition?: () => void;
+    stopPosition?: Disposer | null;
+    /**
+     * Set by the actions that should move DOM focus onto the cursor day —
+     * opening the calendar and keyboard navigation — and consumed by the next
+     * update that renders the open calendar. Any other update (a `locale`
+     * change, a new `value`) leaves focus where it is.
+     */
+    focusCursor?: boolean;
+  }>(
     owner,
     () => ({})
   );
@@ -374,14 +385,26 @@ const definition: ComponentDefinition<BqDatePickerProps, BqDatePickerState> = {
       );
     };
 
-    const setCursor = (date: Date) => {
+    /** Moves the cursor; `focus` also moves DOM focus onto the new day. */
+    const setCursor = (date: Date, { focus = false } = {}) => {
       markFocus(self);
-      self.setState('cursor', formatISODate(clampDate(date, minDate(), maxDate())));
+      const next = formatISODate(clampDate(date, minDate(), maxDate()));
+      if (next === self.getState<string>('cursor')) {
+        // Nothing to render (e.g. stopped at `min`), so no update would
+        // consume the intent; move focus now instead of leaving it pending.
+        if (focus) {
+          (self.shadowRoot?.querySelector('.day[tabindex="0"]') as HTMLElement | null)?.focus();
+        }
+        return;
+      }
+      if (focus) local.focusCursor = true;
+      self.setState('cursor', next);
     };
 
     const open = () => {
       if (!isInteractive() || self.getState<boolean>('open')) return;
       markFocus(self);
+      local.focusCursor = true;
       self.setState('cursor', formatISODate(cursorDate()));
       self.setState('open', true);
       self.setAttribute('data-open', '');
@@ -393,6 +416,7 @@ const definition: ComponentDefinition<BqDatePickerProps, BqDatePickerState> = {
     const close = ({ restore = false } = {}) => {
       if (!self.getState<boolean>('open')) return;
       markFocus(self);
+      local.focusCursor = false;
       self.setState('open', false);
       self.removeAttribute('data-open');
       self.dispatchEvent(
@@ -520,26 +544,26 @@ const definition: ComponentDefinition<BqDatePickerProps, BqDatePickerState> = {
         case 'ArrowLeft':
           if (onField) return;
           ke.preventDefault();
-          setCursor(addDays(cursorDate(), -1));
+          setCursor(addDays(cursorDate(), -1), { focus: true });
           return;
         case 'ArrowRight':
           if (onField) return;
           ke.preventDefault();
-          setCursor(addDays(cursorDate(), 1));
+          setCursor(addDays(cursorDate(), 1), { focus: true });
           return;
         case 'ArrowUp':
           if (onField) return;
           ke.preventDefault();
-          setCursor(addDays(cursorDate(), -7));
+          setCursor(addDays(cursorDate(), -7), { focus: true });
           return;
         case 'ArrowDown':
           if (onField) return;
           ke.preventDefault();
-          setCursor(addDays(cursorDate(), 7));
+          setCursor(addDays(cursorDate(), 7), { focus: true });
           return;
         case 'PageUp':
           ke.preventDefault();
-          setCursor(addMonths(cursorDate(), ke.shiftKey ? -12 : -1));
+          setCursor(addMonths(cursorDate(), ke.shiftKey ? -12 : -1), { focus: true });
           return;
         case 'Home': {
           if (onField) return;
@@ -547,7 +571,7 @@ const definition: ComponentDefinition<BqDatePickerProps, BqDatePickerState> = {
           const first = Number(self.getAttribute('first-day-of-week') ?? 1);
           const current = cursorDate();
           const offset = (current.getUTCDay() - first + 7) % 7;
-          setCursor(addDays(current, -offset));
+          setCursor(addDays(current, -offset), { focus: true });
           return;
         }
         case 'End': {
@@ -556,12 +580,12 @@ const definition: ComponentDefinition<BqDatePickerProps, BqDatePickerState> = {
           const first = Number(self.getAttribute('first-day-of-week') ?? 1);
           const current = cursorDate();
           const offset = (current.getUTCDay() - first + 7) % 7;
-          setCursor(addDays(current, 6 - offset));
+          setCursor(addDays(current, 6 - offset), { focus: true });
           return;
         }
         case 'PageDown':
           ke.preventDefault();
-          setCursor(addMonths(cursorDate(), ke.shiftKey ? 12 : 1));
+          setCursor(addMonths(cursorDate(), ke.shiftKey ? 12 : 1), { focus: true });
           return;
         case 'Enter':
         case ' ':
@@ -602,7 +626,11 @@ const definition: ComponentDefinition<BqDatePickerProps, BqDatePickerState> = {
     // Arrow keys move a roving tab stop through the grid. bQuery >= 1.18
     // patches the grid in place, so the day that had focus keeps it (older
     // releases replaced it, and focus was restored onto a stand-in); move
-    // focus to the cursor whenever it is on another day, or nowhere.
+    // focus to the cursor when it is on another day, or nowhere — but only
+    // for an update that asked for it (`focusCursor`). An unrelated update
+    // must not pull focus into the calendar from outside the picker.
+    if (!local.focusCursor || this.getState<boolean>('open') !== true) return;
+    local.focusCursor = false;
     const root = this.shadowRoot;
     const cursor = root?.querySelector(
       '.day[tabindex="0"]'
@@ -610,9 +638,7 @@ const definition: ComponentDefinition<BqDatePickerProps, BqDatePickerState> = {
     const focused = root?.activeElement as HTMLElement | null | undefined;
     const focusOnOtherDay =
       !focused || (focused !== cursor && focused.classList.contains('day'));
-    if (cursor && this.hasAttribute('data-open') && focusOnOtherDay) {
-      cursor.focus();
-    }
+    if (cursor && focusOnOtherDay) cursor.focus();
   },
   render({ props, state }) {
     const uid = state.uid || 'bq-dp';
@@ -769,4 +795,5 @@ const definition: ComponentDefinition<BqDatePickerProps, BqDatePickerState> = {
   },
 };
 
-component<BqDatePickerProps, BqDatePickerState>('bq-date-picker', definition);
+component<BqDatePickerProps, BqDatePickerState>('bq-date-picker', formControl(definition));
+defineFormControl('bq-date-picker');
