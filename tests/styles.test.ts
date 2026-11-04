@@ -84,17 +84,12 @@ describe('style payloads', () => {
     );
   });
 
-  // `:host-context()` only exists in Chromium, and one unknown selector
-  // invalidates the whole list it sits in — pairing the two in `a, b { … }`
-  // dropped the entire dark theme in Firefox and Safari.
-  it('keeps :host-context out of the selector list that carries dark mode', () => {
-    const rules = baseStyles.text
-      .split('}')
-      .map((chunk) => chunk.split('{')[0] ?? '');
-    for (const selector of rules) {
-      if (!selector.includes(':host-context')) continue;
-      expect(selector).not.toContain(',');
-    }
+  // `:host-context()` only exists in Chromium, and it set the dark tokens as
+  // literals: there it beat a page's own `--bq-scheme-*` palette, elsewhere
+  // it did nothing (issue #27). An ancestor's `data-theme` now reaches the
+  // component only through the scheme channel, the same way in every engine.
+  it('emits no :host-context rule; dark literals apply only to an explicitly dark host', () => {
+    expect(baseStyles.text).not.toContain(':host-context');
     expect(baseStyles.text).toContain(':host([data-theme="dark"]) {');
   });
 });

@@ -1,3 +1,5 @@
+import { getTokensCSS } from '../tokens/index.js';
+
 /**
  * The semantic token layer, and the mechanism that lets a page switch it.
  *
@@ -8,9 +10,10 @@
  * cannot re-theme a component just by setting the variable on `<html>`.
  *
  * The library used to bridge that with `:host-context([data-theme="dark"])`.
- * That selector only exists in Chromium; worse, it appeared in a selector list
- * next to `:host([data-theme="dark"])`, and one unknown selector invalidates
- * the whole list — so Firefox and Safari dropped the entire dark theme.
+ * That selector only exists in Chromium, and it set the dark tokens as
+ * literals — so in Chrome it also beat a page's own `--bq-scheme-*` values,
+ * and the same page looked different per browser. It is gone; the channel
+ * below is the only path from the document into a component.
  *
  * The fix is one level of indirection. Components resolve each semantic token
  * through a *scheme channel*:
@@ -184,6 +187,35 @@ const DARK_OVERRIDES: Record<string, string> = {
   'shadow-inner': 'inset 0 1px 2px 0 rgba(0, 0, 0, 0.35)',
 };
 
+/**
+ * The light values of the {@link DARK_OVERRIDES} tokens, read from the token
+ * sheet so the two cannot drift apart.
+ */
+function lightOverrideValues(): Record<string, string> {
+  const tokens = getTokensCSS();
+  const values: Record<string, string> = {};
+  for (const name of Object.keys(DARK_OVERRIDES)) {
+    const match = new RegExp(`--bq-${name}:\\s*([^;]+);`).exec(tokens);
+    if (match) values[name] = match[1]!.trim();
+  }
+  return values;
+}
+
+/**
+ * The token sheet with the {@link DARK_OVERRIDES} tokens routed through the
+ * scheme channel, so the brighter dark accents and shadows reach every shadow
+ * root from the document — in every browser, not only where
+ * `:host-context()` exists.
+ */
+export function getChanneledTokensCSS(): string {
+  const names = new Set(Object.keys(DARK_OVERRIDES));
+  return getTokensCSS().replace(
+    /--bq-([a-z0-9-]+):\s*([^;]+);/g,
+    (whole, name: string, value: string) =>
+      names.has(name) ? `--bq-${name}: var(--bq-scheme-${name}, ${value.trim()});` : whole
+  );
+}
+
 /** Light values, keyed by full custom property name. */
 export const lightTokens: Readonly<Record<string, string>> = Object.fromEntries(
   Object.entries(LIGHT_TOKENS)
@@ -267,6 +299,11 @@ export function getSchemeRootCSS(): string {
   const darkOverrides = Object.entries(DARK_OVERRIDES)
     .map(([name, value]) => `  --bq-scheme-${name}: ${value};`)
     .join('\n');
+  // A light region nested in a dark one must reset these too, or it would
+  // inherit the dark accents and shadows.
+  const lightOverrides = Object.entries(lightOverrideValues())
+    .map(([name, value]) => `  --bq-scheme-${name}: ${value};`)
+    .join('\n');
 
   return `[data-theme="dark"] {
 ${dark}
@@ -275,6 +312,7 @@ ${darkOverrides}
 
 [data-theme="light"] {
 ${light}
+${lightOverrides}
 }
 
 @media (prefers-color-scheme: dark) {

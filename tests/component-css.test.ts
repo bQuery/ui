@@ -120,7 +120,7 @@ describe('component stylesheets', () => {
     for (const tag of tags) {
       // Only the component's own rules; the token block itself legitimately
       // defines every palette step.
-      const css = shadowCss(tag).split(':host-context([data-theme="dark"])').pop() ?? '';
+      const css = shadowCss(tag).split(':host([data-theme="dark"])').pop() ?? '';
       for (const match of css.matchAll(rule)) {
         offenders.push(`${tag}: ${match[0].trim()}`);
       }

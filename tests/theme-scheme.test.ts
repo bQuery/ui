@@ -10,6 +10,8 @@ import {
 import { installThemeStyles } from '../src/theme/root.js';
 import {
   getColorScheme,
+  getDarkThemeCSS,
+  getDefaultThemeCSS,
   getResolvedColorScheme,
   setColorScheme,
 } from '../src/theme/index.js';
@@ -87,6 +89,35 @@ describe('getSchemeRootCSS', () => {
 
   it('is not scoped to the root element, so a themed section works too', () => {
     expect(css).not.toContain(':root[data-theme="dark"]');
+  });
+
+  // A light section inside a dark one must not inherit the dark accents.
+  it('resets the dark accent and shadow channel in a light region', () => {
+    const light = css.split('[data-theme="light"] {')[1]!.split('}')[0]!;
+    expect(light).toContain('--bq-scheme-color-primary-600: #2563eb;');
+    expect(light).toContain('--bq-scheme-shadow-xs:');
+  });
+});
+
+// Issue #27: the dark accents and shadows used to reach a component only via
+// Chromium's `:host-context()`. They go through the channel now, so a page
+// that sets `data-theme="dark"` — or its own `--bq-scheme-*` values — gets
+// the same result in every engine.
+describe('accent and shadow channel', () => {
+  const css = getDefaultThemeCSS();
+
+  it('resolves the dark-adjusted palette steps and shadows through the channel', () => {
+    expect(css).toContain('--bq-color-primary-600: var(--bq-scheme-color-primary-600, #2563eb);');
+    expect(css).toContain('--bq-color-danger-600: var(--bq-scheme-color-danger-600, #dc2626);');
+    expect(css).toMatch(/--bq-shadow-md: var\(--bq-scheme-shadow-md, [^;]+\);/);
+  });
+
+  it('leaves the rest of the palette literal', () => {
+    expect(css).toContain('--bq-color-primary-500: #3b82f6;');
+  });
+
+  it('emits no :host-context rule that could outrank the channel', () => {
+    expect(getDarkThemeCSS()).not.toContain(':host-context');
   });
 });
 
