@@ -292,6 +292,86 @@ describe('bq-date-picker', () => {
     expect(focusedDate()).toBe('2026-03-23');
   });
 
+  // Issue #20: only opening and keyboard navigation move focus onto the
+  // cursor day. Blurring the day (focus goes to the page, relatedTarget null)
+  // keeps the calendar open without tripping the focusout / outside-click
+  // close handlers, which is the state an unrelated update must not disturb.
+  it('does not pull focus into the calendar on an unrelated update', async () => {
+    const el = create({ value: '2026-03-15' });
+    await waitForFrame();
+    click(el.shadowRoot?.querySelector('.calendar-btn') ?? null);
+    await waitForFrame();
+    // Opening moved focus onto the cursor day, as before.
+    expect((el.shadowRoot?.activeElement as HTMLElement | null)?.getAttribute('data-date')).toBe('2026-03-15');
+
+    (el.shadowRoot?.activeElement as HTMLElement).blur();
+    expect(el.shadowRoot?.activeElement ?? null).toBeNull();
+    expect(el.hasAttribute('data-open')).toBe(true);
+
+    el.setAttribute('locale', 'de-DE');
+    await waitForFrame();
+    el.setAttribute('value', '2026-03-18');
+    await waitForFrame();
+
+    expect(el.hasAttribute('data-open')).toBe(true);
+    expect(el.shadowRoot?.activeElement ?? null).toBeNull();
+  });
+
+  it('keeps focus on another picker control during an unrelated update', async () => {
+    const el = create({ value: '2026-03-15' });
+    await waitForFrame();
+    click(el.shadowRoot?.querySelector('.calendar-btn') ?? null);
+    await waitForFrame();
+
+    const next = el.shadowRoot?.querySelector('[data-dir="next"]') as HTMLElement;
+    next.focus();
+    el.setAttribute('locale', 'fr-FR');
+    await waitForFrame();
+    // Compared by role, not identity: bQuery < 1.18 replaces the button on
+    // render and restores focus onto its replacement.
+    expect((el.shadowRoot?.activeElement as HTMLElement | null)?.getAttribute('data-dir')).toBe('next');
+  });
+
+  it('still moves focus with the cursor after an unrelated update', async () => {
+    const el = create({ value: '2026-03-15' });
+    await waitForFrame();
+    click(el.shadowRoot?.querySelector('.calendar-btn') ?? null);
+    await waitForFrame();
+    el.setAttribute('locale', 'de-DE');
+    await waitForFrame();
+    press(el, 'ArrowRight');
+    await waitForFrame();
+    expect((el.shadowRoot?.activeElement as HTMLElement | null)?.getAttribute('data-date')).toBe('2026-03-16');
+  });
+
+  it('keeps focus on the cursor when keyboard navigation stops at a bound', async () => {
+    const el = create({ value: '2026-03-15', max: '2026-03-15' });
+    await waitForFrame();
+    click(el.shadowRoot?.querySelector('.calendar-btn') ?? null);
+    await waitForFrame();
+    press(el, 'ArrowRight');
+    await waitForFrame();
+    expect((el.shadowRoot?.activeElement as HTMLElement | null)?.getAttribute('data-date')).toBe('2026-03-15');
+    // The no-op move left no pending intent behind.
+    (el.shadowRoot?.activeElement as HTMLElement).blur();
+    el.setAttribute('locale', 'de-DE');
+    await waitForFrame();
+    expect(el.shadowRoot?.activeElement ?? null).toBeNull();
+  });
+
+  it('leaves focus in the text field when a key there cannot move the cursor', async () => {
+    const el = create({ value: '2026-03-15', max: '2026-03-15' });
+    await waitForFrame();
+    click(el.shadowRoot?.querySelector('.calendar-btn') ?? null);
+    await waitForFrame();
+    field(el).focus();
+    field(el).dispatchEvent(
+      new win.KeyboardEvent('keydown', { key: 'PageDown', bubbles: true, composed: true, cancelable: true })
+    );
+    await waitForFrame();
+    expect(el.shadowRoot?.activeElement).toBe(field(el));
+  });
+
   it('closes on Escape without changing the value', async () => {
     const el = create({ value: '2026-03-15' });
     await waitForFrame();

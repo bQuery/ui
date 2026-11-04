@@ -31,7 +31,7 @@
  * @fires bq-close
  */
 import type { ComponentDefinition } from '@bquery/bquery/component';
-import { component, css, html } from '@bquery/bquery/component';
+import { css, html } from '@bquery/bquery/component';
 import { escapeHtml } from '@bquery/bquery/security';
 import { t } from '../../i18n/index.js';
 import { bind, host, release, store } from '../../utils/component.js';
@@ -47,6 +47,7 @@ import { autoPosition } from '../../utils/position.js';
 import { iconCss, iconMask } from '../../utils/icons.js';
 import { baseStyles, focusRing, reset, srOnly } from '../../utils/styles.js';
 import { bindValidation } from '../../utils/validation.js';
+import { registerFormControl } from '../../utils/model.js';
 
 type BqComboboxProps = {
   label: string;
@@ -755,4 +756,4 @@ const definition: ComponentDefinition<BqComboboxProps, BqComboboxState> = {
   },
 };
 
-component<BqComboboxProps, BqComboboxState>('bq-combobox', definition);
+registerFormControl<BqComboboxProps, BqComboboxState>('bq-combobox', definition);

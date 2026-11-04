@@ -22,11 +22,11 @@
  * @fires bq-blur
  */
 import type { ComponentDefinition } from '@bquery/bquery/component';
-import { bool, component, css, html } from '@bquery/bquery/component';
+import { bool, css, html } from '@bquery/bquery/component';
 import { escapeHtml } from '@bquery/bquery/security';
 import { t } from '../../i18n/index.js';
 import { uniqueId } from '../../utils/dom.js';
-import { bindFormProxy, syncFormProxy } from '../../utils/form.js';
+import { bindFormProxy, implicitSubmit, isSubmitKey, syncFormProxy } from '../../utils/form.js';
 import { bind, release } from '../../utils/component.js';
 import {
   markFocus,
@@ -41,6 +41,7 @@ import {
   focusRing,
   reset,
 } from '../../utils/styles.js';
+import { registerFormControl } from '../../utils/model.js';
 
 type BqInputProps = {
   label: string;
@@ -250,7 +251,17 @@ const definition: ComponentDefinition<BqInputProps, BqInputState> = {
       );
     };
 
+    // Enter submits the surrounding form, as in a native text field. The
+    // native <input> sits in the shadow root, where it has no form owner.
+    const kd = (e: Event) => {
+      const ke = e as KeyboardEvent;
+      if ((ke.target as Element)?.tagName !== 'INPUT' || !isSubmitKey(ke)) return;
+      if (self.hasAttribute('disabled')) return;
+      implicitSubmit(self);
+    };
+
     const shadow = self.shadowRoot;
+    scope.on(shadow, 'keydown', kd);
     scope.on(shadow, 'input', ih);
     scope.on(shadow, 'change', ch);
     scope.on(shadow, 'focusin', fh);
@@ -363,4 +374,4 @@ const definition: ComponentDefinition<BqInputProps, BqInputState> = {
   },
 };
 
-component<BqInputProps, BqInputState>('bq-input', definition);
+registerFormControl<BqInputProps, BqInputState>('bq-input', definition);

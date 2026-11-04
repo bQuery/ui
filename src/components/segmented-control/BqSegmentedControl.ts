@@ -13,13 +13,14 @@
  * @fires bq-change - { value: string }
  */
 import type { ComponentDefinition } from '@bquery/bquery/component';
-import { component, css, html } from '@bquery/bquery/component';
+import { css, html } from '@bquery/bquery/component';
 import { escapeHtml } from '@bquery/bquery/security';
 import { t } from '../../i18n/index.js';
 import { uniqueId } from '../../utils/dom.js';
 import { bindFormProxy, syncFormProxy } from '../../utils/form.js';
 import { bind, release, store } from '../../utils/component.js';
 import { baseStyles, reset } from '../../utils/styles.js';
+import { registerFormControl } from '../../utils/model.js';
 
 type BqSegmentedControlProps = {
   label: string;
@@ -450,7 +451,4 @@ const definition: ComponentDefinition<
   },
 };
 
-component<BqSegmentedControlProps, BqSegmentedControlState>(
-  'bq-segmented-control',
-  definition
-);
+registerFormControl<BqSegmentedControlProps, BqSegmentedControlState>('bq-segmented-control', definition);

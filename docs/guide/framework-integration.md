@@ -108,6 +108,52 @@ Svelte works especially well with Custom Elements because you can bind to native
 />
 ```
 
+## Two-way binding (`bq-model`, `v-model`, …)
+
+Form components behave like native controls for bindings:
+
+- `value` is a property on the element (`checked` too on `bq-checkbox`,
+  `bq-switch` and `bq-radio`, whose `type` is `checkbox` / `radio`). Setting it
+  updates the component and fires no event, as on a native input.
+- Every user change fires a bubbling, composed `input` event on the element,
+  and every committed change a `change` event — after the component's own
+  `bq-input` / `bq-change`, which keep their detail payloads.
+
+A form reset (`form.reset()`, a native reset button or
+`bq-button type="reset"`) restores each of these to the value it had when it
+was first connected, without firing events — as for native controls.
+
+This covers `bq-input`, `bq-textarea`, `bq-number-input`, `bq-select`,
+`bq-combobox`, `bq-date-picker`, `bq-pin-input`, `bq-rating`,
+`bq-segmented-control`, `bq-slider`, `bq-tag-input`, `bq-checkbox`,
+`bq-switch` and `bq-radio`. `value` is always a string, as on native controls.
+
+With bQuery's view module:
+
+```html
+<div id="profile">
+  <bq-input label="Name" bq-model="name"></bq-input>
+  <bq-switch label="Newsletter" bq-model="subscribed"></bq-switch>
+  <bq-radio name="plan" value="free" bq-model="plan">Free</bq-radio>
+  <bq-radio name="plan" value="pro" bq-model="plan">Pro</bq-radio>
+</div>
+
+<script type="module">
+  import '@bquery/ui';
+  import { mount, signal } from '@bquery/bquery/view';
+
+  mount('#profile', {
+    name: signal(''),
+    subscribed: signal(false),
+    plan: signal('free'),
+  });
+</script>
+```
+
+In Vue, `v-model` on a custom element binds `value` and listens for `input`;
+use `v-model` for text-like controls and `:checked` + `@change` for the
+checkable ones.
+
 ## Plain HTML or bQuery
 
 If you are not using a frontend framework, the setup is even simpler:

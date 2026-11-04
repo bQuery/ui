@@ -180,8 +180,31 @@ info|neutral}-{bg|fg|border}`, which flip with the scheme.
 Semantic tokens resolve through a scheme channel — `--bq-bg-base:
 var(--bq-scheme-bg-base, #fff)` — so a document-level `data-theme` can reach
 into shadow roots. Do not "simplify" that away: a plain `:host` definition
-cannot be overridden by an ancestor, and `:host-context()` only exists in
-Chromium. See `src/theme/scheme.ts`.
+cannot be overridden by an ancestor. Do not add `:host-context()` back either:
+it only exists in Chromium, and a literal value there beats the page's
+channel in that one engine. A token that needs a different value in dark mode
+goes through the channel too (see `DARK_OVERRIDES` in `src/theme/scheme.ts`).
+
+### Form controls
+
+- Register a form component with `registerFormControl()` from
+  `src/utils/model.ts` instead of `component()`, so it has a `value` (and
+  `checked`) property, fires native `input` / `change` events for `bq-model`
+  and other bindings, and restores its initial value on a form reset:
+
+  ```ts
+  registerFormControl<Props, State>('bq-switch', definition, { kind: 'checkbox' });
+  ```
+
+  The events are derived from `bq-input` / `bq-change`, so keep firing those
+  after the attribute is updated. The component's `connected()` must call
+  `bind()` (the reset listener joins that scope).
+- A native control in the shadow root has no form owner. Submission and reset
+  go through `submitForm()` / `resetForm()` / `implicitSubmit()` in
+  `src/utils/form.ts`.
+- Per-component entries only re-export their chunk. Every chunk that calls
+  `component()` must match a `sideEffects` pattern in `package.json`;
+  `bun run test:bundle` (after `npm run build:lib`) checks it.
 
 ### Shadow-DOM state and re-renders
 
@@ -229,6 +252,7 @@ Use these commands to validate work:
 npm run lint:types
 bun test                 # use `npx bun test` if Bun is not installed globally
 npm run build
+bun run test:bundle      # after the build: every per-component entry registers its element
 npm run build:docs
 ```
 

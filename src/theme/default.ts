@@ -1,5 +1,4 @@
-import { getTokensCSS } from '../tokens/index.js';
-import { getLightSchemeCSS, lightTokens } from './scheme.js';
+import { getChanneledTokensCSS, getLightSchemeCSS, lightTokens } from './scheme.js';
 
 /**
  * Default (light) theme for @bquery/ui
@@ -20,7 +19,7 @@ export const defaultTheme = {
 export function getDefaultThemeCSS(): string {
   return `
 :host {
-  ${getTokensCSS()}
+  ${getChanneledTokensCSS()}
 
   /* Semantic tokens (light) */
 ${getLightSchemeCSS()}

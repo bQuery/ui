@@ -75,7 +75,8 @@ If you need an icon-only action, prefer [`bq-icon-button`](/components/icon-butt
 | `size` | `sm \| md \| lg \| xl` | `md` | Button size |
 | `disabled` | `boolean` | `false` | Disables interaction |
 | `loading` | `boolean` | `false` | Shows spinner, disables interaction |
-| `type` | `button \| submit \| reset` | `button` | Form submission type |
+| `type` | `button \| submit \| reset` | `button` | `submit` / `reset` submit or reset the surrounding `<form>`, like a native button |
+| `form` | `string` | — | `id` of the `<form>` to submit or reset when the button is not inside it |
 | `href` | `string` | — | Renders as `<a>` when set |
 | `target` | `string` | — | Link target (used with `href`) |
 | `label` | `string` | — | Optional accessible label override, especially useful for icon-only usage |
@@ -86,7 +87,25 @@ If you need an icon-only action, prefer [`bq-icon-button`](/components/icon-butt
 
 | Event | Detail | Description |
 |-------|--------|-------------|
-| `bq-click` | `{ originalEvent: MouseEvent }` | Fired on click (not fired when disabled/loading) |
+| `bq-click` | `{ originalEvent: MouseEvent }` | Fired on click (not fired when disabled/loading). Cancelable: `preventDefault()` stops a `submit` / `reset` button from acting on its form |
+
+## Forms
+
+The native `<button>` lives in the shadow root, where it has no form owner, so
+`bq-button` forwards `type="submit"` and `type="reset"` to the host's form
+itself. The form's `submit` event fires as usual (with validation, through
+`requestSubmit()`):
+
+```html
+<form id="search">
+  <bq-input name="q" label="Search"></bq-input>
+  <bq-button type="submit">Search</bq-button>
+</form>
+```
+
+Pressing Enter in `bq-input` or `bq-number-input` submits the form too, as in a
+native text field: the form's first submit button is used, nothing happens if
+that button is disabled, and a form without one is submitted directly.
 
 ## Slots
 

@@ -20,13 +20,14 @@
  * @fires bq-change - { value: string, checked: boolean }
  */
 import type { ComponentDefinition } from '@bquery/bquery/component';
-import { bool, component, css, html } from '@bquery/bquery/component';
+import { bool, css, html } from '@bquery/bquery/component';
 import { escapeHtml } from '@bquery/bquery/security';
 import { bindFormProxy, syncFormProxy } from '../../utils/form.js';
 import { bind, host, release } from '../../utils/component.js';
 import { uniqueId } from '../../utils/dom.js';
 import { iconMask } from '../../utils/icons.js';
 import { baseStyles, fieldStyles, reset } from '../../utils/styles.js';
+import { registerFormControl } from '../../utils/model.js';
 
 type BqCheckboxProps = {
   label: string;
@@ -225,4 +226,4 @@ const definition: ComponentDefinition<BqCheckboxProps, BqCheckboxState> = {
   },
 };
 
-component<BqCheckboxProps, BqCheckboxState>('bq-checkbox', definition);
+registerFormControl<BqCheckboxProps, BqCheckboxState>('bq-checkbox', definition, { kind: 'checkbox' });

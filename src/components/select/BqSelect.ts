@@ -14,7 +14,7 @@
  * @fires bq-change - { value: string }
  */
 import type { ComponentDefinition } from '@bquery/bquery/component';
-import { bool, component, css, html } from '@bquery/bquery/component';
+import { bool, css, html } from '@bquery/bquery/component';
 import { escapeHtml } from '@bquery/bquery/security';
 import { uniqueId } from '../../utils/dom.js';
 import {
@@ -31,6 +31,7 @@ import {
   focusRing,
   reset,
 } from '../../utils/styles.js';
+import { registerFormControl } from '../../utils/model.js';
 
 type BqSelectProps = {
   label: string;
@@ -294,4 +295,4 @@ const definition: ComponentDefinition<BqSelectProps, BqSelectState> = {
   },
 };
 
-component<BqSelectProps, BqSelectState>('bq-select', definition);
+registerFormControl<BqSelectProps, BqSelectState>('bq-select', definition);

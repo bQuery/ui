@@ -81,7 +81,7 @@ describe('form control IDs and theme CSS', () => {
     const css = getDarkThemeCSS();
 
     expect(css).not.toContain('--bq-color-primary-50: #eff6ff;');
-    expect(css).toContain('--bq-color-primary-600: #3b82f6;');
-    expect(css).toContain('--bq-bg-base: #0f172a;');
+    expect(css).toContain('--bq-color-primary-600: var(--bq-scheme-color-primary-600, #3b82f6);');
+    expect(css).toContain('--bq-bg-base: var(--bq-scheme-bg-base, #0f172a);');
   });
 });

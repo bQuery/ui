@@ -11,7 +11,7 @@
  * @prop {string}  name      - Form field name
  * @fires bq-change - { value: number }
  */
-import { component, css, html } from '@bquery/bquery/component';
+import { css, html } from '@bquery/bquery/component';
 import type { ComponentDefinition } from '@bquery/bquery/component';
 import { escapeHtml } from '@bquery/bquery/security';
 import { t } from '../../i18n/index.js';
@@ -19,6 +19,7 @@ import { bind, host, release, store } from '../../utils/component.js';
 import { createFormProxy, type FormProxy } from '../../utils/form.js';
 import { iconCss } from '../../utils/icons.js';
 import { baseStyles, reset, srOnly } from '../../utils/styles.js';
+import { registerFormControl } from '../../utils/model.js';
 
 type BqRatingProps = {
   value: number;
@@ -213,4 +214,4 @@ const definition: ComponentDefinition<BqRatingProps> = {
   },
 };
 
-component<BqRatingProps>('bq-rating', definition);
+registerFormControl<BqRatingProps>('bq-rating', definition, { defaultValue: '0' });

@@ -16,7 +16,16 @@ type DeepPartial<T> = {
   [K in keyof T]?: T[K] extends object ? DeepPartial<T[K]> : T[K];
 };
 
-export type BqLocale = typeof en;
+/**
+ * Widens the string literals of `as const` locale data to `string`, so a
+ * translation (`'Dialog schließen'`) is assignable where `en` holds
+ * `'Close dialog'`.
+ */
+type Widen<T> = {
+  readonly [K in keyof T]: T[K] extends string ? string : Widen<T[K]>;
+};
+
+export type BqLocale = Widen<typeof en>;
 export type BqLocaleOverride = DeepPartial<BqLocale>;
 
 function cloneLocale<T>(value: T): T {

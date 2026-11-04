@@ -20,16 +20,17 @@
  * @fires bq-input  - { value: number }
  * @fires bq-change - { value: number }
  */
-import { bool, component, css, html } from '@bquery/bquery/component';
+import { bool, css, html } from '@bquery/bquery/component';
 import type { ComponentDefinition } from '@bquery/bquery/component';
 import { escapeHtml } from '@bquery/bquery/security';
 import { t } from '../../i18n/index.js';
 import { bind, host, release, store } from '../../utils/component.js';
 import { uniqueId } from '../../utils/dom.js';
-import { createFormProxy, type FormProxy } from '../../utils/form.js';
+import { createFormProxy, implicitSubmit, isSubmitKey, type FormProxy } from '../../utils/form.js';
 import { bindValidation } from '../../utils/validation.js';
 import { iconCss } from '../../utils/icons.js';
 import { baseStyles, focusRing, reset, srOnly } from '../../utils/styles.js';
+import { liveField, registerFormControl } from '../../utils/model.js';
 
 type BqNumberInputProps = {
   value: number;
@@ -274,6 +275,21 @@ const definition: ComponentDefinition<BqNumberInputProps, BqNumberInputState> = 
       if (!input || input.type !== 'number') return;
       commit(Number(input.value), 'bq-change');
     });
+
+    // Enter submits the surrounding form, as in a native field. The typed
+    // value is committed first — exactly as a change would commit it, so an
+    // emptied field becomes the clamped 0 — so the form and its `required`
+    // check see what the field shows, not the previous number.
+    scope.on(self.shadowRoot, 'keydown', (e) => {
+      const ke = e as KeyboardEvent;
+      const input = ke.target as HTMLInputElement | null;
+      if (!input || input.type !== 'number' || !isSubmitKey(ke)) return;
+      if (self.hasAttribute('disabled')) return;
+      if (input.value !== (self.getAttribute('value') ?? '')) {
+        commit(Number(input.value), 'bq-change');
+      }
+      implicitSubmit(self);
+    });
   },
   disconnected() {
     release(this);
@@ -360,7 +376,4 @@ const definition: ComponentDefinition<BqNumberInputProps, BqNumberInputState> = 
   },
 };
 
-component<BqNumberInputProps, BqNumberInputState>(
-  'bq-number-input',
-  definition
-);
+registerFormControl<BqNumberInputProps, BqNumberInputState>('bq-number-input', definition, { defaultValue: '0', live: liveField('input[type="number"]') });

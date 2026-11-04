@@ -24,7 +24,7 @@
  * @fires bq-complete - { value: string } once every cell is filled
  */
 import type { ComponentDefinition } from '@bquery/bquery/component';
-import { bool, component, css, html } from '@bquery/bquery/component';
+import { bool, css, html } from '@bquery/bquery/component';
 import { escapeHtml } from '@bquery/bquery/security';
 import { t } from '../../i18n/index.js';
 import { bind, host, release } from '../../utils/component.js';
@@ -33,6 +33,7 @@ import { markFocus, restorePreservedFocus } from '../../utils/focus.js';
 import { bindFormProxy, syncFormProxy } from '../../utils/form.js';
 import { baseStyles, fieldStyles, reset, srOnly } from '../../utils/styles.js';
 import { bindValidation } from '../../utils/validation.js';
+import { registerFormControl } from '../../utils/model.js';
 
 type BqPinInputProps = {
   length: number;
@@ -379,4 +380,4 @@ const definition: ComponentDefinition<BqPinInputProps, BqPinInputState> = {
   },
 };
 
-component<BqPinInputProps, BqPinInputState>('bq-pin-input', definition);
+registerFormControl<BqPinInputProps, BqPinInputState>('bq-pin-input', definition);

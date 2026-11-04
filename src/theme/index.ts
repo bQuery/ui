@@ -6,6 +6,7 @@ export { defaultTheme, getDefaultThemeCSS } from './default.js';
 export { installThemeStyles } from './root.js';
 export {
   darkTokens,
+  getDarkSchemeChannelCSS,
   getDarkSchemeCSS,
   getLightSchemeCSS,
   getSchemeRootCSS,

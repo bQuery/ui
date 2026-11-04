@@ -12,12 +12,13 @@
  * @fires bq-change - { value: number }
  */
 import type { ComponentDefinition } from '@bquery/bquery/component';
-import { bool, component, css, html } from '@bquery/bquery/component';
+import { bool, css, html } from '@bquery/bquery/component';
 import { escapeHtml } from '@bquery/bquery/security';
 import { t } from '../../i18n/index.js';
 import { bindFormProxy, syncFormProxy } from '../../utils/form.js';
 import { bind, host, release } from '../../utils/component.js';
 import { baseStyles, reset } from '../../utils/styles.js';
+import { liveField, registerFormControl } from '../../utils/model.js';
 
 type BqSliderProps = {
   value: number;
@@ -238,4 +239,4 @@ const definition: ComponentDefinition<BqSliderProps> = {
   },
 };
 
-component<BqSliderProps>('bq-slider', definition);
+registerFormControl<BqSliderProps>('bq-slider', definition, { defaultValue: '50', live: liveField('input[type="range"]') });

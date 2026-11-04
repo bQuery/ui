@@ -194,3 +194,112 @@ export function bindFormProxy(
 export function syncFormProxy(owner: object): void {
   bindings.get(owner)?.sync();
 }
+
+// ─── Submission ──────────────────────────────────────────────────────────────
+
+/**
+ * The form a host belongs to: the `<form>` named by its `form` attribute, or
+ * the closest ancestor `<form>`.
+ *
+ * A native control inside a shadow root has no form owner in the light DOM,
+ * so components resolve the form from the host instead.
+ */
+export function formOf(host: Element): HTMLFormElement | null {
+  const id = host.getAttribute('form');
+  if (id) {
+    const named = host.ownerDocument?.getElementById(id);
+    return named?.tagName === 'FORM' ? (named as HTMLFormElement) : null;
+  }
+  return host.closest('form');
+}
+
+/** Selector for the controls that can act as a form's default button. */
+const SUBMIT_BUTTONS =
+  'button:not([type]), button[type="submit" i], input[type="submit" i], input[type="image" i], bq-button[type="submit" i]:not([href])';
+
+/** Fields that block implicit submission when a form has no submit button. */
+const BLOCKING_FIELDS =
+  'input:not([type]), input[type="text" i], input[type="search" i], input[type="url" i], input[type="tel" i], input[type="email" i], input[type="password" i], input[type="date" i], input[type="month" i], input[type="week" i], input[type="time" i], input[type="datetime-local" i], input[type="number" i], bq-input, bq-number-input';
+
+/**
+ * The controls of `form` matching `selector`, in document order: its
+ * descendants plus elements elsewhere that name it with `form="id"`.
+ */
+function controlsOf(form: HTMLFormElement, selector: string): HTMLElement[] {
+  const found = new Set<HTMLElement>(form.querySelectorAll<HTMLElement>(selector));
+  if (form.id) {
+    const doc = form.ownerDocument;
+    const id = form.id.replace(/["\\]/g, '\\$&');
+    for (const el of doc.querySelectorAll<HTMLElement>(`[form="${id}"]`)) {
+      if (el.matches(selector)) found.add(el);
+    }
+  }
+  return Array.from(found)
+    .filter((el) => formOf(el) === form)
+    .sort((a, b) =>
+      a === b ? 0 : a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1,
+    );
+}
+
+/** Submits the host's form like a native submit button would. */
+export function submitForm(host: Element): void {
+  const form = formOf(host);
+  if (!form) return;
+  if (typeof form.requestSubmit === 'function') form.requestSubmit();
+  else form.submit();
+}
+
+/**
+ * Resets the host's form like a native reset button would. Form components
+ * registered with `registerFormControl()` restore their initial value on the
+ * form's `reset` event.
+ */
+export function resetForm(host: Element): void {
+  formOf(host)?.reset();
+}
+
+/**
+ * Implicit submission — what pressing Enter in a native text field does.
+ *
+ * The form's default button (its first submit button, including one outside
+ * the form that names it with `form`) is clicked, so its own handlers — a
+ * `bq-button`'s cancelable `bq-click` among them — run first. When it is
+ * disabled, nothing happens. A form without a submit button is submitted
+ * only when the field is the form's single text-like field, as the HTML
+ * standard specifies.
+ */
+export function implicitSubmit(host: Element): void {
+  const form = formOf(host);
+  if (!form) return;
+  const button = controlsOf(form, SUBMIT_BUTTONS)[0];
+  if (!button) {
+    if (controlsOf(form, BLOCKING_FIELDS).length > 1) return;
+    submitForm(host);
+    return;
+  }
+  if (button.tagName === 'BQ-BUTTON') {
+    if (button.hasAttribute('disabled') || button.hasAttribute('loading')) return;
+    (button.shadowRoot?.querySelector('button') as HTMLButtonElement | null)?.click();
+    return;
+  }
+  if ((button as HTMLButtonElement).disabled) return;
+  button.click();
+}
+
+/**
+ * True for an Enter keydown that should submit: no modifier, not repeated
+ * from a held key, and not confirming an IME composition.
+ */
+export function isSubmitKey(event: KeyboardEvent): boolean {
+  return (
+    event.key === 'Enter' &&
+    !event.defaultPrevented &&
+    !event.isComposing &&
+    event.keyCode !== 229 &&
+    !event.repeat &&
+    !event.shiftKey &&
+    !event.altKey &&
+    !event.ctrlKey &&
+    !event.metaKey
+  );
+}

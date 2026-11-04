@@ -37,3 +37,6 @@ jobs:
 
       - name: Build package
         run: bun run build
+
+      - name: Check per-component registration in bundles
+        run: bun run test:bundle
