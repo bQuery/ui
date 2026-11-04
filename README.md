@@ -71,10 +71,10 @@ import '@bquery/ui';
 
 ```html
 <!-- UMD -->
-<script src="https://cdn.jsdelivr.net/npm/@bquery/ui@1.16.0/dist/index.umd.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@bquery/ui@1.17.0/dist/index.umd.js"></script>
 
 <!-- IIFE -->
-<script src="https://cdn.jsdelivr.net/npm/@bquery/ui@1.16.0/dist/index.iife.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@bquery/ui@1.17.0/dist/index.iife.js"></script>
 ```
 
 The UMD and IIFE bundles register all components on load and expose the library on `window.BQueryUI`.
@@ -82,14 +82,14 @@ For ESM-based app builds, prefer importing `@bquery/ui` from your bundler or oth
 
 ## Current release snapshot
 
-The current release (`1.16.0`) emphasizes:
+The current release (`1.17.0`) emphasizes:
 
-- **App-shell building blocks.** `bq-command-palette` brings the ⌘K / Ctrl+K command surface with ranked search, groups and shortcut hints; `bq-split-panel` adds resizable master–detail and editor layouts; `bq-carousel` covers galleries and highlights with accessible autoplay.
-- **Locale-aware formatting.** `bq-format-number`, `bq-format-date` and `bq-relative-time` wrap `Intl` and follow the document language. The same formatters are exported from `@bquery/ui/utils`.
-- **Accessibility patterns from WAI-ARIA.** Window splitter, carousel (inert off-screen slides, pause button for autoplay) and combobox-in-dialog, with keyboard support and RTL awareness throughout.
-- **Complete docs and stories.** Every component, including `bq-combobox` and `bq-tag-input`, now has a reference page and Storybook stories, and the Storybook build registers the components again.
-- **A larger production-ready catalog.** The package now spans 55 web components across actions, forms, navigation, data display, feedback, overlays and layout.
-- **Up-to-date toolchain.** Vite, Storybook, ESLint, happy-dom and friends are on their latest releases; bQuery `1.18.0` is used for development and the bundled CDN builds, with the peer range still starting at `1.15.1`.
+- **Forms that behave like native forms.** `bq-button type="submit"` / `"reset"` and Enter in `bq-input` / `bq-number-input` now submit or reset the surrounding `<form>`.
+- **Two-way binding out of the box.** Form components expose `value` (and `checked`) properties and fire native `input` / `change` events, so bQuery's `bq-model`, Vue's `v-model` and similar bindings work unchanged.
+- **Reliable per-component imports.** `import '@bquery/ui/components/<name>'` registers the element again in bundlers that honour `sideEffects`; CI now bundles every entry to keep it that way.
+- **Consistent theming.** Dark mode and custom `--bq-scheme-*` palettes look the same in Chrome, Edge, Firefox and Safari.
+- **Typed translations.** `setLocale()` accepts translated strings without casts.
+- **A larger production-ready catalog.** 55 web components across actions, forms, navigation, data display, feedback, overlays and layout, tested against bQuery `1.15.1` and `1.18.0`.
 
 ## Tree-Shakeable Usage
 

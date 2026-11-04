@@ -1,6 +1,6 @@
 {
   "name": "@bquery/ui",
-  "version": "1.16.0",
+  "version": "1.17.0",
   "description": "Production-grade web component library for the bQuery project",
   "license": "MIT",
   "repository": {

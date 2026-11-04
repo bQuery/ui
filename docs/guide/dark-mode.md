@@ -70,11 +70,17 @@ way — by inheritance from the document. A small stylesheet, installed
 automatically the first time any component module is imported, defines the
 channel for each `data-theme` value.
 
-That stylesheet is plain CSS with no exotic selectors. The previous approach
-relied on `:host-context()`, which exists only in Chromium; worse, it appeared
-in a selector list alongside `:host([data-theme="dark"])`, and one unknown
-selector invalidates the entire list — so Firefox and Safari dropped the whole
-dark theme. The channel works in every browser.
+That stylesheet is plain CSS with no exotic selectors, and it is the only way
+an ancestor's `data-theme` reaches a component. Earlier releases also used
+`:host-context()`, which exists only in Chromium and set the dark tokens as
+literals there — so a custom `--bq-scheme-*` palette worked in Firefox and
+Safari but was replaced by the stock one in Chrome and Edge. Since 1.17.0 the
+channel is the single path, and it behaves the same in every browser. The
+brighter dark accents (`--bq-color-*-600`) and dark shadows (`--bq-shadow-*`)
+go through it too.
+
+A component that carries `data-theme="dark"` itself still gets the dark tokens
+directly.
 
 If you need to install the stylesheet into another document — an iframe or a
 popup window — call it yourself:
@@ -87,14 +93,20 @@ installThemeStyles(iframe.contentDocument);
 
 ## Custom dark tokens
 
-Override any token for one scheme by writing the rule against the attribute:
+Re-theme a scheme by setting its channel values against the attribute:
 
 ```css
 [data-theme='dark'] {
-  --bq-color-primary-600: #818cf8;
-  --bq-surface-overlay: #111827;
+  --bq-scheme-bg-base: #0b1020;
+  --bq-scheme-surface-overlay: #111827;
+  --bq-scheme-color-primary-600: #818cf8;
 }
 ```
+
+Semantic tokens (`bg-*`, `surface-*`, `text-*`, `border-*`, `focus-ring*`,
+`intent-*`) and the dark-adjusted accents and shadows (`color-primary-600`,
+`color-primary-700`, `color-danger-600`, `color-success-600`,
+`color-warning-600`, `shadow-*`) all have a `--bq-scheme-*` channel.
 
 To override a token in *both* schemes, set it on `:root` instead — see
 [Theming](/guide/theming).
