@@ -29,7 +29,7 @@
  * @fires bq-remove - { tag: string }
  */
 import type { ComponentDefinition } from '@bquery/bquery/component';
-import { component, css, html } from '@bquery/bquery/component';
+import { css, html } from '@bquery/bquery/component';
 import { escapeHtml } from '@bquery/bquery/security';
 import { t } from '../../i18n/index.js';
 import { bind, host, release } from '../../utils/component.js';
@@ -43,7 +43,7 @@ import { bindFormProxy, syncFormProxy } from '../../utils/form.js';
 import { iconCss } from '../../utils/icons.js';
 import { baseStyles, focusRing, reset, srOnly } from '../../utils/styles.js';
 import { bindValidation } from '../../utils/validation.js';
-import { defineFormControl, formControl } from '../../utils/model.js';
+import { registerFormControl } from '../../utils/model.js';
 
 type BqTagInputProps = {
   label: string;
@@ -420,5 +420,4 @@ const definition: ComponentDefinition<BqTagInputProps, BqTagInputState> = {
   },
 };
 
-component<BqTagInputProps, BqTagInputState>('bq-tag-input', formControl(definition));
-defineFormControl('bq-tag-input');
+registerFormControl<BqTagInputProps, BqTagInputState>('bq-tag-input', definition);

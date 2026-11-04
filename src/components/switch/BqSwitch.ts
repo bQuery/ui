@@ -12,14 +12,14 @@
  * @fires bq-change - { value: string, checked: boolean }
  */
 import type { ComponentDefinition } from '@bquery/bquery/component';
-import { bool, component, css, html } from '@bquery/bquery/component';
+import { bool, css, html } from '@bquery/bquery/component';
 import { escapeHtml } from '@bquery/bquery/security';
 import { bindFormProxy, syncFormProxy } from '../../utils/form.js';
 import { t } from '../../i18n/index.js';
 import { bind, host, release } from '../../utils/component.js';
 import { uniqueId } from '../../utils/dom.js';
 import { baseStyles, fieldStyles, reset } from '../../utils/styles.js';
-import { defineFormControl, formControl } from '../../utils/model.js';
+import { registerFormControl } from '../../utils/model.js';
 
 type BqSwitchProps = {
   label: string;
@@ -215,5 +215,4 @@ const definition: ComponentDefinition<BqSwitchProps, BqSwitchState> = {
   },
 };
 
-component<BqSwitchProps, BqSwitchState>('bq-switch', formControl(definition));
-defineFormControl('bq-switch', { kind: 'checkbox' });
+registerFormControl<BqSwitchProps, BqSwitchState>('bq-switch', definition, { kind: 'checkbox' });

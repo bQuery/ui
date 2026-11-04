@@ -84,7 +84,7 @@ For ESM-based app builds, prefer importing `@bquery/ui` from your bundler or oth
 
 The current release (`1.17.0`) emphasizes:
 
-- **Forms that behave like native forms.** `bq-button type="submit"` / `"reset"` and Enter in `bq-input` / `bq-number-input` now submit or reset the surrounding `<form>`.
+- **Forms that behave like native forms.** `bq-button type="submit"` submits and `type="reset"` resets the surrounding `<form>`, and Enter in `bq-input` / `bq-number-input` submits it. A reset restores form components to their initial values.
 - **Two-way binding out of the box.** Form components expose `value` (and `checked`) properties and fire native `input` / `change` events, so bQuery's `bq-model`, Vue's `v-model` and similar bindings work unchanged.
 - **Reliable per-component imports.** `import '@bquery/ui/components/<name>'` registers the element again in bundlers that honour `sideEffects`; CI now bundles every entry to keep it that way.
 - **Consistent theming.** Dark mode and custom `--bq-scheme-*` palettes look the same in Chrome, Edge, Firefox and Safari.

@@ -63,7 +63,7 @@ export {
   submitForm,
   syncFormProxy,
 } from './form.js';
-export { defineFormControl, formControl, liveField } from './model.js';
+export { defineFormControl, formControl, liveField, registerFormControl } from './model.js';
 export type { FormControlOptions } from './model.js';
 export type {
   FormProxy,

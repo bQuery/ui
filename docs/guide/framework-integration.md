@@ -119,6 +119,10 @@ Form components behave like native controls for bindings:
   and every committed change a `change` event — after the component's own
   `bq-input` / `bq-change`, which keep their detail payloads.
 
+A form reset (`form.reset()`, a native reset button or
+`bq-button type="reset"`) restores each of these to the value it had when it
+was first connected, without firing events — as for native controls.
+
 This covers `bq-input`, `bq-textarea`, `bq-number-input`, `bq-select`,
 `bq-combobox`, `bq-date-picker`, `bq-pin-input`, `bq-rating`,
 `bq-segmented-control`, `bq-slider`, `bq-tag-input`, `bq-checkbox`,

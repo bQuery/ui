@@ -15,9 +15,9 @@ import { getSchemeRootCSS } from './scheme.js';
 
 const MARKER = 'bq-theme-root';
 
-const installed = new WeakSet<Document>();
+const installed = new WeakSet<Document | ShadowRoot>();
 
-type AdoptingDocument = Document & {
+type Adopting = (Document | ShadowRoot) & {
   adoptedStyleSheets?: CSSStyleSheet[];
 };
 
@@ -28,17 +28,20 @@ type AdoptingDocument = Document & {
  * under a Content-Security-Policy that forbids inline styles, and it cannot be
  * knocked out by a framework that re-renders `<head>`.
  *
- * @param doc - Target document; defaults to the ambient one. Pass a document
- *   explicitly when rendering into an iframe or a popup window.
+ * @param root - Target document or shadow root; defaults to the ambient
+ *   document. Pass a document explicitly when rendering into an iframe or a
+ *   popup window. Pass a shadow root when an app renders inside its own
+ *   shadow DOM and sets `data-theme` there: document styles do not reach into
+ *   it, so the channel has to be installed in that root as well.
  * @returns whether the stylesheet is now present.
  */
-export function installThemeStyles(doc?: Document): boolean {
-  const target = doc ?? (typeof document === 'undefined' ? null : document);
+export function installThemeStyles(root?: Document | ShadowRoot): boolean {
+  const target = root ?? (typeof document === 'undefined' ? null : document);
   if (!target) return false;
   if (installed.has(target)) return true;
 
   const css = getSchemeRootCSS();
-  const adopting = target as AdoptingDocument;
+  const adopting = target as Adopting;
 
   if (
     typeof CSSStyleSheet === 'function' &&
@@ -55,17 +58,22 @@ export function installThemeStyles(doc?: Document): boolean {
     }
   }
 
-  const head = target.head ?? target.documentElement;
-  if (!head) return false;
+  const isDocument = target.nodeType === Node.DOCUMENT_NODE;
+  const doc = isDocument ? (target as Document) : target.ownerDocument;
+  if (!doc) return false;
+  const container: ParentNode | null = isDocument
+    ? (doc.head ?? doc.documentElement)
+    : target;
+  if (!container) return false;
   if (target.querySelector(`style[data-${MARKER}]`)) {
     installed.add(target);
     return true;
   }
 
-  const style = target.createElement('style');
+  const style = doc.createElement('style');
   style.setAttribute(`data-${MARKER}`, '');
   style.textContent = css;
-  head.prepend(style);
+  container.prepend(style);
   installed.add(target);
   return true;
 }

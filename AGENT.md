@@ -187,17 +187,18 @@ goes through the channel too (see `DARK_OVERRIDES` in `src/theme/scheme.ts`).
 
 ### Form controls
 
-- Register a form component with `formControl()` and `defineFormControl()`
-  from `src/utils/model.ts`, so it has a `value` (and `checked`) property and
-  fires native `input` / `change` events for `bq-model` and other bindings:
+- Register a form component with `registerFormControl()` from
+  `src/utils/model.ts` instead of `component()`, so it has a `value` (and
+  `checked`) property, fires native `input` / `change` events for `bq-model`
+  and other bindings, and restores its initial value on a form reset:
 
   ```ts
-  component<Props, State>('bq-switch', formControl(definition));
-  defineFormControl('bq-switch', { kind: 'checkbox' });
+  registerFormControl<Props, State>('bq-switch', definition, { kind: 'checkbox' });
   ```
 
   The events are derived from `bq-input` / `bq-change`, so keep firing those
-  after the attribute is updated.
+  after the attribute is updated. The component's `connected()` must call
+  `bind()` (the reset listener joins that scope).
 - A native control in the shadow root has no form owner. Submission and reset
   go through `submitForm()` / `resetForm()` / `implicitSubmit()` in
   `src/utils/form.ts`.

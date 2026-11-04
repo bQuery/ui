@@ -215,7 +215,31 @@ export function formOf(host: Element): HTMLFormElement | null {
 
 /** Selector for the controls that can act as a form's default button. */
 const SUBMIT_BUTTONS =
-  'button:not([type]), button[type="submit" i], input[type="submit" i], input[type="image" i], bq-button[type="submit" i]';
+  'button:not([type]), button[type="submit" i], input[type="submit" i], input[type="image" i], bq-button[type="submit" i]:not([href])';
+
+/** Fields that block implicit submission when a form has no submit button. */
+const BLOCKING_FIELDS =
+  'input:not([type]), input[type="text" i], input[type="search" i], input[type="url" i], input[type="tel" i], input[type="email" i], input[type="password" i], input[type="date" i], input[type="month" i], input[type="week" i], input[type="time" i], input[type="datetime-local" i], input[type="number" i], bq-input, bq-number-input';
+
+/**
+ * The controls of `form` matching `selector`, in document order: its
+ * descendants plus elements elsewhere that name it with `form="id"`.
+ */
+function controlsOf(form: HTMLFormElement, selector: string): HTMLElement[] {
+  const found = new Set<HTMLElement>(form.querySelectorAll<HTMLElement>(selector));
+  if (form.id) {
+    const doc = form.ownerDocument;
+    const id = form.id.replace(/["\\]/g, '\\$&');
+    for (const el of doc.querySelectorAll<HTMLElement>(`[form="${id}"]`)) {
+      if (el.matches(selector)) found.add(el);
+    }
+  }
+  return Array.from(found)
+    .filter((el) => formOf(el) === form)
+    .sort((a, b) =>
+      a === b ? 0 : a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1,
+    );
+}
 
 /** Submits the host's form like a native submit button would. */
 export function submitForm(host: Element): void {
@@ -225,7 +249,11 @@ export function submitForm(host: Element): void {
   else form.submit();
 }
 
-/** Resets the host's form like a native reset button would. */
+/**
+ * Resets the host's form like a native reset button would. Form components
+ * registered with `registerFormControl()` restore their initial value on the
+ * form's `reset` event.
+ */
 export function resetForm(host: Element): void {
   formOf(host)?.reset();
 }
@@ -233,23 +261,25 @@ export function resetForm(host: Element): void {
 /**
  * Implicit submission — what pressing Enter in a native text field does.
  *
- * The form's default button (its first submit button) is activated. When it
- * is disabled, nothing happens, as in the platform. A form without a submit
- * button is submitted directly.
+ * The form's default button (its first submit button, including one outside
+ * the form that names it with `form`) is clicked, so its own handlers — a
+ * `bq-button`'s cancelable `bq-click` among them — run first. When it is
+ * disabled, nothing happens. A form without a submit button is submitted
+ * only when the field is the form's single text-like field, as the HTML
+ * standard specifies.
  */
 export function implicitSubmit(host: Element): void {
   const form = formOf(host);
   if (!form) return;
-  const button = Array.from(form.querySelectorAll<HTMLElement>(SUBMIT_BUTTONS)).find(
-    (el) => formOf(el) === form,
-  );
+  const button = controlsOf(form, SUBMIT_BUTTONS)[0];
   if (!button) {
+    if (controlsOf(form, BLOCKING_FIELDS).length > 1) return;
     submitForm(host);
     return;
   }
   if (button.tagName === 'BQ-BUTTON') {
     if (button.hasAttribute('disabled') || button.hasAttribute('loading')) return;
-    submitForm(button);
+    (button.shadowRoot?.querySelector('button') as HTMLButtonElement | null)?.click();
     return;
   }
   if ((button as HTMLButtonElement).disabled) return;

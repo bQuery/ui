@@ -93,7 +93,7 @@ describe('getSchemeRootCSS', () => {
 
   // A light section inside a dark one must not inherit the dark accents.
   it('resets the dark accent and shadow channel in a light region', () => {
-    const light = css.split('[data-theme="light"] {')[1]!.split('}')[0]!;
+    const light = css.split(':where([data-theme="light"]) {')[1]!.split('}')[0]!;
     expect(light).toContain('--bq-scheme-color-primary-600: #2563eb;');
     expect(light).toContain('--bq-scheme-shadow-xs:');
   });
@@ -118,6 +118,35 @@ describe('accent and shadow channel', () => {
 
   it('emits no :host-context rule that could outrank the channel', () => {
     expect(getDarkThemeCSS()).not.toContain(':host-context');
+  });
+
+  // A page's own dark palette has to reach an explicitly dark component too.
+  it('routes an explicitly dark host through the channel, with dark fallbacks', () => {
+    const dark = getDarkThemeCSS();
+    expect(dark).toContain('--bq-bg-base: var(--bq-scheme-bg-base, #0f172a);');
+    expect(dark).toContain('color-scheme: var(--bq-scheme-color-scheme, dark);');
+  });
+
+  // The adopted root sheet comes after the page's stylesheets, so equal
+  // specificity would let it win over a page's `[data-theme='dark']` rule.
+  it('keeps every root selector at zero specificity', () => {
+    const root = getSchemeRootCSS();
+    for (const scheme of ['dark', 'light', 'auto']) {
+      expect(root).toContain(`:where([data-theme="${scheme}"]) {`);
+      expect(root).not.toMatch(new RegExp(`(^|\\n)\\s*\\[data-theme="${scheme}"\\]`));
+    }
+  });
+
+  it('installs into a shadow root, for apps that theme inside their own shadow DOM', () => {
+    const hostEl = doc.createElement('div');
+    const shadow = hostEl.attachShadow({ mode: 'open' });
+    doc.body.appendChild(hostEl);
+    expect(installThemeStyles(shadow)).toBe(true);
+    const adopted = (shadow as ShadowRoot & { adoptedStyleSheets?: CSSStyleSheet[] }).adoptedStyleSheets ?? [];
+    const styled = shadow.querySelector('style[data-bq-theme-root]');
+    expect(adopted.length > 0 || styled !== null).toBe(true);
+    expect(installThemeStyles(shadow)).toBe(true);
+    hostEl.remove();
   });
 });
 

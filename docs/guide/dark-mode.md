@@ -79,8 +79,22 @@ channel is the single path, and it behaves the same in every browser. The
 brighter dark accents (`--bq-color-*-600`) and dark shadows (`--bq-shadow-*`)
 go through it too.
 
-A component that carries `data-theme="dark"` itself still gets the dark tokens
-directly.
+A component that carries `data-theme="dark"` itself is dark even without the
+stylesheet; with it, a page's own dark palette (below) applies to that
+component too.
+
+Document styles do not reach into a shadow root. If your application renders
+inside its own shadow DOM and sets `data-theme` there, install the stylesheet
+into that root as well:
+
+```typescript
+import { installThemeStyles } from '@bquery/ui/theme';
+
+installThemeStyles(appHost.shadowRoot!);
+```
+
+Chromium used to cover that case through `:host-context()`; other browsers
+never did.
 
 If you need to install the stylesheet into another document — an iframe or a
 popup window — call it yourself:
@@ -93,7 +107,9 @@ installThemeStyles(iframe.contentDocument);
 
 ## Custom dark tokens
 
-Re-theme a scheme by setting its channel values against the attribute:
+Re-theme a scheme by setting its channel values against the attribute. The
+library's own rules use `:where()`, so any rule of yours wins regardless of
+stylesheet order:
 
 ```css
 [data-theme='dark'] {

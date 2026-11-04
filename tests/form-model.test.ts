@@ -84,6 +84,44 @@ describe('form controls as native-style properties and events', () => {
     expect(seen).toEqual(['hi']);
   });
 
+  it('an element connected before its tag is defined keeps its pending value working', async () => {
+    const { registerFormControl } = await import('../src/utils/model.js');
+    const tag = 'bq-late-field';
+    const el = doc.createElement(tag) as HTMLElement & { value: string };
+    doc.body.appendChild(el);
+    el.value = 'early';
+    // Defining upgrades the connected element synchronously, before the
+    // accessor installation that follows component() in the old order.
+    registerFormControl<{ value: string }>(tag, {
+      props: { value: { type: String, default: '' } },
+      render: () => '<span></span>',
+    });
+    expect(el.getAttribute('value')).toBe('early');
+    el.value = 'later';
+    expect(el.getAttribute('value')).toBe('later');
+    expect(Object.prototype.hasOwnProperty.call(el, 'value')).toBe(false);
+  });
+
+  it('a checkbox click fires exactly one input event, with the new state', async () => {
+    const root = place('<bq-checkbox></bq-checkbox>');
+    await settle();
+    const host = root.querySelector('bq-checkbox') as HTMLElement & { checked: boolean };
+    const seen: string[] = [];
+    host.addEventListener('input', () => seen.push(`input:${host.checked}`));
+    host.addEventListener('change', () => seen.push(`change:${host.checked}`));
+    host.shadowRoot!.querySelector('input')!.click();
+    expect(seen).toEqual(['input:true', 'change:true']);
+  });
+
+  it('an emptied number field reads as an empty value', async () => {
+    const root = place('<bq-number-input value="4"></bq-number-input>');
+    await settle();
+    const host = root.querySelector('bq-number-input') as HTMLElement & { value: string };
+    const field = host.shadowRoot!.querySelector('input[type="number"]') as HTMLInputElement;
+    field.value = '';
+    expect(host.value).toBe('');
+  });
+
   it('clicking a checkbox fires input then change on the host with the new state', async () => {
     const root = place('<bq-checkbox></bq-checkbox>');
     await settle();

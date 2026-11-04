@@ -359,6 +359,19 @@ describe('bq-date-picker', () => {
     expect(el.shadowRoot?.activeElement ?? null).toBeNull();
   });
 
+  it('leaves focus in the text field when a key there cannot move the cursor', async () => {
+    const el = create({ value: '2026-03-15', max: '2026-03-15' });
+    await waitForFrame();
+    click(el.shadowRoot?.querySelector('.calendar-btn') ?? null);
+    await waitForFrame();
+    field(el).focus();
+    field(el).dispatchEvent(
+      new win.KeyboardEvent('keydown', { key: 'PageDown', bubbles: true, composed: true, cancelable: true })
+    );
+    await waitForFrame();
+    expect(el.shadowRoot?.activeElement).toBe(field(el));
+  });
+
   it('closes on Escape without changing the value', async () => {
     const el = create({ value: '2026-03-15' });
     await waitForFrame();

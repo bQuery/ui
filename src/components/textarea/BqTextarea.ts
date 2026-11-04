@@ -19,7 +19,7 @@
  * @fires bq-blur
  */
 import type { ComponentDefinition } from '@bquery/bquery/component';
-import { bool, component, css, html } from '@bquery/bquery/component';
+import { bool, css, html } from '@bquery/bquery/component';
 import { escapeHtml } from '@bquery/bquery/security';
 import { t } from '../../i18n/index.js';
 import { uniqueId } from '../../utils/dom.js';
@@ -37,7 +37,7 @@ import {
   focusRing,
   reset,
 } from '../../utils/styles.js';
-import { defineFormControl, formControl } from '../../utils/model.js';
+import { registerFormControl } from '../../utils/model.js';
 
 type BqTextareaProps = {
   label: string;
@@ -258,5 +258,4 @@ ${escapeHtml(props.value)}</textarea
   },
 };
 
-component<BqTextareaProps, BqTextareaState>('bq-textarea', formControl(definition));
-defineFormControl('bq-textarea');
+registerFormControl<BqTextareaProps, BqTextareaState>('bq-textarea', definition);

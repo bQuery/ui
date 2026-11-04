@@ -121,6 +121,95 @@ describe('form submission from shadow controls', () => {
     expect(counts().submits).toBe(1);
   });
 
+  it('Enter on a form whose default bq-button cancels bq-click does not submit', async () => {
+    const { wrap, counts } = mount('<form><bq-input name="q"></bq-input><bq-button type="submit">Go</bq-button></form>');
+    await settle();
+    wrap.querySelector('bq-button')!.addEventListener('bq-click', (e) => e.preventDefault());
+    enter(wrap.querySelector('bq-input')!.shadowRoot!.querySelector('input')!);
+    expect(counts().submits).toBe(0);
+  });
+
+  it('Enter skips a link-mode bq-button when choosing the default button', async () => {
+    const { wrap, counts } = mount(
+      '<form><bq-input name="a"></bq-input><bq-input name="b"></bq-input><bq-button type="submit" href="/x">Link</bq-button></form>',
+    );
+    await settle();
+    enter(wrap.querySelector('bq-input')!.shadowRoot!.querySelector('input')!);
+    // No real submit button and two text fields: nothing to submit.
+    expect(counts().submits).toBe(0);
+  });
+
+  it('Enter does not submit a button-less form with several text fields', async () => {
+    const { wrap, counts } = mount('<form><bq-input name="a"></bq-input><input name="b"></form>');
+    await settle();
+    enter(wrap.querySelector('bq-input')!.shadowRoot!.querySelector('input')!);
+    expect(counts().submits).toBe(0);
+  });
+
+  it('Enter uses a submit button outside the form that names it with form=', async () => {
+    const { wrap, counts } = mount(
+      '<form id="f-ext"><bq-input name="q"></bq-input></form><bq-button type="submit" form="f-ext" disabled>Go</bq-button>',
+    );
+    await settle();
+    const field = wrap.querySelector('bq-input')!.shadowRoot!.querySelector('input')!;
+    enter(field);
+    expect(counts().submits).toBe(0);
+    wrap.querySelector('bq-button')!.removeAttribute('disabled');
+    await settle();
+    enter(field);
+    expect(counts().submits).toBe(1);
+  });
+
+  it('Enter in an emptied bq-number-input commits the empty value like a change would', async () => {
+    const { wrap, form, counts } = mount('<form><bq-number-input name="n" value="5"></bq-number-input></form>');
+    await settle();
+    const host = wrap.querySelector('bq-number-input')!;
+    const field = host.shadowRoot!.querySelector('input[type="number"]') as HTMLInputElement;
+    field.value = '';
+    enter(field);
+    expect(host.getAttribute('value')).toBe('0');
+    expect((form.querySelector('input[data-bq-form-proxy]') as HTMLInputElement).value).toBe('0');
+    expect(counts().submits).toBe(1);
+  });
+
+  it('a reset restores form components to their initial values', async () => {
+    const { wrap, counts } = mount(
+      '<form><bq-input name="q" value="start"></bq-input><bq-switch name="s"></bq-switch><bq-number-input name="n" value="3"></bq-number-input><bq-button type="reset">Reset</bq-button></form>',
+    );
+    await settle();
+    const input = wrap.querySelector('bq-input')!;
+    const sw = wrap.querySelector('bq-switch')!;
+    const num = wrap.querySelector('bq-number-input')!;
+    const typeInto = (field: HTMLInputElement, text: string) => {
+      field.value = text;
+      field.dispatchEvent(new Event('input', { bubbles: true, composed: true }));
+    };
+    typeInto(input.shadowRoot!.querySelector('input')!, 'edited');
+    sw.shadowRoot!.querySelector('input')!.click();
+    (num.shadowRoot!.querySelector('input[type="number"]') as HTMLInputElement).value = '9';
+    expect(input.getAttribute('value')).toBe('edited');
+    expect(sw.hasAttribute('checked')).toBe(true);
+
+    wrap.querySelector('bq-button')!.shadowRoot!.querySelector('button')!.click();
+    await settle();
+    expect(counts().resets).toBe(1);
+    expect(input.getAttribute('value')).toBe('start');
+    expect(input.shadowRoot!.querySelector('input')!.value).toBe('start');
+    expect(sw.hasAttribute('checked')).toBe(false);
+    expect((num.shadowRoot!.querySelector('input[type="number"]') as HTMLInputElement).value).toBe('3');
+  });
+
+  it('a cancelled reset leaves the values alone', async () => {
+    const { wrap, form } = mount('<form><bq-input name="q" value="start"></bq-input></form>');
+    await settle();
+    const input = wrap.querySelector('bq-input')!;
+    input.setAttribute('value', 'edited');
+    form.addEventListener('reset', (e) => e.preventDefault());
+    form.reset();
+    await settle();
+    expect(input.getAttribute('value')).toBe('edited');
+  });
+
   it('Enter in bq-number-input commits the typed value, then submits', async () => {
     const { wrap, form, counts } = mount(
       '<form><bq-number-input name="n" value="1" max="10"></bq-number-input></form>',

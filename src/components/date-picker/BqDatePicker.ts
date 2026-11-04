@@ -32,7 +32,7 @@
  * @fires bq-close
  */
 import type { ComponentDefinition } from '@bquery/bquery/component';
-import { component, css, html } from '@bquery/bquery/component';
+import { css, html } from '@bquery/bquery/component';
 import { escapeHtml } from '@bquery/bquery/security';
 import { t } from '../../i18n/index.js';
 import { bind, host, release, store } from '../../utils/component.js';
@@ -50,7 +50,7 @@ import {
   srOnly,
 } from '../../utils/styles.js';
 import { bindValidation } from '../../utils/validation.js';
-import { defineFormControl, formControl } from '../../utils/model.js';
+import { registerFormControl } from '../../utils/model.js';
 
 type BqDatePickerProps = {
   label: string;
@@ -391,9 +391,13 @@ const definition: ComponentDefinition<BqDatePickerProps, BqDatePickerState> = {
       const next = formatISODate(clampDate(date, minDate(), maxDate()));
       if (next === self.getState<string>('cursor')) {
         // Nothing to render (e.g. stopped at `min`), so no update would
-        // consume the intent; move focus now instead of leaving it pending.
+        // consume the intent; apply it now instead of leaving it pending,
+        // under the same rule as `updated()`: only from another day, or
+        // from nowhere — never out of the text field or a nav button.
         if (focus) {
-          (self.shadowRoot?.querySelector('.day[tabindex="0"]') as HTMLElement | null)?.focus();
+          const day = self.shadowRoot?.querySelector('.day[tabindex="0"]') as HTMLElement | null;
+          const focused = self.shadowRoot?.activeElement as HTMLElement | null | undefined;
+          if (day && (!focused || (focused !== day && focused.classList.contains('day')))) day.focus();
         }
         return;
       }
@@ -795,5 +799,4 @@ const definition: ComponentDefinition<BqDatePickerProps, BqDatePickerState> = {
   },
 };
 
-component<BqDatePickerProps, BqDatePickerState>('bq-date-picker', formControl(definition));
-defineFormControl('bq-date-picker');
+registerFormControl<BqDatePickerProps, BqDatePickerState>('bq-date-picker', definition);

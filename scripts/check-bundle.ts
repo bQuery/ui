@@ -32,7 +32,7 @@ try {
     for (const file of readdirSync(dir)) {
       if (!file.endsWith('.ts')) continue;
       const text = readFileSync(join(dir, file), 'utf8');
-      for (const m of text.matchAll(/component(?:<[^>]*>)?\(\s*['"](bq-[a-z0-9-]+)['"]/g)) {
+      for (const m of text.matchAll(/(?:component|registerFormControl)(?:<[^>]*>)?\(\s*['"](bq-[a-z0-9-]+)['"]/g)) {
         tags.add(m[1]!);
       }
     }

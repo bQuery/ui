@@ -22,6 +22,11 @@
  * @module
  */
 
+import { component } from '@bquery/bquery/component';
+import type { ComponentDefinition } from '@bquery/bquery/component';
+import { scopeOf } from './component.js';
+import { formOf } from './form.js';
+
 type Checkable = 'checkbox' | 'radio';
 
 export interface FormControlOptions {
@@ -43,6 +48,29 @@ export interface FormControlOptions {
 const installed = Symbol.for('bquery-ui.formControl');
 const wired = new WeakSet<HTMLElement>();
 
+/** The state each control had when it first connected, for `form.reset()`. */
+const defaults = new WeakMap<HTMLElement, { value: string | null; checked: boolean }>();
+
+/**
+ * Restores a control's initial state, as a form reset does for a native
+ * control. The inner fields are reset too: one the user typed into without
+ * committing (a number field) would otherwise keep the text.
+ */
+function restoreDefault(el: HTMLElement): void {
+  const initial = defaults.get(el);
+  if (!initial) return;
+  if (initial.value === null) el.removeAttribute('value');
+  else el.setAttribute('value', initial.value);
+  el.toggleAttribute('checked', initial.checked);
+  for (const field of el.shadowRoot?.querySelectorAll<HTMLInputElement | HTMLTextAreaElement>('input, textarea') ?? []) {
+    if (field.tagName === 'INPUT' && (field.type === 'checkbox' || field.type === 'radio')) {
+      (field as HTMLInputElement).checked = (field as HTMLInputElement).defaultChecked;
+    } else {
+      field.value = field.defaultValue;
+    }
+  }
+}
+
 /** A control's state, compared to decide whether a change was reported. */
 function snapshot(el: HTMLElement): string {
   const type = (el as unknown as { type?: unknown }).type;
@@ -54,6 +82,7 @@ function snapshot(el: HTMLElement): string {
 function wire(el: HTMLElement): void {
   if (wired.has(el)) return;
   wired.add(el);
+  defaults.set(el, { value: el.getAttribute('value'), checked: el.hasAttribute('checked') });
 
   // Native `input` events are composed: one dispatched inside the shadow root
   // (typing in the inner field) reaches the host on its own. It is still in
@@ -67,7 +96,21 @@ function wire(el: HTMLElement): void {
   el.shadowRoot?.addEventListener(
     'input',
     (event) => {
-      if (event.composed) native = event;
+      if (!event.composed) return;
+      // A checkbox or radio fires `input` before `change`, while the host
+      // still holds the old state. The `bq-change` that follows reports the
+      // click, so this one is kept inside: one `input` per click, carrying
+      // the new state.
+      const type = (el as unknown as { type?: unknown }).type;
+      const field = event.target as HTMLInputElement | null;
+      if (
+        (type === 'checkbox' || type === 'radio') &&
+        (field?.type === 'checkbox' || field?.type === 'radio')
+      ) {
+        event.stopPropagation();
+        return;
+      }
+      native = event;
     },
     true,
   );
@@ -99,23 +142,42 @@ function wire(el: HTMLElement): void {
 const MODEL_PROPS = ['value', 'checked'] as const;
 
 /**
- * Wraps a component definition so each instance fires native `input` /
- * `change` events. Pass the result to `component()`, then call
- * {@link defineFormControl} for the properties:
+ * Registers a form component: `component(tag, definition)` plus native-style
+ * properties and events.
  *
  * ```ts
- * component('bq-switch', formControl(definition));
- * defineFormControl('bq-switch', { kind: 'checkbox' });
+ * registerFormControl<Props, State>('bq-switch', definition, { kind: 'checkbox' });
  * ```
+ */
+export function registerFormControl<
+  TProps extends Record<string, unknown>,
+  TState extends Record<string, unknown> | undefined = undefined,
+>(
+  tag: string,
+  definition: ComponentDefinition<TProps, TState>,
+  options: FormControlOptions = {},
+): void {
+  (component as (tag: string, definition: unknown) => void)(tag, formControl(definition, options));
+  defineFormControl(tag, options);
+}
+
+/**
+ * Wraps a component definition so each instance gets the properties of
+ * {@link defineFormControl} and fires native `input` / `change` events.
+ * {@link registerFormControl} does this for you.
  *
  * The hook has to be part of the definition: the platform reads an element's
  * lifecycle callbacks once, when the element is defined.
  */
-export function formControl<T extends object>(definition: T): T {
+export function formControl<T extends object>(definition: T, options: FormControlOptions = {}): T {
   const connected = (definition as { connected?: (this: HTMLElement) => void }).connected;
   return {
     ...definition,
     connected(this: HTMLElement) {
+      // An element already in the page is upgraded — and connected — inside
+      // `customElements.define()`, before `defineFormControl()` can run.
+      // Install the accessors first so the replay below reaches them.
+      installAccessors(Object.getPrototypeOf(this) as HTMLElement, options);
       // A property set before the element upgraded is an own data property
       // that shadows the accessor; re-apply it through the setter.
       for (const prop of MODEL_PROPS) {
@@ -128,6 +190,18 @@ export function formControl<T extends object>(definition: T): T {
       }
       wire(this);
       connected?.call(this);
+      // Registered after the component's own `connected()`, whose `bind()`
+      // starts a fresh scope, so `release()` removes it on disconnect.
+      const form = formOf(this);
+      if (form) {
+        scopeOf(this).on(form, 'reset', (event) => {
+          // The reset event fires before the form resets; a cancelled one
+          // leaves everything as it is.
+          queueMicrotask(() => {
+            if (!event.defaultPrevented) restoreDefault(this);
+          });
+        });
+      }
     },
   };
 }
@@ -138,9 +212,12 @@ export function formControl<T extends object>(definition: T): T {
  */
 export function defineFormControl(tag: string, options: FormControlOptions = {}): void {
   const ctor = customElements.get(tag);
-  if (!ctor) return;
-  const proto = ctor.prototype as HTMLElement & { [installed]?: true };
-  if (proto[installed]) return;
+  if (ctor) installAccessors(ctor.prototype as HTMLElement, options);
+}
+
+function installAccessors(target: HTMLElement, options: FormControlOptions): void {
+  const proto = target as HTMLElement & { [installed]?: true };
+  if (Object.prototype.hasOwnProperty.call(proto, installed)) return;
   Object.defineProperty(proto, installed, { value: true });
 
   const kind = options.kind ?? 'value';
@@ -180,11 +257,12 @@ export function defineFormControl(tag: string, options: FormControlOptions = {})
 
 /**
  * A {@link FormControlOptions.live} reader for the shadow field matching
- * `selector`, ignoring it while empty.
+ * `selector`. A field the user emptied reads as `''`, as on a native input;
+ * before the first render there is no field and the attribute is used.
  */
 export function liveField(selector: string): (host: HTMLElement) => string | null {
   return (host) => {
     const field = host.shadowRoot?.querySelector(selector) as HTMLInputElement | null;
-    return field && field.value !== '' ? field.value : null;
+    return field ? field.value : null;
   };
 }

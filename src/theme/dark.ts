@@ -1,4 +1,4 @@
-import { darkTokens, getDarkSchemeCSS } from './scheme.js';
+import { darkTokens, getDarkSchemeChannelCSS } from './scheme.js';
 
 /**
  * Dark theme for @bquery/ui
@@ -11,7 +11,9 @@ export const darkTheme = {
 
 /**
  * Generates the CSS for a component told to be dark directly
- * (`<bq-button data-theme="dark">`).
+ * (`<bq-button data-theme="dark">`). The values go through the scheme channel
+ * with dark fallbacks (see `getDarkSchemeChannelCSS`), so a page's own dark
+ * palette applies here too.
  *
  * An ancestor's `data-theme` reaches components through the document-level
  * scheme channel (`./scheme.ts`, installed automatically), in every browser.
@@ -22,7 +24,7 @@ export const darkTheme = {
 export function getDarkThemeCSS(): string {
   return `
 :host([data-theme="dark"]) {
-${getDarkSchemeCSS()}
+${getDarkSchemeChannelCSS()}
 }
 `.trim();
 }

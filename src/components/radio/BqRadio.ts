@@ -17,13 +17,13 @@
  * @fires bq-change - { value: string, checked: boolean }
  */
 import type { ComponentDefinition } from '@bquery/bquery/component';
-import { bool, component, css, html } from '@bquery/bquery/component';
+import { bool, css, html } from '@bquery/bquery/component';
 import { escapeHtml } from '@bquery/bquery/security';
 import { bindFormProxy, syncFormProxy } from '../../utils/form.js';
 import { bind, host, release } from '../../utils/component.js';
 import { uniqueId } from '../../utils/dom.js';
 import { baseStyles, fieldStyles, reset } from '../../utils/styles.js';
-import { defineFormControl, formControl } from '../../utils/model.js';
+import { registerFormControl } from '../../utils/model.js';
 
 type BqRadioProps = {
   label: string;
@@ -220,5 +220,4 @@ function uncheckSiblings(el: HTMLElement): void {
   }
 }
 
-component<BqRadioProps, BqRadioState>('bq-radio', formControl(definition));
-defineFormControl('bq-radio', { kind: 'radio' });
+registerFormControl<BqRadioProps, BqRadioState>('bq-radio', definition, { kind: 'radio' });

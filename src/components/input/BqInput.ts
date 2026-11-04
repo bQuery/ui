@@ -22,7 +22,7 @@
  * @fires bq-blur
  */
 import type { ComponentDefinition } from '@bquery/bquery/component';
-import { bool, component, css, html } from '@bquery/bquery/component';
+import { bool, css, html } from '@bquery/bquery/component';
 import { escapeHtml } from '@bquery/bquery/security';
 import { t } from '../../i18n/index.js';
 import { uniqueId } from '../../utils/dom.js';
@@ -41,7 +41,7 @@ import {
   focusRing,
   reset,
 } from '../../utils/styles.js';
-import { defineFormControl, formControl } from '../../utils/model.js';
+import { registerFormControl } from '../../utils/model.js';
 
 type BqInputProps = {
   label: string;
@@ -374,5 +374,4 @@ const definition: ComponentDefinition<BqInputProps, BqInputState> = {
   },
 };
 
-component<BqInputProps, BqInputState>('bq-input', formControl(definition));
-defineFormControl('bq-input');
+registerFormControl<BqInputProps, BqInputState>('bq-input', definition);

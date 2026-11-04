@@ -271,6 +271,27 @@ export function getDarkSchemeCSS(indent = '  '): string {
   ].join('\n');
 }
 
+/**
+ * The dark values routed through the scheme channel, with the dark values as
+ * fallbacks.
+ *
+ * Used for a component that carries `data-theme="dark"` itself. The
+ * document's `[data-theme="dark"]` rule matches that element too and sets the
+ * channel on it, so a page that re-themes dark (`[data-theme='dark'] {
+ * --bq-scheme-bg-base: … }`) reaches it like any other dark region, and the
+ * element's own channel beats a light value inherited from an ancestor.
+ * Without the document sheet the fallbacks apply.
+ */
+export function getDarkSchemeChannelCSS(indent = '  '): string {
+  return [
+    `${indent}color-scheme: var(--bq-scheme-color-scheme, dark);`,
+    ...[
+      ...Object.entries(DARK_TOKENS).filter(([name]) => name !== 'color-scheme'),
+      ...Object.entries(DARK_OVERRIDES),
+    ].map(([name, value]) => `${indent}--bq-${name}: var(--bq-scheme-${name}, ${value});`),
+  ].join('\n');
+}
+
 function channel(
   tokens: Record<string, string>,
   scheme: string,
@@ -305,18 +326,22 @@ export function getSchemeRootCSS(): string {
     .map(([name, value]) => `  --bq-scheme-${name}: ${value};`)
     .join('\n');
 
-  return `[data-theme="dark"] {
+  // `:where()` keeps every selector at zero specificity. The sheet is
+  // usually adopted, which places it after the page's own stylesheets, so a
+  // page rule such as `[data-theme='dark'] { --bq-scheme-bg-base: … }` would
+  // otherwise tie on specificity and lose on order.
+  return `:where([data-theme="dark"]) {
 ${dark}
 ${darkOverrides}
 }
 
-[data-theme="light"] {
+:where([data-theme="light"]) {
 ${light}
 ${lightOverrides}
 }
 
 @media (prefers-color-scheme: dark) {
-  [data-theme="auto"] {
+  :where([data-theme="auto"]) {
 ${dark
   .split('\n')
   .map((line) => `  ${line}`)
